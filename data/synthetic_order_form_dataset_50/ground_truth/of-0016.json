@@ -1,0 +1,37 @@
+{
+  "effective_date": "2026-03-01",
+  "contract_signed_date_buying_company": "2026-03-01",
+  "contract_signed_date_selling_company": "2026-03-01",
+  "contract_items": [
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 1163866.55,
+      "service_start_date": "2026-03-16",
+      "service_end_date": "2027-03-15",
+      "quantity": 5.0,
+      "unit_price": 232773.31,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Usage caps apply per signed order form."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 103525.4,
+      "service_start_date": "2026-03-16",
+      "service_end_date": "2027-03-15",
+      "quantity": 1.0,
+      "unit_price": 103525.4,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Subject to master subscription agreement."
+    }
+  ]
+}

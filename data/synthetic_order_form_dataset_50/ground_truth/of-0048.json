@@ -1,0 +1,52 @@
+{
+  "effective_date": "2022-11-10",
+  "contract_signed_date_buying_company": "2022-11-11",
+  "contract_signed_date_selling_company": "2022-11-15",
+  "contract_items": [
+    {
+      "sku_id": "89ab57ac-9aad-49a5-b9f5-4b99698dd292",
+      "sku_code": "TALENT_ACQUISITION_CORE",
+      "sku_name": "Talent Acquisition Core",
+      "currency": "USD",
+      "total_listed_value": 734369.64,
+      "service_start_date": "2022-12-09",
+      "service_end_date": "2023-12-08",
+      "quantity": 3.0,
+      "unit_price": 61197.47,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 790308.76,
+      "service_start_date": "2022-12-09",
+      "service_end_date": "2023-12-08",
+      "quantity": 1.0,
+      "unit_price": 197577.19,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 845975.16,
+      "service_start_date": "2022-12-09",
+      "service_end_date": "2023-12-08",
+      "quantity": 3.0,
+      "unit_price": 70497.93,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Usage caps apply per signed order form."
+    }
+  ]
+}

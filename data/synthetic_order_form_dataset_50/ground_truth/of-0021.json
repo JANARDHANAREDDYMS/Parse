@@ -1,0 +1,67 @@
+{
+  "effective_date": "2025-06-05",
+  "contract_signed_date_buying_company": "2025-06-06",
+  "contract_signed_date_selling_company": "2025-06-09",
+  "contract_items": [
+    {
+      "sku_id": "d6f20b62-9bec-421b-8d33-489712746aee",
+      "sku_code": "TALENT_ACQUISITION",
+      "sku_name": "Talent Acquisition",
+      "currency": "USD",
+      "total_listed_value": 7476716.88,
+      "service_start_date": "2025-06-22",
+      "service_end_date": "2026-06-21",
+      "quantity": 3.0,
+      "unit_price": 207686.58,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 5410356.6,
+      "service_start_date": "2025-06-22",
+      "service_end_date": "2026-06-21",
+      "quantity": 5.0,
+      "unit_price": 90172.61,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 2480573.16,
+      "service_start_date": "2025-06-22",
+      "service_end_date": "2026-06-21",
+      "quantity": 3.0,
+      "unit_price": 68904.81,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Includes standard onboarding support."
+    },
+    {
+      "sku_id": "89ab57ac-9aad-49a5-b9f5-4b99698dd292",
+      "sku_code": "TALENT_ACQUISITION_CORE",
+      "sku_name": "Talent Acquisition Core",
+      "currency": "USD",
+      "total_listed_value": 1871581.2,
+      "service_start_date": "2025-06-22",
+      "service_end_date": "2026-06-21",
+      "quantity": 2.0,
+      "unit_price": 77982.55,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Usage caps apply per signed order form."
+    }
+  ]
+}

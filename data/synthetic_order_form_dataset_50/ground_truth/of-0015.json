@@ -1,0 +1,67 @@
+{
+  "effective_date": "2024-09-29",
+  "contract_signed_date_buying_company": "2024-10-06",
+  "contract_signed_date_selling_company": "2024-10-09",
+  "contract_items": [
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 4550807.4,
+      "service_start_date": "2024-10-09",
+      "service_end_date": "2025-10-08",
+      "quantity": 5.0,
+      "unit_price": 75846.79,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 30",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "2c825663-7215-4f20-883c-4e8099f64b8b",
+      "sku_code": "PREMIUM_SUPPORT",
+      "sku_name": "Premium Support",
+      "currency": "USD",
+      "total_listed_value": 1574734.92,
+      "service_start_date": "2024-10-09",
+      "service_end_date": "2025-10-08",
+      "quantity": 1.0,
+      "unit_price": 131227.91,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 30",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "bc8b9193-a684-41c5-ac83-c0356cbcb7f3",
+      "sku_code": "SANDBOX",
+      "sku_name": "Sandbox",
+      "currency": "USD",
+      "total_listed_value": 1808828.76,
+      "service_start_date": "2024-10-09",
+      "service_end_date": "2025-10-08",
+      "quantity": 1.0,
+      "unit_price": 150735.73,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 30",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "6e0247a7-ae3b-49ef-971e-feb0641cf52d",
+      "sku_code": "SIGNATURE_SUCCESS",
+      "sku_name": "Signature Success",
+      "currency": "USD",
+      "total_listed_value": 1144114.8,
+      "service_start_date": "2024-10-09",
+      "service_end_date": "2025-10-08",
+      "quantity": 1.0,
+      "unit_price": 95342.9,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 30",
+      "special_notes": "Includes standard onboarding support."
+    }
+  ]
+}

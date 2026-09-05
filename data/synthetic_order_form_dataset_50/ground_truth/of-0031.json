@@ -1,0 +1,37 @@
+{
+  "effective_date": "2024-07-14",
+  "contract_signed_date_buying_company": "2024-07-21",
+  "contract_signed_date_selling_company": "2024-07-21",
+  "contract_items": [
+    {
+      "sku_id": "2c825663-7215-4f20-883c-4e8099f64b8b",
+      "sku_code": "PREMIUM_SUPPORT",
+      "sku_name": "Premium Support",
+      "currency": "USD",
+      "total_listed_value": 337166.12,
+      "service_start_date": "2024-08-13",
+      "service_end_date": "2026-08-12",
+      "quantity": 1.0,
+      "unit_price": 168583.06,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Usage caps apply per signed order form."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 357346.98,
+      "service_start_date": "2024-08-13",
+      "service_end_date": "2026-08-12",
+      "quantity": 1.0,
+      "unit_price": 178673.49,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

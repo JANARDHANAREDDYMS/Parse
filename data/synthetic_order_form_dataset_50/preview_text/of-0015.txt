@@ -1,0 +1,65 @@
+Prepared For: Brightwave Industries
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Jordan Lee
+Offer Valid Through: 2024-10-14
+Quote Number: Q-428517
+Order Form ID: OF-0015
+
+Order Form - Subscription Services
+
+Sold To: 3985 Technology Drive, San Jose, CA 69888, USA
+Bill To: Attn: Accounts Payable, 2010 Innovation Pkwy, San Jose, CA 12061, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@brightwaveindustries.com
+Billing Contact Name: Taylor Morgan
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: 10/09/2024
+Service End Date: 10/08/2025
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION FEES
+
+Offering                                 Qty         Unit Fee   Total Contract Value
+Talent Intel. Platf.                       5    75,846.79 USD     4,550,807.40 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2024-10-09 to 2025-10-08
+  Invoicing: recurring/monthly | Terms: Net 30
+Prem. Support                              1   131,227.91 USD     1,574,734.92 USD
+  SKU: PREMIUM_SUPPORT | Service: 2024-10-09 to 2025-10-08
+  Invoicing: recurring/monthly | Terms: Net 30
+Sandbox                                    1   150,735.73 USD     1,808,828.76 USD
+  SKU: SANDBOX | Service: 2024-10-09 to 2025-10-08
+  Invoicing: recurring/monthly | Terms: Net 30
+Signature Success                          1    95,342.90 USD     1,144,114.80 USD
+  SKU: SIGNATURE_SUCCESS | Service: 2024-10-09 to 2025-10-08
+  Invoicing: recurring/monthly | Terms: Net 30
+
+TOTAL AMOUNT DUE: 9,078,485.88 USD
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Overages - Talent Acquisition AI Interviewer Agent Add-on, Talent Acquisition CRM.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Oct 06, 2024
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Oct 09, 2024
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

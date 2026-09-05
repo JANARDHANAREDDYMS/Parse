@@ -1,0 +1,60 @@
+Prepared For: Oakbridge Energy
+Prepared By: Acme Software Inc.
+Account Executive: Taylor Morgan
+Offer Valid Through: 2022-04-28
+Quote Number: Q-143007
+Order Form ID: OF-0003
+
+Sales Order Form
+
+Sold To: 7023 Enterprise Way, Chicago, IL 46341, USA
+Bill To: Attn: Accounts Payable, 1440 Mission Street, Chicago, IL 72937, USA
+Primary Contact: Taylor Morgan
+Primary Contact Email: taylor@oakbridgeenergy.com
+Billing Contact Name: Jamie Kim
+Billing Contact Email: ap@oakbridgeenergy.com
+Service Start Date: 2022-04-02
+Service End Date: 31 Mar 2024
+Up to Customer Employee Size: 10,000
+
+SUBSCRIPTION SERVICE FEES
+
+Offering                                 Qty       Unit Price                Total
+Elevate Success Plan                       2    92,550.00 USD       185,100.00 USD
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2022-04-02 to 2024-03-31
+  Invoicing: upfront/one-time | Terms: Net 55
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   240,248.05 USD       240,248.05 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2022-04-02 to 2024-03-31
+  Invoicing: upfront/one-time | Terms: Net 55
+
+TOTAL AMOUNT DUE: 425,348.05 USD
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Intelligence Platform, Sandbox.
+
+Oakbridge Energy
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Mar 20, 2022
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Mar 25, 2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

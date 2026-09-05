@@ -1,0 +1,57 @@
+Prepared For: Riverstone Health
+Prepared By: Acme Software Inc.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2022-09-08
+Quote Number: Q-961320
+Order Form ID: OF-0038
+
+ORDER FORM - SUBSCRIPTION SERVICES
+
+Sold To: 249 Innovation Pkwy, Denver, CO 39963, USA
+Bill To: Attn: Accounts Payable, 914 Technology Drive, Denver, CO 50610, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@riverstonehealth.com
+Billing Contact Name: Jamie Kim
+Billing Contact Email: ap@riverstonehealth.com
+Service Start Date: 2022-09-01
+Service End Date: 2025-08-30
+Up to Customer Employee Size: 5,000
+
+LICENSE AND SERVICE FEES
+
+Product/Service                          Qty       Unit Price   Total Contract Value
+Talent Intelligence Platform Premium       5      $224,620.64       $40,431,715.20
+  Edition (Add-on)
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2022-09-01 to 2025-08-30
+  Invoicing: recurring/monthly | Terms: Net 45
+
+TOTAL AMOUNT DUE: $40,431,715.20
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Copilot, Talent Acquisition Candidate Experience.
+
+Riverstone Health
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 16, 2022
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 16, 2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

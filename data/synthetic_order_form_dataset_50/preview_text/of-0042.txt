@@ -1,0 +1,56 @@
+Prepared For: Riverstone Health
+Prepared By: Acme Software Inc.
+Account Executive: Riley Singh
+Offer Valid Through: 2022-10-15
+Quote Number: Q-531866
+Order Form ID: OF-0042
+
+SALES ORDER FORM
+
+Sold To: 8734 Mission Street, Denver, CO 68671, USA
+Bill To: Attn: Accounts Payable, 5263 Market Street, Denver, CO 42480, USA
+Primary Contact: Jamie Kim
+Primary Contact Email: jamie@riverstonehealth.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@riverstonehealth.com
+Service Start Date: 09-Oct-2022
+Service End Date: 10/07/2025
+Up to Customer Employee Size: 10,000
+
+SUBSCRIPTION SERVICE FEES
+
+SKU Description                          Qty             Rate                Total
+Signature Success                          1       $60,264.76          $723,177.12
+  SKU: SIGNATURE_SUCCESS | Service: 2022-10-09 to 2025-10-07
+  Invoicing: upfront/quarterly | Terms: Net 45
+
+TOTAL AMOUNT DUE: $723,177.12
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Professional Service, Talent Intelligence Platform Premium Edition (Add-on).
+
+Riverstone Health
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 24-Sep-2022
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 27-Sep-2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

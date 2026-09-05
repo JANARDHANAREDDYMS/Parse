@@ -1,0 +1,52 @@
+{
+  "effective_date": "2023-10-07",
+  "contract_signed_date_buying_company": "2023-10-11",
+  "contract_signed_date_selling_company": "2023-10-13",
+  "contract_items": [
+    {
+      "sku_id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+      "sku_code": "ELEVATE_SUCCESS_PLAN",
+      "sku_name": "Elevate Success Plan",
+      "currency": "USD",
+      "total_listed_value": 510912.63,
+      "service_start_date": "2023-10-13",
+      "service_end_date": "2026-10-11",
+      "quantity": 3.0,
+      "unit_price": 170304.21,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 301582.5,
+      "service_start_date": "2023-10-13",
+      "service_end_date": "2026-10-11",
+      "quantity": 5.0,
+      "unit_price": 60316.5,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Includes standard onboarding support."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 25697.34,
+      "service_start_date": "2023-10-13",
+      "service_end_date": "2026-10-11",
+      "quantity": 3.0,
+      "unit_price": 8565.78,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

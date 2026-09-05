@@ -1,0 +1,59 @@
+Prepared For: Meridian Financial Services
+Prepared By: Acme Software Inc.
+Account Executive: Casey Patel
+Offer Valid Through: 2025-03-14
+Quote Number: Q-459180
+Order Form ID: OF-0025
+
+Customer Order Schedule
+
+Sold To: 7159 Harbor Boulevard, Boston, MA 86967, USA
+Bill To: Attn: Accounts Payable, 9967 Technology Drive, Boston, MA 63634, USA
+Primary Contact: Jamie Kim
+Primary Contact Email: jamie@meridianfinancialservices.com
+Billing Contact Name: Riley Singh
+Billing Contact Email: ap@meridianfinancialservices.com
+Service Start Date: 18 Mar 2025
+Service End Date: 17 Mar 2026
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION FEES
+
+SKU Description                          Qty             Rate                Total
+Talent Mgmt Ent.                           1      $103,891.40          $103,891.40
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2025-03-18 to 2026-03-17
+  Invoicing: upfront/yearly | Terms: Net 55
+Talent Acquisition Candidate Experience    2      $189,007.48          $378,014.96
+  SKU: TALENT_ACQUISITION_CANDIDATE_EXPERIENCE | Service: 2025-03-18 to 2026-03-17
+  Invoicing: upfront/yearly | Terms: Net 55
+
+TOTAL AMOUNT DUE: $481,906.36
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition CRM, Talent Acquisition AI Interviewer Agent Add-on.
+
+Meridian Financial Services
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 21-Feb-2025
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 24-Feb-2025
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

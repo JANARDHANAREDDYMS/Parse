@@ -1,0 +1,57 @@
+Prepared For: Atlas Retail Group
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2024-03-14
+Quote Number: Q-476961
+Order Form ID: OF-0018
+
+Customer Order Schedule
+
+Sold To: 6633 Technology Drive, Denver, CO 72940, USA
+Bill To: Attn: Accounts Payable, 9981 Technology Drive, Denver, CO 85464, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@atlasretailgroup.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@atlasretailgroup.com
+Service Start Date: 09-Feb-2024
+Service End Date: Feb 07, 2025
+Up to Customer Employee Size: 50,000
+
+LICENSE AND SERVICE FEES
+
+Offering                                 Qty             Rate       Extended Price
+Sandbox                                    5    USD 55,539.86     USD 3,332,391.60
+  SKU: SANDBOX | Service: 2024-02-09 to 2025-02-07
+  Invoicing: recurring/monthly | Terms: Net 45
+
+TOTAL AMOUNT DUE: USD 3,332,391.60
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition, Talent Intelligence Platform Premium Edition (Add-on).
+
+Atlas Retail Group
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-02-09
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-02-14
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

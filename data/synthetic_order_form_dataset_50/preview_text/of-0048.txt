@@ -1,0 +1,62 @@
+Prepared For: Summit Telecom
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Riley Singh
+Offer Valid Through: 2022-12-19
+Quote Number: Q-384126
+Order Form ID: OF-0048
+
+Customer Order Schedule
+
+Sold To: 5510 Harbor Boulevard, San Jose, CA 64255, USA
+Bill To: Attn: Accounts Payable, 3741 Technology Drive, San Jose, CA 60252, USA
+Primary Contact: Taylor Morgan
+Primary Contact Email: taylor@summittelecom.com
+Billing Contact Name: Alex Carter
+Billing Contact Email: ap@summittelecom.com
+Service Start Date: 12/09/2022
+Service End Date: 08-Dec-2023
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION SERVICE FEES
+
+Offering                                 Qty       Unit Price   Total Contract Value
+Talent Acquisition Core                    3    61,197.47 USD       734,369.64 USD
+  SKU: TALENT_ACQUISITION_CORE | Service: 2022-12-09 to 2023-12-08
+  Invoicing: upfront/quarterly | Terms: Due on Receipt
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   197,577.19 USD       790,308.76 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2022-12-09 to 2023-12-08
+  Invoicing: upfront/quarterly | Terms: Due on Receipt
+Talent Intel. Platf.                       3    70,497.93 USD       845,975.16 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2022-12-09 to 2023-12-08
+  Invoicing: upfront/quarterly | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: 2,370,653.56 USD
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Management Core, Overages - Talent Acquisition AI Interviewer Agent Add-on.
+
+Summit Telecom
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 11-Nov-2022
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 15-Nov-2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

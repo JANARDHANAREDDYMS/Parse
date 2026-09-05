@@ -1,0 +1,56 @@
+Prepared For: Brightwave Industries
+Prepared By: Northstar Systems LLC
+Account Executive: Morgan Diaz
+Offer Valid Through: 2022-11-20
+Quote Number: Q-692855
+Order Form ID: OF-0045
+
+Customer Order Schedule
+
+Sold To: 777 Enterprise Way, Denver, CO 25388, USA
+Bill To: Attn: Accounts Payable, 7048 Market Street, Denver, CO 20361, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@brightwaveindustries.com
+Billing Contact Name: Avery Brown
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: 11/26/2022
+Service End Date: 2024-11-24
+Up to Customer Employee Size: 15,000
+
+SUBSCRIPTION FEES
+
+Offering                                 Qty             Rate       Extended Price
+Professional Service                       1      $165,104.90          $330,209.80
+  SKU: PROFESSIONAL_SERVICE | Service: 2022-11-26 to 2024-11-24
+  Invoicing: hybrid/yearly | Terms: Net 55
+
+TOTAL AMOUNT DUE: $330,209.80
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition Core, Talent Acquisition.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 05-Nov-2022
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 10-Nov-2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

@@ -1,0 +1,66 @@
+Prepared For: Brightwave Industries
+Prepared By: Northstar Systems LLC
+Account Executive: Casey Patel
+Offer Valid Through: 2024-04-15
+Quote Number: Q-402362
+Order Form ID: OF-0044
+
+Order Form - Subscription Services
+
+Sold To: 1879 Enterprise Way, Chicago, IL 73692, USA
+Bill To: Attn: Accounts Payable, 8757 Technology Drive, Chicago, IL 70865, USA
+Primary Contact: Jamie Kim
+Primary Contact Email: jamie@brightwaveindustries.com
+Billing Contact Name: Taylor Morgan
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: 22 Mar 2024
+Service End Date: 21-Mar-2026
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty       Unit Price   Total Contract Value
+Talent Acquisition Core                    5    86,549.46 USD    10,385,935.20 USD
+  SKU: TALENT_ACQUISITION_CORE | Service: 2024-03-22 to 2026-03-21
+  Invoicing: hybrid/monthly | Terms: Due on Receipt
+Talent Acquisition                         1   102,636.10 USD     2,463,266.40 USD
+  SKU: TALENT_ACQUISITION | Service: 2024-03-22 to 2026-03-21
+  Invoicing: hybrid/monthly | Terms: Due on Receipt
+Elevate Success Plan                       2   228,037.20 USD    10,945,785.60 USD
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2024-03-22 to 2026-03-21
+  Invoicing: hybrid/monthly | Terms: Due on Receipt
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   249,904.22 USD     5,997,701.28 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2024-03-22 to 2026-03-21
+  Invoicing: hybrid/monthly | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: 29,792,688.48 USD
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Intelligence Platform, Sandbox.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-03-03
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-03-08
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

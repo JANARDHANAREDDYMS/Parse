@@ -1,0 +1,65 @@
+Prepared For: Summit Telecom
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Riley Singh
+Offer Valid Through: 2025-06-29
+Quote Number: Q-782452
+Order Form ID: OF-0041
+
+Order Form - Subscription Services
+
+Sold To: 6204 Harbor Boulevard, San Francisco, CA 32305, USA
+Bill To: Attn: Accounts Payable, 9895 Mission Street, San Francisco, CA 69380, USA
+Primary Contact: Casey Patel
+Primary Contact Email: casey@summittelecom.com
+Billing Contact Name: Avery Brown
+Billing Contact Email: ap@summittelecom.com
+Service Start Date: 2025-07-14
+Service End Date: Jul 13, 2026
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION FEES
+
+SKU Description                          Qty             Rate   Total Contract Value
+WhatsApp / SMS Credits                     1      $150,946.28          $150,946.28
+  SKU: WHATSAPP_SMS_CREDITS | Service: 2025-07-14 to 2026-07-13
+  Invoicing: upfront/one-time | Terms: Net 45
+Elevate Success Plan                       1       $68,005.90           $68,005.90
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2025-07-14 to 2026-07-13
+  Invoicing: upfront/one-time | Terms: Net 45
+Talent Acquisition Core                    1       $70,915.52           $70,915.52
+  SKU: TALENT_ACQUISITION_CORE | Service: 2025-07-14 to 2026-07-13
+  Invoicing: upfront/one-time | Terms: Net 45
+Professional Service                       3      $230,837.75          $692,513.25
+  SKU: PROFESSIONAL_SERVICE | Service: 2025-07-14 to 2026-07-13
+  Invoicing: upfront/one-time | Terms: Net 45
+
+TOTAL AMOUNT DUE: $982,380.95
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Premium Support, Talent Design.
+
+Summit Telecom
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2025-06-24
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2025-06-29
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

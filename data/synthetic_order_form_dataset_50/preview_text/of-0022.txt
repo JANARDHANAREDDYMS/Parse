@@ -1,0 +1,62 @@
+Prepared For: Atlas Retail Group
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Alex Carter
+Offer Valid Through: 2026-03-17
+Quote Number: Q-378066
+Order Form ID: OF-0022
+
+Customer Order Schedule
+
+Sold To: 3120 Enterprise Way, San Francisco, CA 19935, USA
+Bill To: Attn: Accounts Payable, 286 Technology Drive, San Francisco, CA 56029, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@atlasretailgroup.com
+Billing Contact Name: Jamie Kim
+Billing Contact Email: ap@atlasretailgroup.com
+Service Start Date: Mar 10, 2026
+Service End Date: 2029-03-08
+Up to Customer Employee Size: 50,000
+
+SUBSCRIPTION SERVICE FEES
+
+Offering                                 Qty             Rate   Total Contract Value
+Talent Mgmt Ent.                           3   USD 148,343.01     USD 5,340,348.36
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2026-03-10 to 2029-03-08
+  Invoicing: hybrid/quarterly | Terms: Net 30
+Talent Intel. Platf.                       1   USD 152,832.62     USD 1,833,991.44
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2026-03-10 to 2029-03-08
+  Invoicing: hybrid/quarterly | Terms: Net 30
+Talent Design                              3    USD 38,453.07     USD 1,384,310.52
+  SKU: TALENT_DESIGN | Service: 2026-03-10 to 2029-03-08
+  Invoicing: hybrid/quarterly | Terms: Net 30
+
+TOTAL AMOUNT DUE: USD 8,558,650.32
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition Candidate Experience, Copilot.
+
+Atlas Retail Group
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 23-Feb-2026
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 24-Feb-2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

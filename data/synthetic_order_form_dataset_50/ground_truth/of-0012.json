@@ -1,0 +1,52 @@
+{
+  "effective_date": "2023-09-26",
+  "contract_signed_date_buying_company": "2023-10-01",
+  "contract_signed_date_selling_company": "2023-10-03",
+  "contract_items": [
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 130015.2,
+      "service_start_date": "2023-10-12",
+      "service_end_date": "2024-10-10",
+      "quantity": 3.0,
+      "unit_price": 10834.6,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Net 55",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 81949.28,
+      "service_start_date": "2023-10-12",
+      "service_end_date": "2024-10-10",
+      "quantity": 2.0,
+      "unit_price": 10243.66,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Net 55",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 187728.76,
+      "service_start_date": "2023-10-12",
+      "service_end_date": "2024-10-10",
+      "quantity": 1.0,
+      "unit_price": 46932.19,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Net 55",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

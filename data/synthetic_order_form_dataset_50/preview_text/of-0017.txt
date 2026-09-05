@@ -1,0 +1,63 @@
+Prepared For: Meridian Financial Services
+Prepared By: Acme Software Inc.
+Account Executive: Jordan Lee
+Offer Valid Through: 2026-12-18
+Quote Number: Q-175195
+Order Form ID: OF-0017
+
+CUSTOMER ORDER SCHEDULE
+
+Sold To: 4605 Harbor Boulevard, Boston, MA 66046, USA
+Bill To: Attn: Accounts Payable, 8186 Enterprise Way, Boston, MA 13290, USA
+Primary Contact: Riley Singh
+Primary Contact Email: riley@meridianfinancialservices.com
+Billing Contact Name: Casey Patel
+Billing Contact Email: ap@meridianfinancialservices.com
+Service Start Date: 2026-12-16
+Service End Date: 2028-12-14
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION SERVICE FEES
+
+Offering                                 Qty       Unit Price                Total
+Talent Acquisition                         3    43,941.90 USD       131,825.70 USD
+  SKU: TALENT_ACQUISITION | Service: 2026-12-16 to 2028-12-14
+  Invoicing: upfront/one-time | Terms: Net 55
+Talent Intel. Platf. Prem. Ed. (Add-on)    3    79,029.01 USD       237,087.03 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2026-12-16 to 2028-12-14
+  Invoicing: upfront/one-time | Terms: Net 55
+Talent Intel. Platf.                       5   188,996.32 USD       944,981.60 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2026-12-16 to 2028-12-14
+  Invoicing: upfront/one-time | Terms: Net 55
+
+TOTAL AMOUNT DUE: 1,313,894.33 USD
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Elevate Success Plan, Talent Acquisition CRM.
+
+Meridian Financial Services
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 06 Dec 2026
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 08 Dec 2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

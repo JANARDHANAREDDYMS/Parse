@@ -1,0 +1,63 @@
+Prepared For: Orchid Logistics
+Prepared By: Acme Software Inc.
+Account Executive: Avery Brown
+Offer Valid Through: 2026-08-09
+Quote Number: Q-135420
+Order Form ID: OF-0001
+
+Sales Order Form
+
+Sold To: 8784 Market Street, Seattle, WA 35165, USA
+Bill To: Attn: Accounts Payable, 5966 Mission Street, Seattle, WA 45046, USA
+Primary Contact: Morgan Diaz
+Primary Contact Email: morgan@orchidlogistics.com
+Billing Contact Name: Alex Carter
+Billing Contact Email: ap@orchidlogistics.com
+Service Start Date: 01-Aug-2026
+Service End Date: 31 Jul 2027
+Up to Customer Employee Size: 5,000
+
+SUBSCRIPTION SERVICE FEES
+
+SKU Description                          Qty         Unit Fee       Extended Price
+Talent Acquisition Core                    1   197,510.77 USD       197,510.77 USD
+  SKU: TALENT_ACQUISITION_CORE | Service: 2026-08-01 to 2027-07-31
+  Invoicing: upfront/one-time | Terms: Net 30
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   167,214.88 USD       167,214.88 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2026-08-01 to 2027-07-31
+  Invoicing: upfront/one-time | Terms: Net 30
+Professional Service                       1   242,917.93 USD       242,917.93 USD
+  SKU: PROFESSIONAL_SERVICE | Service: 2026-08-01 to 2027-07-31
+  Invoicing: upfront/one-time | Terms: Net 30
+
+TOTAL AMOUNT DUE: 607,643.58 USD
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Sandbox, Talent Acquisition.
+
+Orchid Logistics
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 05, 2026
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 08, 2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

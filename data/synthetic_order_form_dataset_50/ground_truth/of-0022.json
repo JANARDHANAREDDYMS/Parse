@@ -1,0 +1,52 @@
+{
+  "effective_date": "2026-02-23",
+  "contract_signed_date_buying_company": "2026-02-23",
+  "contract_signed_date_selling_company": "2026-02-24",
+  "contract_items": [
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 5340348.36,
+      "service_start_date": "2026-03-10",
+      "service_end_date": "2029-03-08",
+      "quantity": 3.0,
+      "unit_price": 148343.01,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Net 30",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 1833991.44,
+      "service_start_date": "2026-03-10",
+      "service_end_date": "2029-03-08",
+      "quantity": 1.0,
+      "unit_price": 152832.62,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Net 30",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "b9d6a351-d317-46c4-be4e-8df01866127a",
+      "sku_code": "TALENT_DESIGN",
+      "sku_name": "Talent Design",
+      "currency": "USD",
+      "total_listed_value": 1384310.52,
+      "service_start_date": "2026-03-10",
+      "service_end_date": "2029-03-08",
+      "quantity": 3.0,
+      "unit_price": 38453.07,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Net 30",
+      "special_notes": "Subject to master subscription agreement."
+    }
+  ]
+}

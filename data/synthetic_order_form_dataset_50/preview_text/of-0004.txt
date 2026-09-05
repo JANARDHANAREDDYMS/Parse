@@ -1,0 +1,60 @@
+Prepared For: Helio Manufacturing
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Jamie Kim
+Offer Valid Through: 2023-06-12
+Quote Number: Q-510435
+Order Form ID: OF-0004
+
+Sales Order Form
+
+Sold To: 4933 Innovation Pkwy, Seattle, WA 89023, USA
+Bill To: Attn: Accounts Payable, 9435 Innovation Pkwy, Seattle, WA 87515, USA
+Primary Contact: Jordan Lee
+Primary Contact Email: jordan@heliomanufacturing.com
+Billing Contact Name: Riley Singh
+Billing Contact Email: ap@heliomanufacturing.com
+Service Start Date: 03 Jun 2023
+Service End Date: 2024-06-01
+Up to Customer Employee Size: 2,500
+
+LICENSE AND SERVICE FEES
+
+Product/Service                          Qty             Rate       Extended Price
+Professional Service                       3   USD 150,046.90       USD 450,140.70
+  SKU: PROFESSIONAL_SERVICE | Service: 2023-06-03 to 2024-06-01
+  Invoicing: hybrid/yearly | Terms: Net 45
+Talent Intel. Platf. Prem. Ed. (Add-on)    5    USD 95,581.17       USD 477,905.85
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2023-06-03 to 2024-06-01
+  Invoicing: hybrid/yearly | Terms: Net 45
+
+TOTAL AMOUNT DUE: USD 928,046.55
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Intelligence Platform, Premium Support.
+
+Helio Manufacturing
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): May 09, 2023
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): May 10, 2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

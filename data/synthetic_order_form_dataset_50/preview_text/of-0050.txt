@@ -1,0 +1,63 @@
+Prepared For: Orchid Logistics
+Prepared By: Acme Software Inc.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2023-11-04
+Quote Number: Q-581319
+Order Form ID: OF-0050
+
+CUSTOMER ORDER SCHEDULE
+
+Sold To: 6647 Mission Street, Austin, TX 49572, USA
+Bill To: Attn: Accounts Payable, 572 Mission Street, Austin, TX 81610, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@orchidlogistics.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@orchidlogistics.com
+Service Start Date: 10/13/2023
+Service End Date: Oct 11, 2026
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION SERVICE FEES
+
+SKU Description                          Qty       Unit Price       Extended Price
+Elevate Success Plan                       3   170,304.21 USD       510,912.63 USD
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2023-10-13 to 2026-10-11
+  Invoicing: upfront/one-time | Terms: Due on Receipt
+Talent Intel. Platf.                       5    60,316.50 USD       301,582.50 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2023-10-13 to 2026-10-11
+  Invoicing: upfront/one-time | Terms: Due on Receipt
+Talent Intel. Platf. Prem. Ed. (Add-on)    3     8,565.78 USD        25,697.34 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2023-10-13 to 2026-10-11
+  Invoicing: upfront/one-time | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: 838,192.47 USD
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Sandbox, Professional Service.
+
+Orchid Logistics
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 10/11/2023
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 10/13/2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

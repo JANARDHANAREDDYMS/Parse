@@ -1,0 +1,52 @@
+{
+  "effective_date": "2026-03-18",
+  "contract_signed_date_buying_company": "2026-03-22",
+  "contract_signed_date_selling_company": "2026-03-27",
+  "contract_items": [
+    {
+      "sku_id": "bc8b9193-a684-41c5-ac83-c0356cbcb7f3",
+      "sku_code": "SANDBOX",
+      "sku_name": "Sandbox",
+      "currency": "USD",
+      "total_listed_value": 206158.71,
+      "service_start_date": "2026-04-06",
+      "service_end_date": "2028-04-04",
+      "quantity": 1.0,
+      "unit_price": 206158.71,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 278759.16,
+      "service_start_date": "2026-04-06",
+      "service_end_date": "2028-04-04",
+      "quantity": 2.0,
+      "unit_price": 139379.58,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Includes standard onboarding support."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 124244.65,
+      "service_start_date": "2026-04-06",
+      "service_end_date": "2028-04-04",
+      "quantity": 1.0,
+      "unit_price": 124244.65,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

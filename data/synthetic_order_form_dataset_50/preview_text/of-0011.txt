@@ -1,0 +1,60 @@
+Prepared For: Helio Manufacturing
+Prepared By: Acme Software Inc.
+Account Executive: Casey Patel
+Offer Valid Through: 2023-07-12
+Quote Number: Q-872482
+Order Form ID: OF-0011
+
+Sales Order Form
+
+Sold To: 3278 Market Street, Boston, MA 90747, USA
+Bill To: Attn: Accounts Payable, 9978 Mission Street, Boston, MA 62703, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@heliomanufacturing.com
+Billing Contact Name: Avery Brown
+Billing Contact Email: ap@heliomanufacturing.com
+Service Start Date: Jul 01, 2023
+Service End Date: Jun 29, 2025
+Up to Customer Employee Size: 10,000
+
+SUBSCRIPTION FEES
+
+Product/Service                          Qty       Unit Price                Total
+Professional Service                       1   USD 218,856.20     USD 5,252,548.80
+  SKU: PROFESSIONAL_SERVICE | Service: 2023-07-01 to 2025-06-29
+  Invoicing: upfront/monthly | Terms: Net 45
+Sandbox                                    2   USD 184,149.44     USD 8,839,173.12
+  SKU: SANDBOX | Service: 2023-07-01 to 2025-06-29
+  Invoicing: upfront/monthly | Terms: Net 45
+
+TOTAL AMOUNT DUE: USD 14,091,721.92
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Overages - Talent Acquisition AI Interviewer Agent Add-on, Premium Support.
+
+Helio Manufacturing
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 28 Jun 2023
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 02 Jul 2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

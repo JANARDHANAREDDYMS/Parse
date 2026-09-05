@@ -1,0 +1,67 @@
+{
+  "effective_date": "2023-10-12",
+  "contract_signed_date_buying_company": "2023-10-18",
+  "contract_signed_date_selling_company": "2023-10-18",
+  "contract_items": [
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 7086245.04,
+      "service_start_date": "2023-10-16",
+      "service_end_date": "2024-10-14",
+      "quantity": 3.0,
+      "unit_price": 196840.14,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+      "sku_code": "ELEVATE_SUCCESS_PLAN",
+      "sku_name": "Elevate Success Plan",
+      "currency": "USD",
+      "total_listed_value": 645771.6,
+      "service_start_date": "2023-10-16",
+      "service_end_date": "2024-10-14",
+      "quantity": 1.0,
+      "unit_price": 53814.3,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Includes standard onboarding support."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 727634.64,
+      "service_start_date": "2023-10-16",
+      "service_end_date": "2024-10-14",
+      "quantity": 2.0,
+      "unit_price": 30318.11,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "6e0247a7-ae3b-49ef-971e-feb0641cf52d",
+      "sku_code": "SIGNATURE_SUCCESS",
+      "sku_name": "Signature Success",
+      "currency": "USD",
+      "total_listed_value": 3808231.68,
+      "service_start_date": "2023-10-16",
+      "service_end_date": "2024-10-14",
+      "quantity": 2.0,
+      "unit_price": 158676.32,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Subject to master subscription agreement."
+    }
+  ]
+}

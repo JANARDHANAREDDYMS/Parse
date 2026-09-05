@@ -1,0 +1,65 @@
+Prepared For: Orchid Logistics
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Taylor Morgan
+Offer Valid Through: 2022-08-15
+Quote Number: Q-356309
+Order Form ID: OF-0049
+
+Sales Order Form
+
+Sold To: 9764 Market Street, Austin, TX 80201, USA
+Bill To: Attn: Accounts Payable, 9033 Technology Drive, Austin, TX 36040, USA
+Primary Contact: Taylor Morgan
+Primary Contact Email: taylor@orchidlogistics.com
+Billing Contact Name: Avery Brown
+Billing Contact Email: ap@orchidlogistics.com
+Service Start Date: 04 Aug 2022
+Service End Date: 03 Aug 2023
+Up to Customer Employee Size: 2,500
+
+LICENSE AND SERVICE FEES
+
+Offering                                 Qty       Unit Price       Extended Price
+WhatsApp / SMS Credits                     3    60,140.22 USD     2,165,047.92 USD
+  SKU: WHATSAPP_SMS_CREDITS | Service: 2022-08-04 to 2023-08-03
+  Invoicing: hybrid/monthly | Terms: Net 30
+Talent Acquisition CRM                     3   214,335.54 USD     7,716,079.44 USD
+  SKU: TALENT_ACQUISITION_CRM | Service: 2022-08-04 to 2023-08-03
+  Invoicing: hybrid/monthly | Terms: Net 30
+Talent Mgmt Leader Experience              2    73,789.27 USD     1,770,942.48 USD
+  SKU: TALENT_MANAGEMENT_LEADER_EXPERIENCE | Service: 2022-08-04 to 2023-08-03
+  Invoicing: hybrid/monthly | Terms: Net 30
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   213,048.30 USD     2,556,579.60 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2022-08-04 to 2023-08-03
+  Invoicing: hybrid/monthly | Terms: Net 30
+
+TOTAL AMOUNT DUE: 14,208,649.44 USD
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Professional Service, Signature Success.
+
+Orchid Logistics
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Jul 06, 2022
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Jul 06, 2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

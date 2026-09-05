@@ -1,0 +1,62 @@
+Prepared For: Helio Manufacturing
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Alex Carter
+Offer Valid Through: 2023-12-29
+Quote Number: Q-289982
+Order Form ID: OF-0008
+
+CUSTOMER ORDER SCHEDULE
+
+Sold To: 7569 Harbor Boulevard, Boston, MA 88478, USA
+Bill To: Attn: Accounts Payable, 3467 Enterprise Way, Boston, MA 88541, USA
+Primary Contact: Jamie Kim
+Primary Contact Email: jamie@heliomanufacturing.com
+Billing Contact Name: Alex Carter
+Billing Contact Email: ap@heliomanufacturing.com
+Service Start Date: 21 Dec 2023
+Service End Date: 19-Dec-2024
+Up to Customer Employee Size: 50,000
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty       Unit Price                Total
+Talent Acquisition                         1      $183,878.44        $2,206,541.28
+  SKU: TALENT_ACQUISITION | Service: 2023-12-21 to 2024-12-19
+  Invoicing: recurring/monthly | Terms: Due on Receipt
+Talent Acquisition CRM                     1      $139,450.49        $1,673,405.88
+  SKU: TALENT_ACQUISITION_CRM | Service: 2023-12-21 to 2024-12-19
+  Invoicing: recurring/monthly | Terms: Due on Receipt
+Talent Intel. Platf.                       5      $180,941.56       $10,856,493.60
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2023-12-21 to 2024-12-19
+  Invoicing: recurring/monthly | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: $14,736,440.76
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition AI Interviewer Agent Add-on, Premium Support.
+
+Helio Manufacturing
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 12/01/2023
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 12/05/2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

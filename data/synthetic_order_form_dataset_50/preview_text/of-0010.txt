@@ -1,0 +1,59 @@
+Prepared For: Atlas Retail Group
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2023-09-14
+Quote Number: Q-211605
+Order Form ID: OF-0010
+
+Customer Order Schedule
+
+Sold To: 8973 Technology Drive, Denver, CO 72744, USA
+Bill To: Attn: Accounts Payable, 2667 Mission Street, Denver, CO 30765, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@atlasretailgroup.com
+Billing Contact Name: Alex Carter
+Billing Contact Email: ap@atlasretailgroup.com
+Service Start Date: 2023-09-14
+Service End Date: Sep 12, 2024
+Up to Customer Employee Size: 2,500
+
+LICENSE AND SERVICE FEES
+
+Product/Service                          Qty       Unit Price                Total
+Talent Acquisition                         1    USD 62,749.66        USD 62,749.66
+  SKU: TALENT_ACQUISITION | Service: 2023-09-14 to 2024-09-12
+  Invoicing: recurring/one-time | Terms: Due on Receipt
+Talent Intel. Platf. Prem. Ed. (Add-on)    2   USD 192,729.55       USD 385,459.10
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2023-09-14 to 2024-09-12
+  Invoicing: recurring/one-time | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: USD 448,208.76
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Overages - Talent Acquisition AI Interviewer Agent Add-on, Talent Design.
+
+Atlas Retail Group
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 08/29/2023
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 08/31/2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

@@ -1,0 +1,59 @@
+Prepared For: Brightwave Industries
+Prepared By: Acme Software Inc.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2022-01-09
+Quote Number: Q-109297
+Order Form ID: OF-0043
+
+Sales Order Form
+
+Sold To: 258 Mission Street, Chicago, IL 17867, USA
+Bill To: Attn: Accounts Payable, 6340 Technology Drive, Chicago, IL 23524, USA
+Primary Contact: Casey Patel
+Primary Contact Email: casey@brightwaveindustries.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: 01/04/2022
+Service End Date: 01/03/2023
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION FEES
+
+SKU Description                          Qty             Rate   Total Contract Value
+Talent Mgmt Ent.                           1   228,067.95 USD     2,736,815.40 USD
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2022-01-04 to 2023-01-03
+  Invoicing: hybrid/monthly | Terms: Due on Receipt
+Talent Intel. Platf. Prem. Ed. (Add-on)    5   176,335.39 USD    10,580,123.40 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2022-01-04 to 2023-01-03
+  Invoicing: hybrid/monthly | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: 13,316,938.80 USD
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Intelligence Platform, WhatsApp / SMS Credits.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 14 Dec 2021
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 16 Dec 2021
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

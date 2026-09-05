@@ -1,0 +1,52 @@
+{
+  "effective_date": "2024-08-25",
+  "contract_signed_date_buying_company": "2024-08-31",
+  "contract_signed_date_selling_company": "2024-09-01",
+  "contract_items": [
+    {
+      "sku_id": "6e0247a7-ae3b-49ef-971e-feb0641cf52d",
+      "sku_code": "SIGNATURE_SUCCESS",
+      "sku_name": "Signature Success",
+      "currency": "USD",
+      "total_listed_value": 4048871.4,
+      "service_start_date": "2024-09-22",
+      "service_end_date": "2027-09-21",
+      "quantity": 1.0,
+      "unit_price": 112468.65,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Usage caps apply per signed order form."
+    },
+    {
+      "sku_id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+      "sku_code": "ELEVATE_SUCCESS_PLAN",
+      "sku_name": "Elevate Success Plan",
+      "currency": "USD",
+      "total_listed_value": 5634170.28,
+      "service_start_date": "2024-09-22",
+      "service_end_date": "2027-09-21",
+      "quantity": 1.0,
+      "unit_price": 156504.73,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 14402500.2,
+      "service_start_date": "2024-09-22",
+      "service_end_date": "2027-09-21",
+      "quantity": 5.0,
+      "unit_price": 80013.89,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Subject to master subscription agreement."
+    }
+  ]
+}

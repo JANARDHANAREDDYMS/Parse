@@ -1,0 +1,30 @@
+# HTTP API
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+python-multipart==0.0.32
+
+# Schemas and configuration
+pydantic==2.13.5
+pydantic-settings==2.15.0
+
+# PostgreSQL, async database access, and migrations
+SQLAlchemy[asyncio]==2.0.52
+asyncpg==0.31.0
+alembic==1.19.2
+pgvector==0.5.0
+
+# Agent runtime
+claude-agent-sdk==0.2.152
+
+# PDF extraction, rendering, imaging, and OCR integration
+pypdf==6.17.0
+pdfplumber==0.11.10
+PyMuPDF==1.28.2
+Pillow==12.3.0
+pytesseract==0.3.13
+
+# Matching, resilience, CLI, and observability
+rapidfuzz==3.14.6
+tenacity==9.1.4
+typer==0.27.2
+structlog==26.1.0

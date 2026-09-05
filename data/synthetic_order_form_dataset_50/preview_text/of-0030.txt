@@ -1,0 +1,60 @@
+Prepared For: Summit Telecom
+Prepared By: Acme Software Inc.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2026-01-31
+Quote Number: Q-155032
+Order Form ID: OF-0030
+
+CUSTOMER ORDER SCHEDULE
+
+Sold To: 8699 Harbor Boulevard, San Jose, CA 14583, USA
+Bill To: Attn: Accounts Payable, 1029 Technology Drive, San Jose, CA 80077, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@summittelecom.com
+Billing Contact Name: Jamie Kim
+Billing Contact Email: ap@summittelecom.com
+Service Start Date: 01/25/2026
+Service End Date: Jan 23, 2029
+Up to Customer Employee Size: 25,000
+
+LICENSE AND SERVICE FEES
+
+SKU Description                          Qty       Unit Price                Total
+Elevate Success Plan                       5      $103,953.12       $18,711,561.60
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2026-01-25 to 2029-01-23
+  Invoicing: hybrid/monthly | Terms: Net 55
+Talent Acquisition                         2      $122,602.02        $8,827,345.44
+  SKU: TALENT_ACQUISITION | Service: 2026-01-25 to 2029-01-23
+  Invoicing: hybrid/monthly | Terms: Net 55
+
+TOTAL AMOUNT DUE: $27,538,907.04
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Signature Success, WhatsApp / SMS Credits.
+
+Summit Telecom
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2026-01-27
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2026-01-27
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

@@ -1,0 +1,64 @@
+Prepared For: Meridian Financial Services
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2024-12-05
+Quote Number: Q-197690
+Order Form ID: OF-0027
+
+Order Form - Subscription Services
+
+Sold To: 2864 Enterprise Way, Austin, TX 65906, USA
+Bill To: Attn: Accounts Payable, 2493 Innovation Pkwy, Austin, TX 12739, USA
+Primary Contact: Casey Patel
+Primary Contact Email: casey@meridianfinancialservices.com
+Billing Contact Name: Taylor Morgan
+Billing Contact Email: ap@meridianfinancialservices.com
+Service Start Date: 10 Dec 2024
+Service End Date: 09 Dec 2027
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty         Unit Fee   Total Contract Value
+Talent Intelligence Platform Premium       2   USD 198,342.61       USD 396,685.22
+  Edition (Add-on)
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2024-12-10 to 2027-12-09
+  Invoicing: hybrid/one-time | Terms: Net 30
+Premium Support                            3   USD 236,722.33       USD 710,166.99
+  SKU: PREMIUM_SUPPORT | Service: 2024-12-10 to 2027-12-09
+  Invoicing: hybrid/one-time | Terms: Net 30
+Sandbox                                    1   USD 162,710.11       USD 162,710.11
+  SKU: SANDBOX | Service: 2024-12-10 to 2027-12-09
+  Invoicing: hybrid/one-time | Terms: Net 30
+
+TOTAL AMOUNT DUE: USD 1,269,562.32
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition Candidate Experience, Talent Acquisition.
+
+Meridian Financial Services
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Nov 21, 2024
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Nov 26, 2024
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

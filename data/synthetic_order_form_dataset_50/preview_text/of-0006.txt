@@ -1,0 +1,65 @@
+Prepared For: Meridian Financial Services
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2024-12-20
+Quote Number: Q-196953
+Order Form ID: OF-0006
+
+SALES ORDER FORM
+
+Sold To: 9664 Harbor Boulevard, Chicago, IL 11097, USA
+Bill To: Attn: Accounts Payable, 8495 Enterprise Way, Chicago, IL 75093, USA
+Primary Contact: Jordan Lee
+Primary Contact Email: jordan@meridianfinancialservices.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@meridianfinancialservices.com
+Service Start Date: 11/23/2024
+Service End Date: 22 Nov 2027
+Up to Customer Employee Size: 10,000
+
+SUBSCRIPTION FEES
+
+Product/Service                          Qty       Unit Price   Total Contract Value
+Elevate Success Plan                       1   USD 206,491.47     USD 7,433,692.92
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2024-11-23 to 2027-11-22
+  Invoicing: recurring/monthly | Terms: Net 45
+Professional Service                       3   USD 210,924.16    USD 22,779,809.28
+  SKU: PROFESSIONAL_SERVICE | Service: 2024-11-23 to 2027-11-22
+  Invoicing: recurring/monthly | Terms: Net 45
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   USD 203,911.22     USD 7,340,803.92
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2024-11-23 to 2027-11-22
+  Invoicing: recurring/monthly | Terms: Net 45
+Talent Acquisition Candidate Experience    5   USD 137,895.70    USD 24,821,226.00
+  SKU: TALENT_ACQUISITION_CANDIDATE_EXPERIENCE | Service: 2024-11-23 to 2027-11-22
+  Invoicing: recurring/monthly | Terms: Net 45
+
+TOTAL AMOUNT DUE: USD 62,375,532.12
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition Core, Sandbox.
+
+Meridian Financial Services
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-11-23
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-11-24
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

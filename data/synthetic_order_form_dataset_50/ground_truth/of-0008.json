@@ -1,0 +1,52 @@
+{
+  "effective_date": "2023-11-24",
+  "contract_signed_date_buying_company": "2023-12-01",
+  "contract_signed_date_selling_company": "2023-12-05",
+  "contract_items": [
+    {
+      "sku_id": "d6f20b62-9bec-421b-8d33-489712746aee",
+      "sku_code": "TALENT_ACQUISITION",
+      "sku_name": "Talent Acquisition",
+      "currency": "USD",
+      "total_listed_value": 2206541.28,
+      "service_start_date": "2023-12-21",
+      "service_end_date": "2024-12-19",
+      "quantity": 1.0,
+      "unit_price": 183878.44,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Usage caps apply per signed order form."
+    },
+    {
+      "sku_id": "24857132-4f8f-46f9-a89e-db212c44a8aa",
+      "sku_code": "TALENT_ACQUISITION_CRM",
+      "sku_name": "Talent Acquisition CRM",
+      "currency": "USD",
+      "total_listed_value": 1673405.88,
+      "service_start_date": "2023-12-21",
+      "service_end_date": "2024-12-19",
+      "quantity": 1.0,
+      "unit_price": 139450.49,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Includes standard onboarding support."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 10856493.6,
+      "service_start_date": "2023-12-21",
+      "service_end_date": "2024-12-19",
+      "quantity": 5.0,
+      "unit_price": 180941.56,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

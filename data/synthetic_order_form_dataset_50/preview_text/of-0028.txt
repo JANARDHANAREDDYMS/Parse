@@ -1,0 +1,59 @@
+Prepared For: Oakbridge Energy
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Jordan Lee
+Offer Valid Through: 2025-02-25
+Quote Number: Q-780251
+Order Form ID: OF-0028
+
+Sales Order Form
+
+Sold To: 6707 Mission Street, Boston, MA 97972, USA
+Bill To: Attn: Accounts Payable, 985 Enterprise Way, Boston, MA 70833, USA
+Primary Contact: Jamie Kim
+Primary Contact Email: jamie@oakbridgeenergy.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@oakbridgeenergy.com
+Service Start Date: 2025-03-07
+Service End Date: 2027-03-06
+Up to Customer Employee Size: 15,000
+
+SUBSCRIPTION FEES
+
+Offering                                 Qty       Unit Price   Total Contract Value
+Talent Acquisition Core                    1       $97,012.00        $2,328,288.00
+  SKU: TALENT_ACQUISITION_CORE | Service: 2025-03-07 to 2027-03-06
+  Invoicing: recurring/monthly | Terms: Net 55
+Talent Mgmt Ent.                           1       $33,200.98          $796,823.52
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2025-03-07 to 2027-03-06
+  Invoicing: recurring/monthly | Terms: Net 55
+
+TOTAL AMOUNT DUE: $3,125,111.52
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Intelligence Platform, Talent Management Leader Experience.
+
+Oakbridge Energy
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Feb 22, 2025
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Feb 27, 2025
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

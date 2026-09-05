@@ -1,0 +1,67 @@
+{
+  "effective_date": "2024-11-21",
+  "contract_signed_date_buying_company": "2024-11-23",
+  "contract_signed_date_selling_company": "2024-11-24",
+  "contract_items": [
+    {
+      "sku_id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+      "sku_code": "ELEVATE_SUCCESS_PLAN",
+      "sku_name": "Elevate Success Plan",
+      "currency": "USD",
+      "total_listed_value": 7433692.92,
+      "service_start_date": "2024-11-23",
+      "service_end_date": "2027-11-22",
+      "quantity": 1.0,
+      "unit_price": 206491.47,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "2a4fa79f-0fb7-42a3-a4ad-143f3cce8e36",
+      "sku_code": "PROFESSIONAL_SERVICE",
+      "sku_name": "Professional Service",
+      "currency": "USD",
+      "total_listed_value": 22779809.28,
+      "service_start_date": "2024-11-23",
+      "service_end_date": "2027-11-22",
+      "quantity": 3.0,
+      "unit_price": 210924.16,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 7340803.92,
+      "service_start_date": "2024-11-23",
+      "service_end_date": "2027-11-22",
+      "quantity": 1.0,
+      "unit_price": 203911.22,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "436af129-f59f-4be4-aa40-e50f90046516",
+      "sku_code": "TALENT_ACQUISITION_CANDIDATE_EXPERIENCE",
+      "sku_name": "Talent Acquisition Candidate Experience",
+      "currency": "USD",
+      "total_listed_value": 24821226.0,
+      "service_start_date": "2024-11-23",
+      "service_end_date": "2027-11-22",
+      "quantity": 5.0,
+      "unit_price": 137895.7,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    }
+  ]
+}

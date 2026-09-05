@@ -1,0 +1,62 @@
+Prepared For: Brightwave Industries
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Alex Carter
+Offer Valid Through: 2025-05-16
+Quote Number: Q-354848
+Order Form ID: OF-0026
+
+ORDER FORM - SUBSCRIPTION SERVICES
+
+Sold To: 9730 Technology Drive, Denver, CO 31323, USA
+Bill To: Attn: Accounts Payable, 7509 Innovation Pkwy, Denver, CO 71982, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@brightwaveindustries.com
+Billing Contact Name: Riley Singh
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: 05/01/2025
+Service End Date: Apr 30, 2026
+Up to Customer Employee Size: 5,000
+
+SUBSCRIPTION FEES
+
+Offering                                 Qty       Unit Price   Total Contract Value
+Talent Acquisition                         5   USD 191,623.04       USD 958,115.20
+  SKU: TALENT_ACQUISITION | Service: 2025-05-01 to 2026-04-30
+  Invoicing: recurring/yearly | Terms: Net 30
+Talent Mgmt Core                           3   USD 183,856.45       USD 551,569.35
+  SKU: TALENT_MANAGEMENT_CORE | Service: 2025-05-01 to 2026-04-30
+  Invoicing: recurring/yearly | Terms: Net 30
+WhatsApp / SMS Credits                     3   USD 162,044.75       USD 486,134.25
+  SKU: WHATSAPP_SMS_CREDITS | Service: 2025-05-01 to 2026-04-30
+  Invoicing: recurring/yearly | Terms: Net 30
+
+TOTAL AMOUNT DUE: USD 1,995,818.80
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Intelligence Platform Premium Edition (Add-on), Overages - Talent Acquisition AI Interviewer Agent Add-on.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 19-Apr-2025
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 24-Apr-2025
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

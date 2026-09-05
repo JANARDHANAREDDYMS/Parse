@@ -1,0 +1,22 @@
+{
+  "effective_date": "2022-11-05",
+  "contract_signed_date_buying_company": "2022-11-05",
+  "contract_signed_date_selling_company": "2022-11-10",
+  "contract_items": [
+    {
+      "sku_id": "2a4fa79f-0fb7-42a3-a4ad-143f3cce8e36",
+      "sku_code": "PROFESSIONAL_SERVICE",
+      "sku_name": "Professional Service",
+      "currency": "USD",
+      "total_listed_value": 330209.8,
+      "service_start_date": "2022-11-26",
+      "service_end_date": "2024-11-24",
+      "quantity": 1.0,
+      "unit_price": 165104.9,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Net 55",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

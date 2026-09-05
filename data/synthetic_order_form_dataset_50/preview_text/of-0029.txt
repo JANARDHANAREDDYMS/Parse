@@ -1,0 +1,63 @@
+Prepared For: Brightwave Industries
+Prepared By: Acme Software Inc.
+Account Executive: Jamie Kim
+Offer Valid Through: 2026-10-07
+Quote Number: Q-256232
+Order Form ID: OF-0029
+
+ORDER FORM - SUBSCRIPTION SERVICES
+
+Sold To: 1540 Enterprise Way, Chicago, IL 90095, USA
+Bill To: Attn: Accounts Payable, 999 Mission Street, Chicago, IL 19323, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@brightwaveindustries.com
+Billing Contact Name: Riley Singh
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: Sep 01, 2026
+Service End Date: 2028-08-30
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION SERVICE FEES
+
+SKU Description                          Qty             Rate                Total
+Talent Mgmt Leader Experience              5      $160,410.21          $802,051.05
+  SKU: TALENT_MANAGEMENT_LEADER_EXPERIENCE | Service: 2026-09-01 to 2028-08-30
+  Invoicing: recurring/one-time | Terms: Net 55
+Talent Intel. Platf. Prem. Ed. (Add-on)    1       $63,181.37           $63,181.37
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2026-09-01 to 2028-08-30
+  Invoicing: recurring/one-time | Terms: Net 55
+Talent Acquisition                         1      $185,069.11          $185,069.11
+  SKU: TALENT_ACQUISITION | Service: 2026-09-01 to 2028-08-30
+  Invoicing: recurring/one-time | Terms: Net 55
+
+TOTAL AMOUNT DUE: $1,050,301.53
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Sandbox, Talent Management Enterprise.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2026-09-02
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2026-09-03
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

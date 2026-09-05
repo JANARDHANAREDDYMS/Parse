@@ -1,0 +1,67 @@
+{
+  "effective_date": "2022-06-09",
+  "contract_signed_date_buying_company": "2022-06-09",
+  "contract_signed_date_selling_company": "2022-06-10",
+  "contract_items": [
+    {
+      "sku_id": "2a4fa79f-0fb7-42a3-a4ad-143f3cce8e36",
+      "sku_code": "PROFESSIONAL_SERVICE",
+      "sku_name": "Professional Service",
+      "currency": "USD",
+      "total_listed_value": 253197.27,
+      "service_start_date": "2022-07-05",
+      "service_end_date": "2025-07-03",
+      "quantity": 3.0,
+      "unit_price": 28133.03,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Net 30",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 223873.08,
+      "service_start_date": "2022-07-05",
+      "service_end_date": "2025-07-03",
+      "quantity": 1.0,
+      "unit_price": 74624.36,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Net 30",
+      "special_notes": "Includes standard onboarding support."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 880724.16,
+      "service_start_date": "2022-07-05",
+      "service_end_date": "2025-07-03",
+      "quantity": 3.0,
+      "unit_price": 97858.24,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Net 30",
+      "special_notes": "Usage caps apply per signed order form."
+    },
+    {
+      "sku_id": "d6f20b62-9bec-421b-8d33-489712746aee",
+      "sku_code": "TALENT_ACQUISITION",
+      "sku_name": "Talent Acquisition",
+      "currency": "USD",
+      "total_listed_value": 202631.58,
+      "service_start_date": "2022-07-05",
+      "service_end_date": "2025-07-03",
+      "quantity": 1.0,
+      "unit_price": 67543.86,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "yearly",
+      "payment_terms": "Net 30",
+      "special_notes": "Annual uplift terms included as agreed."
+    }
+  ]
+}

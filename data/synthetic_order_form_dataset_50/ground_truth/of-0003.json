@@ -1,0 +1,37 @@
+{
+  "effective_date": "2022-03-20",
+  "contract_signed_date_buying_company": "2022-03-20",
+  "contract_signed_date_selling_company": "2022-03-25",
+  "contract_items": [
+    {
+      "sku_id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+      "sku_code": "ELEVATE_SUCCESS_PLAN",
+      "sku_name": "Elevate Success Plan",
+      "currency": "USD",
+      "total_listed_value": 185100.0,
+      "service_start_date": "2022-04-02",
+      "service_end_date": "2024-03-31",
+      "quantity": 2.0,
+      "unit_price": 92550.0,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 55",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 240248.05,
+      "service_start_date": "2022-04-02",
+      "service_end_date": "2024-03-31",
+      "quantity": 1.0,
+      "unit_price": 240248.05,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 55",
+      "special_notes": "Subject to master subscription agreement."
+    }
+  ]
+}

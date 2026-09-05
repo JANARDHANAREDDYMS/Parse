@@ -1,0 +1,56 @@
+Prepared For: Meridian Financial Services
+Prepared By: Acme Software Inc.
+Account Executive: Avery Brown
+Offer Valid Through: 2025-08-12
+Quote Number: Q-372611
+Order Form ID: OF-0005
+
+Order Form - Subscription Services
+
+Sold To: 4570 Market Street, Chicago, IL 18331, USA
+Bill To: Attn: Accounts Payable, 2863 Harbor Boulevard, Chicago, IL 87080, USA
+Primary Contact: Morgan Diaz
+Primary Contact Email: morgan@meridianfinancialservices.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@meridianfinancialservices.com
+Service Start Date: 22-Aug-2025
+Service End Date: 2026-08-21
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty             Rate                Total
+Talent Intel. Platf.                       1      $197,459.81          $789,839.24
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2025-08-22 to 2026-08-21
+  Invoicing: hybrid/quarterly | Terms: Net 45
+
+TOTAL AMOUNT DUE: $789,839.24
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Skills Portfolio, Professional Service.
+
+Meridian Financial Services
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 08/05/2025
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 08/05/2025
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

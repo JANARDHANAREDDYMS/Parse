@@ -1,0 +1,66 @@
+Prepared For: Summit Telecom
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Alex Carter
+Offer Valid Through: 2023-03-19
+Quote Number: Q-659340
+Order Form ID: OF-0009
+
+Customer Order Schedule
+
+Sold To: 1093 Innovation Pkwy, Austin, TX 17919, USA
+Bill To: Attn: Accounts Payable, 2277 Innovation Pkwy, Austin, TX 35386, USA
+Primary Contact: Jordan Lee
+Primary Contact Email: jordan@summittelecom.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@summittelecom.com
+Service Start Date: 2023-02-23
+Service End Date: 21-Feb-2025
+Up to Customer Employee Size: 5,000
+
+LICENSE AND SERVICE FEES
+
+Offering                                 Qty       Unit Price                Total
+Signature Success                          1       $85,606.58        $2,054,557.92
+  SKU: SIGNATURE_SUCCESS | Service: 2023-02-23 to 2025-02-21
+  Invoicing: recurring/monthly | Terms: Net 45
+Prem. Support                              2      $213,579.42       $10,251,812.16
+  SKU: PREMIUM_SUPPORT | Service: 2023-02-23 to 2025-02-21
+  Invoicing: recurring/monthly | Terms: Net 45
+Talent Acquisition Core                    3      $105,272.78        $7,579,640.16
+  SKU: TALENT_ACQUISITION_CORE | Service: 2023-02-23 to 2025-02-21
+  Invoicing: recurring/monthly | Terms: Net 45
+Elevate Success Plan                       3      $148,399.38       $10,684,755.36
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2023-02-23 to 2025-02-21
+  Invoicing: recurring/monthly | Terms: Net 45
+
+TOTAL AMOUNT DUE: $30,570,765.60
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Skills Portfolio, Talent Intelligence Platform Premium Edition (Add-on).
+
+Summit Telecom
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2023-02-10
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2023-02-13
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

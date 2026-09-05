@@ -1,0 +1,37 @@
+{
+  "effective_date": "2025-02-15",
+  "contract_signed_date_buying_company": "2025-02-22",
+  "contract_signed_date_selling_company": "2025-02-27",
+  "contract_items": [
+    {
+      "sku_id": "89ab57ac-9aad-49a5-b9f5-4b99698dd292",
+      "sku_code": "TALENT_ACQUISITION_CORE",
+      "sku_name": "Talent Acquisition Core",
+      "currency": "USD",
+      "total_listed_value": 2328288.0,
+      "service_start_date": "2025-03-07",
+      "service_end_date": "2027-03-06",
+      "quantity": 1.0,
+      "unit_price": 97012.0,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 55",
+      "special_notes": "Usage caps apply per signed order form."
+    },
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 796823.52,
+      "service_start_date": "2025-03-07",
+      "service_end_date": "2027-03-06",
+      "quantity": 1.0,
+      "unit_price": 33200.98,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 55",
+      "special_notes": "Includes standard onboarding support."
+    }
+  ]
+}

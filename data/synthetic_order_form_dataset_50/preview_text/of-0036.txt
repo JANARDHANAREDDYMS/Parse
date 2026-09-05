@@ -1,0 +1,63 @@
+Prepared For: Summit Telecom
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Casey Patel
+Offer Valid Through: 2024-09-08
+Quote Number: Q-585204
+Order Form ID: OF-0036
+
+Order Form - Subscription Services
+
+Sold To: 8909 Harbor Boulevard, Seattle, WA 84977, USA
+Bill To: Attn: Accounts Payable, 7857 Mission Street, Seattle, WA 39014, USA
+Primary Contact: Casey Patel
+Primary Contact Email: casey@summittelecom.com
+Billing Contact Name: Casey Patel
+Billing Contact Email: ap@summittelecom.com
+Service Start Date: 2024-09-22
+Service End Date: 21 Sep 2027
+Up to Customer Employee Size: 50,000
+
+LICENSE AND SERVICE FEES
+
+SKU Description                          Qty         Unit Fee                Total
+Signature Success                          1   112,468.65 USD     4,048,871.40 USD
+  SKU: SIGNATURE_SUCCESS | Service: 2024-09-22 to 2027-09-21
+  Invoicing: upfront/monthly | Terms: Net 45
+Elevate Success Plan                       1   156,504.73 USD     5,634,170.28 USD
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2024-09-22 to 2027-09-21
+  Invoicing: upfront/monthly | Terms: Net 45
+Talent Mgmt Ent.                           5    80,013.89 USD    14,402,500.20 USD
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2024-09-22 to 2027-09-21
+  Invoicing: upfront/monthly | Terms: Net 45
+
+TOTAL AMOUNT DUE: 24,085,541.88 USD
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Skills Portfolio, Talent Acquisition CRM.
+
+Summit Telecom
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-08-31
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-09-01
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

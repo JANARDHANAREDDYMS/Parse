@@ -1,0 +1,56 @@
+Prepared For: Orchid Logistics
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Avery Brown
+Offer Valid Through: 2024-08-14
+Quote Number: Q-446650
+Order Form ID: OF-0013
+
+Sales Order Form
+
+Sold To: 840 Harbor Boulevard, Seattle, WA 70226, USA
+Bill To: Attn: Accounts Payable, 1450 Harbor Boulevard, Seattle, WA 51195, USA
+Primary Contact: Taylor Morgan
+Primary Contact Email: taylor@orchidlogistics.com
+Billing Contact Name: Taylor Morgan
+Billing Contact Email: ap@orchidlogistics.com
+Service Start Date: 08/03/2024
+Service End Date: 02-Aug-2025
+Up to Customer Employee Size: 50,000
+
+SUBSCRIPTION FEES
+
+Product/Service                          Qty             Rate                Total
+Talent Acquisition CRM                     1   USD 245,985.59       USD 245,985.59
+  SKU: TALENT_ACQUISITION_CRM | Service: 2024-08-03 to 2025-08-02
+  Invoicing: upfront/one-time | Terms: Net 55
+
+TOTAL AMOUNT DUE: USD 245,985.59
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Management Core, Professional Service.
+
+Orchid Logistics
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-08-07
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-08-09
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

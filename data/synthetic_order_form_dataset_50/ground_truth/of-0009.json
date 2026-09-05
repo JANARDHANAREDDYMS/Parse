@@ -1,0 +1,67 @@
+{
+  "effective_date": "2023-02-06",
+  "contract_signed_date_buying_company": "2023-02-10",
+  "contract_signed_date_selling_company": "2023-02-13",
+  "contract_items": [
+    {
+      "sku_id": "6e0247a7-ae3b-49ef-971e-feb0641cf52d",
+      "sku_code": "SIGNATURE_SUCCESS",
+      "sku_name": "Signature Success",
+      "currency": "USD",
+      "total_listed_value": 2054557.92,
+      "service_start_date": "2023-02-23",
+      "service_end_date": "2025-02-21",
+      "quantity": 1.0,
+      "unit_price": 85606.58,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "2c825663-7215-4f20-883c-4e8099f64b8b",
+      "sku_code": "PREMIUM_SUPPORT",
+      "sku_name": "Premium Support",
+      "currency": "USD",
+      "total_listed_value": 10251812.16,
+      "service_start_date": "2023-02-23",
+      "service_end_date": "2025-02-21",
+      "quantity": 2.0,
+      "unit_price": 213579.42,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "89ab57ac-9aad-49a5-b9f5-4b99698dd292",
+      "sku_code": "TALENT_ACQUISITION_CORE",
+      "sku_name": "Talent Acquisition Core",
+      "currency": "USD",
+      "total_listed_value": 7579640.16,
+      "service_start_date": "2023-02-23",
+      "service_end_date": "2025-02-21",
+      "quantity": 3.0,
+      "unit_price": 105272.78,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+      "sku_code": "ELEVATE_SUCCESS_PLAN",
+      "sku_name": "Elevate Success Plan",
+      "currency": "USD",
+      "total_listed_value": 10684755.36,
+      "service_start_date": "2023-02-23",
+      "service_end_date": "2025-02-21",
+      "quantity": 3.0,
+      "unit_price": 148399.38,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Net 45",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

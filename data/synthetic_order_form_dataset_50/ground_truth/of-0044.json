@@ -1,0 +1,67 @@
+{
+  "effective_date": "2024-03-01",
+  "contract_signed_date_buying_company": "2024-03-03",
+  "contract_signed_date_selling_company": "2024-03-08",
+  "contract_items": [
+    {
+      "sku_id": "89ab57ac-9aad-49a5-b9f5-4b99698dd292",
+      "sku_code": "TALENT_ACQUISITION_CORE",
+      "sku_name": "Talent Acquisition Core",
+      "currency": "USD",
+      "total_listed_value": 10385935.2,
+      "service_start_date": "2024-03-22",
+      "service_end_date": "2026-03-21",
+      "quantity": 5.0,
+      "unit_price": 86549.46,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "d6f20b62-9bec-421b-8d33-489712746aee",
+      "sku_code": "TALENT_ACQUISITION",
+      "sku_name": "Talent Acquisition",
+      "currency": "USD",
+      "total_listed_value": 2463266.4,
+      "service_start_date": "2024-03-22",
+      "service_end_date": "2026-03-21",
+      "quantity": 1.0,
+      "unit_price": 102636.1,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+      "sku_code": "ELEVATE_SUCCESS_PLAN",
+      "sku_name": "Elevate Success Plan",
+      "currency": "USD",
+      "total_listed_value": 10945785.6,
+      "service_start_date": "2024-03-22",
+      "service_end_date": "2026-03-21",
+      "quantity": 2.0,
+      "unit_price": 228037.2,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 5997701.28,
+      "service_start_date": "2024-03-22",
+      "service_end_date": "2026-03-21",
+      "quantity": 1.0,
+      "unit_price": 249904.22,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "monthly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Includes standard onboarding support."
+    }
+  ]
+}

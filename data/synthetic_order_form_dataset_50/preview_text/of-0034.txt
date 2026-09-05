@@ -1,0 +1,62 @@
+Prepared For: Oakbridge Energy
+Prepared By: Northstar Systems LLC
+Account Executive: Jamie Kim
+Offer Valid Through: 2024-05-30
+Quote Number: Q-675281
+Order Form ID: OF-0034
+
+Customer Order Schedule
+
+Sold To: 4193 Technology Drive, Chicago, IL 36610, USA
+Bill To: Attn: Accounts Payable, 2243 Harbor Boulevard, Chicago, IL 21146, USA
+Primary Contact: Jamie Kim
+Primary Contact Email: jamie@oakbridgeenergy.com
+Billing Contact Name: Alex Carter
+Billing Contact Email: ap@oakbridgeenergy.com
+Service Start Date: 2024-05-18
+Service End Date: 2025-05-17
+Up to Customer Employee Size: 15,000
+
+SUBSCRIPTION FEES
+
+Offering                                 Qty       Unit Price       Extended Price
+Talent Mgmt Ent.                           5      $206,846.46        $1,034,232.30
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2024-05-18 to 2025-05-17
+  Invoicing: hybrid/one-time | Terms: Net 55
+Talent Intel. Platf.                       1       $98,508.32           $98,508.32
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2024-05-18 to 2025-05-17
+  Invoicing: hybrid/one-time | Terms: Net 55
+Skills Portfolio                           3      $190,625.89          $571,877.67
+  SKU: SKILLS_PORTFOLIO | Service: 2024-05-18 to 2025-05-17
+  Invoicing: hybrid/one-time | Terms: Net 55
+
+TOTAL AMOUNT DUE: $1,704,618.29
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Sandbox, Talent Design.
+
+Oakbridge Energy
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-04-24
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2024-04-24
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

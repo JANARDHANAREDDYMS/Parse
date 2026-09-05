@@ -1,0 +1,59 @@
+Prepared For: Brightwave Industries
+Prepared By: Northstar Systems LLC
+Account Executive: Avery Brown
+Offer Valid Through: 2026-04-07
+Quote Number: Q-447876
+Order Form ID: OF-0016
+
+Sales Order Form
+
+Sold To: 2498 Innovation Pkwy, Denver, CO 33260, USA
+Bill To: Attn: Accounts Payable, 6260 Harbor Boulevard, Denver, CO 96629, USA
+Primary Contact: Taylor Morgan
+Primary Contact Email: taylor@brightwaveindustries.com
+Billing Contact Name: Avery Brown
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: 03/16/2026
+Service End Date: 03/15/2027
+Up to Customer Employee Size: 50,000
+
+LICENSE AND SERVICE FEES
+
+Product/Service                          Qty       Unit Price       Extended Price
+Talent Intel. Platf. Prem. Ed. (Add-on)    5      $232,773.31        $1,163,866.55
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2026-03-16 to 2027-03-15
+  Invoicing: recurring/yearly | Terms: Due on Receipt
+Talent Intel. Platf.                       1      $103,525.40          $103,525.40
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2026-03-16 to 2027-03-15
+  Invoicing: recurring/yearly | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: $1,267,391.95
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Design, Copilot.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 01-Mar-2026
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 01-Mar-2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

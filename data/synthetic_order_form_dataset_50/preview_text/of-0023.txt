@@ -1,0 +1,66 @@
+Prepared For: Orchid Logistics
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Taylor Morgan
+Offer Valid Through: 2026-11-18
+Quote Number: Q-294849
+Order Form ID: OF-0023
+
+Order Form - Subscription Services
+
+Sold To: 2861 Innovation Pkwy, San Jose, CA 68656, USA
+Bill To: Attn: Accounts Payable, 9986 Market Street, San Jose, CA 30339, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@orchidlogistics.com
+Billing Contact Name: Jamie Kim
+Billing Contact Email: ap@orchidlogistics.com
+Service Start Date: 2026-11-14
+Service End Date: 2028-11-12
+Up to Customer Employee Size: 5,000
+
+SUBSCRIPTION SERVICE FEES
+
+Offering                                 Qty       Unit Price   Total Contract Value
+Professional Service                       2   107,910.68 USD     1,726,570.88 USD
+  SKU: PROFESSIONAL_SERVICE | Service: 2026-11-14 to 2028-11-12
+  Invoicing: hybrid/quarterly | Terms: Net 45
+Talent Mgmt Ent.                           1    52,664.01 USD       421,312.08 USD
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2026-11-14 to 2028-11-12
+  Invoicing: hybrid/quarterly | Terms: Net 45
+Signature Success                          1    99,778.92 USD       798,231.36 USD
+  SKU: SIGNATURE_SUCCESS | Service: 2026-11-14 to 2028-11-12
+  Invoicing: hybrid/quarterly | Terms: Net 45
+Talent Intel. Platf. Prem. Ed. (Add-on)    2   122,323.09 USD     1,957,169.44 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2026-11-14 to 2028-11-12
+  Invoicing: hybrid/quarterly | Terms: Net 45
+
+TOTAL AMOUNT DUE: 4,903,283.76 USD
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition Talent Tracking Add-on, Copilot.
+
+Orchid Logistics
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 02-Nov-2026
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 06-Nov-2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

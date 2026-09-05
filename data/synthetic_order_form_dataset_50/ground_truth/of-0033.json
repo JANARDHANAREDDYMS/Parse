@@ -1,0 +1,52 @@
+{
+  "effective_date": "2022-04-06",
+  "contract_signed_date_buying_company": "2022-04-13",
+  "contract_signed_date_selling_company": "2022-04-17",
+  "contract_items": [
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 51698.27,
+      "service_start_date": "2022-04-26",
+      "service_end_date": "2025-04-24",
+      "quantity": 1.0,
+      "unit_price": 51698.27,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 30",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "436af129-f59f-4be4-aa40-e50f90046516",
+      "sku_code": "TALENT_ACQUISITION_CANDIDATE_EXPERIENCE",
+      "sku_name": "Talent Acquisition Candidate Experience",
+      "currency": "USD",
+      "total_listed_value": 196316.71,
+      "service_start_date": "2022-04-26",
+      "service_end_date": "2025-04-24",
+      "quantity": 1.0,
+      "unit_price": 196316.71,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 30",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "bc8b9193-a684-41c5-ac83-c0356cbcb7f3",
+      "sku_code": "SANDBOX",
+      "sku_name": "Sandbox",
+      "currency": "USD",
+      "total_listed_value": 78094.12,
+      "service_start_date": "2022-04-26",
+      "service_end_date": "2025-04-24",
+      "quantity": 1.0,
+      "unit_price": 78094.12,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 30",
+      "special_notes": "Subject to master subscription agreement."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+Prepared For: Helio Manufacturing
+Prepared By: Northstar Systems LLC
+Account Executive: Jordan Lee
+Offer Valid Through: 2024-08-24
+Quote Number: Q-561578
+Order Form ID: OF-0031
+
+ORDER FORM - SUBSCRIPTION SERVICES
+
+Sold To: 478 Harbor Boulevard, San Francisco, CA 83496, USA
+Bill To: Attn: Accounts Payable, 5364 Mission Street, San Francisco, CA 33476, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@heliomanufacturing.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@heliomanufacturing.com
+Service Start Date: 13-Aug-2024
+Service End Date: 12 Aug 2026
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty             Rate   Total Contract Value
+Prem. Support                              1   168,583.06 USD       337,166.12 USD
+  SKU: PREMIUM_SUPPORT | Service: 2024-08-13 to 2026-08-12
+  Invoicing: hybrid/yearly | Terms: Due on Receipt
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   178,673.49 USD       357,346.98 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2024-08-13 to 2026-08-12
+  Invoicing: hybrid/yearly | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: 694,513.10 USD
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Skills Portfolio, Elevate Success Plan.
+
+Helio Manufacturing
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 21-Jul-2024
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 21-Jul-2024
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

@@ -1,0 +1,57 @@
+Prepared For: Summit Telecom
+Prepared By: Acme Software Inc.
+Account Executive: Taylor Morgan
+Offer Valid Through: 2025-09-18
+Quote Number: Q-495498
+Order Form ID: OF-0002
+
+Customer Order Schedule
+
+Sold To: 308 Mission Street, Chicago, IL 80594, USA
+Bill To: Attn: Accounts Payable, 3740 Innovation Pkwy, Chicago, IL 68337, USA
+Primary Contact: Jordan Lee
+Primary Contact Email: jordan@summittelecom.com
+Billing Contact Name: Riley Singh
+Billing Contact Email: ap@summittelecom.com
+Service Start Date: 08/07/2025
+Service End Date: 2026-08-06
+Up to Customer Employee Size: 2,500
+
+LICENSE AND SERVICE FEES
+
+Product/Service                          Qty       Unit Price                Total
+Talent Intel. Platf. Prem. Ed. (Add-on)    1    30,180.26 USD       120,721.04 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2025-08-07 to 2026-08-06
+  Invoicing: upfront/quarterly | Terms: Net 55
+
+TOTAL AMOUNT DUE: 120,721.04 USD
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Design, Copilot.
+
+Summit Telecom
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 08, 2025
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 11, 2025
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

@@ -1,0 +1,67 @@
+{
+  "effective_date": "2023-04-27",
+  "contract_signed_date_buying_company": "2023-04-28",
+  "contract_signed_date_selling_company": "2023-04-29",
+  "contract_items": [
+    {
+      "sku_id": "d6f20b62-9bec-421b-8d33-489712746aee",
+      "sku_code": "TALENT_ACQUISITION",
+      "sku_name": "Talent Acquisition",
+      "currency": "USD",
+      "total_listed_value": 7144980.12,
+      "service_start_date": "2023-04-28",
+      "service_end_date": "2026-04-26",
+      "quantity": 3.0,
+      "unit_price": 198471.67,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "2c825663-7215-4f20-883c-4e8099f64b8b",
+      "sku_code": "PREMIUM_SUPPORT",
+      "sku_name": "Premium Support",
+      "currency": "USD",
+      "total_listed_value": 651341.76,
+      "service_start_date": "2023-04-28",
+      "service_end_date": "2026-04-26",
+      "quantity": 1.0,
+      "unit_price": 54278.48,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "436af129-f59f-4be4-aa40-e50f90046516",
+      "sku_code": "TALENT_ACQUISITION_CANDIDATE_EXPERIENCE",
+      "sku_name": "Talent Acquisition Candidate Experience",
+      "currency": "USD",
+      "total_listed_value": 7089112.8,
+      "service_start_date": "2023-04-28",
+      "service_end_date": "2026-04-26",
+      "quantity": 5.0,
+      "unit_price": 118151.88,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Includes standard onboarding support."
+    },
+    {
+      "sku_id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+      "sku_name": "Talent Intelligence Platform",
+      "currency": "USD",
+      "total_listed_value": 2533429.2,
+      "service_start_date": "2023-04-28",
+      "service_end_date": "2026-04-26",
+      "quantity": 1.0,
+      "unit_price": 211119.1,
+      "invoicing_schedule_type": "recurring",
+      "invoicing_frequency": "quarterly",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Usage caps apply per signed order form."
+    }
+  ]
+}

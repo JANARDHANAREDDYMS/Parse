@@ -1,0 +1,66 @@
+Prepared For: Riverstone Health
+Prepared By: Northstar Systems LLC
+Account Executive: Alex Carter
+Offer Valid Through: 2025-07-11
+Quote Number: Q-197015
+Order Form ID: OF-0021
+
+ORDER FORM - SUBSCRIPTION SERVICES
+
+Sold To: 1289 Innovation Pkwy, Seattle, WA 26821, USA
+Bill To: Attn: Accounts Payable, 3358 Enterprise Way, Seattle, WA 15016, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@riverstonehealth.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@riverstonehealth.com
+Service Start Date: 22 Jun 2025
+Service End Date: 21-Jun-2026
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION SERVICE FEES
+
+Offering                                 Qty       Unit Price   Total Contract Value
+Talent Acquisition                         3   207,686.58 USD     7,476,716.88 USD
+  SKU: TALENT_ACQUISITION | Service: 2025-06-22 to 2026-06-21
+  Invoicing: recurring/monthly | Terms: Net 45
+Talent Intel. Platf. Prem. Ed. (Add-on)    5    90,172.61 USD     5,410,356.60 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2025-06-22 to 2026-06-21
+  Invoicing: recurring/monthly | Terms: Net 45
+Talent Intel. Platf.                       3    68,904.81 USD     2,480,573.16 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2025-06-22 to 2026-06-21
+  Invoicing: recurring/monthly | Terms: Net 45
+Talent Acquisition Core                    2    77,982.55 USD     1,871,581.20 USD
+  SKU: TALENT_ACQUISITION_CORE | Service: 2025-06-22 to 2026-06-21
+  Invoicing: recurring/monthly | Terms: Net 45
+
+TOTAL AMOUNT DUE: 17,239,227.84 USD
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition CRM, Premium Support.
+
+Riverstone Health
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 06 Jun 2025
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 09 Jun 2025
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

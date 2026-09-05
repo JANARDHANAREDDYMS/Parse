@@ -1,0 +1,66 @@
+Prepared For: Oakbridge Energy
+Prepared By: Northstar Systems LLC
+Account Executive: Jamie Kim
+Offer Valid Through: 2023-05-20
+Quote Number: Q-805652
+Order Form ID: OF-0035
+
+Sales Order Form
+
+Sold To: 3338 Innovation Pkwy, Boston, MA 70460, USA
+Bill To: Attn: Accounts Payable, 4966 Mission Street, Boston, MA 98697, USA
+Primary Contact: Jordan Lee
+Primary Contact Email: jordan@oakbridgeenergy.com
+Billing Contact Name: Avery Brown
+Billing Contact Email: ap@oakbridgeenergy.com
+Service Start Date: 2023-04-28
+Service End Date: 04/26/2026
+Up to Customer Employee Size: 2,500
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty             Rate   Total Contract Value
+Talent Acquisition                         3      $198,471.67        $7,144,980.12
+  SKU: TALENT_ACQUISITION | Service: 2023-04-28 to 2026-04-26
+  Invoicing: recurring/quarterly | Terms: Due on Receipt
+Prem. Support                              1       $54,278.48          $651,341.76
+  SKU: PREMIUM_SUPPORT | Service: 2023-04-28 to 2026-04-26
+  Invoicing: recurring/quarterly | Terms: Due on Receipt
+Talent Acquisition Candidate Experience    5      $118,151.88        $7,089,112.80
+  SKU: TALENT_ACQUISITION_CANDIDATE_EXPERIENCE | Service: 2023-04-28 to 2026-04-26
+  Invoicing: recurring/quarterly | Terms: Due on Receipt
+Talent Intel. Platf.                       1      $211,119.10        $2,533,429.20
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2023-04-28 to 2026-04-26
+  Invoicing: recurring/quarterly | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: $17,418,863.88
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Elevate Success Plan, Skills Portfolio.
+
+Oakbridge Energy
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Apr 28, 2023
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Apr 29, 2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

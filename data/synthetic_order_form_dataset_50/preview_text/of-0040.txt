@@ -1,0 +1,60 @@
+Prepared For: Helio Manufacturing
+Prepared By: Northstar Systems LLC
+Account Executive: Taylor Morgan
+Offer Valid Through: 2022-09-14
+Quote Number: Q-800161
+Order Form ID: OF-0040
+
+Order Form - Subscription Services
+
+Sold To: 2015 Technology Drive, Denver, CO 17617, USA
+Bill To: Attn: Accounts Payable, 5509 Enterprise Way, Denver, CO 58030, USA
+Primary Contact: Taylor Morgan
+Primary Contact Email: taylor@heliomanufacturing.com
+Billing Contact Name: Riley Singh
+Billing Contact Email: ap@heliomanufacturing.com
+Service Start Date: 09 Aug 2022
+Service End Date: 08 Aug 2023
+Up to Customer Employee Size: 15,000
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty             Rate                Total
+Talent Mgmt Ent.                           5    95,522.95 USD       477,614.75 USD
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2022-08-09 to 2023-08-08
+  Invoicing: upfront/one-time | Terms: Net 30
+Talent Acquisition                         3    78,266.58 USD       234,799.74 USD
+  SKU: TALENT_ACQUISITION | Service: 2022-08-09 to 2023-08-08
+  Invoicing: upfront/one-time | Terms: Net 30
+
+TOTAL AMOUNT DUE: 712,414.49 USD
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Overages - Talent Acquisition AI Interviewer Agent Add-on, Talent Intelligence Platform Premium Edition (Add-on).
+
+Helio Manufacturing
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 06, 2022
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Aug 06, 2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

@@ -1,0 +1,62 @@
+Prepared For: Riverstone Health
+Prepared By: Northstar Systems LLC
+Account Executive: Casey Patel
+Offer Valid Through: 2026-05-01
+Quote Number: Q-450529
+Order Form ID: OF-0024
+
+Customer Order Schedule
+
+Sold To: 5133 Enterprise Way, San Jose, CA 13779, USA
+Bill To: Attn: Accounts Payable, 3611 Innovation Pkwy, San Jose, CA 41762, USA
+Primary Contact: Jordan Lee
+Primary Contact Email: jordan@riverstonehealth.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@riverstonehealth.com
+Service Start Date: 06-Apr-2026
+Service End Date: Apr 04, 2028
+Up to Customer Employee Size: 50,000
+
+LICENSE AND SERVICE FEES
+
+Product/Service                          Qty         Unit Fee                Total
+Sandbox                                    1   USD 206,158.71       USD 206,158.71
+  SKU: SANDBOX | Service: 2026-04-06 to 2028-04-04
+  Invoicing: recurring/one-time | Terms: Due on Receipt
+Talent Mgmt Ent.                           2   USD 139,379.58       USD 278,759.16
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2026-04-06 to 2028-04-04
+  Invoicing: recurring/one-time | Terms: Due on Receipt
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   USD 124,244.65       USD 124,244.65
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2026-04-06 to 2028-04-04
+  Invoicing: recurring/one-time | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: USD 609,162.52
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition AI Interviewer Agent Add-on, Talent Management Leader Experience.
+
+Riverstone Health
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 22-Mar-2026
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 27-Mar-2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

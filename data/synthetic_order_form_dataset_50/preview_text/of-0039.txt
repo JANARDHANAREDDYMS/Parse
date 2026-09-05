@@ -1,0 +1,60 @@
+Prepared For: Orchid Logistics
+Prepared By: Acme Software Inc.
+Account Executive: Casey Patel
+Offer Valid Through: 2026-11-21
+Quote Number: Q-471863
+Order Form ID: OF-0039
+
+Sales Order Form
+
+Sold To: 1379 Innovation Pkwy, San Francisco, CA 78250, USA
+Bill To: Attn: Accounts Payable, 9609 Mission Street, San Francisco, CA 72394, USA
+Primary Contact: Casey Patel
+Primary Contact Email: casey@orchidlogistics.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@orchidlogistics.com
+Service Start Date: Oct 22, 2026
+Service End Date: Oct 21, 2027
+Up to Customer Employee Size: 25,000
+
+LICENSE AND SERVICE FEES
+
+SKU Description                          Qty       Unit Price   Total Contract Value
+WhatsApp / SMS Credits                     2   237,175.87 USD     1,897,406.96 USD
+  SKU: WHATSAPP_SMS_CREDITS | Service: 2026-10-22 to 2027-10-21
+  Invoicing: hybrid/quarterly | Terms: Net 30
+Prem. Support                              1   110,972.15 USD       443,888.60 USD
+  SKU: PREMIUM_SUPPORT | Service: 2026-10-22 to 2027-10-21
+  Invoicing: hybrid/quarterly | Terms: Net 30
+
+TOTAL AMOUNT DUE: 2,341,295.56 USD
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Copilot, Talent Acquisition Core.
+
+Orchid Logistics
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 23-Oct-2026
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 24-Oct-2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

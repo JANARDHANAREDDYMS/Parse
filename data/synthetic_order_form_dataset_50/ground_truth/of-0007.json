@@ -1,0 +1,67 @@
+{
+  "effective_date": "2023-06-23",
+  "contract_signed_date_buying_company": "2023-06-27",
+  "contract_signed_date_selling_company": "2023-07-01",
+  "contract_items": [
+    {
+      "sku_id": "2c825663-7215-4f20-883c-4e8099f64b8b",
+      "sku_code": "PREMIUM_SUPPORT",
+      "sku_name": "Premium Support",
+      "currency": "USD",
+      "total_listed_value": 219131.88,
+      "service_start_date": "2023-07-10",
+      "service_end_date": "2024-07-08",
+      "quantity": 3.0,
+      "unit_price": 73043.96,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 45",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 225945.2,
+      "service_start_date": "2023-07-10",
+      "service_end_date": "2024-07-08",
+      "quantity": 5.0,
+      "unit_price": 45189.04,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 45",
+      "special_notes": "Customer-specific pricing approved."
+    },
+    {
+      "sku_id": "bc8b9193-a684-41c5-ac83-c0356cbcb7f3",
+      "sku_code": "SANDBOX",
+      "sku_name": "Sandbox",
+      "currency": "USD",
+      "total_listed_value": 198407.38,
+      "service_start_date": "2023-07-10",
+      "service_end_date": "2024-07-08",
+      "quantity": 1.0,
+      "unit_price": 198407.38,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 45",
+      "special_notes": "Annual uplift terms included as agreed."
+    },
+    {
+      "sku_id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+      "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+      "sku_name": "Talent Intelligence Platform Premium Edition (Add-on)",
+      "currency": "USD",
+      "total_listed_value": 220811.91,
+      "service_start_date": "2023-07-10",
+      "service_end_date": "2024-07-08",
+      "quantity": 1.0,
+      "unit_price": 220811.91,
+      "invoicing_schedule_type": "hybrid",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Net 45",
+      "special_notes": "Usage caps apply per signed order form."
+    }
+  ]
+}

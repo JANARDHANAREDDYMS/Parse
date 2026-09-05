@@ -1,0 +1,63 @@
+Prepared For: Summit Telecom
+Prepared By: Acme Software Inc.
+Account Executive: Casey Patel
+Offer Valid Through: 2022-05-02
+Quote Number: Q-763594
+Order Form ID: OF-0033
+
+Sales Order Form
+
+Sold To: 3481 Enterprise Way, San Francisco, CA 89978, USA
+Bill To: Attn: Accounts Payable, 5301 Market Street, San Francisco, CA 36316, USA
+Primary Contact: Riley Singh
+Primary Contact Email: riley@summittelecom.com
+Billing Contact Name: Morgan Diaz
+Billing Contact Email: ap@summittelecom.com
+Service Start Date: Apr 26, 2022
+Service End Date: 24 Apr 2025
+Up to Customer Employee Size: 15,000
+
+SUBSCRIPTION SERVICE FEES
+
+Product/Service                          Qty         Unit Fee                Total
+Talent Mgmt Ent.                           1       $51,698.27           $51,698.27
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2022-04-26 to 2025-04-24
+  Invoicing: hybrid/one-time | Terms: Net 30
+Talent Acquisition Candidate Experience    1      $196,316.71          $196,316.71
+  SKU: TALENT_ACQUISITION_CANDIDATE_EXPERIENCE | Service: 2022-04-26 to 2025-04-24
+  Invoicing: hybrid/one-time | Terms: Net 30
+Sandbox                                    1       $78,094.12           $78,094.12
+  SKU: SANDBOX | Service: 2022-04-26 to 2025-04-24
+  Invoicing: hybrid/one-time | Terms: Net 30
+
+TOTAL AMOUNT DUE: $326,109.10
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Intelligence Platform, Talent Management Core.
+
+Summit Telecom
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Apr 13, 2022
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Apr 17, 2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

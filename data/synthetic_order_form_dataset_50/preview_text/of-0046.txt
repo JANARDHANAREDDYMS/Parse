@@ -1,0 +1,62 @@
+Prepared For: Riverstone Health
+Prepared By: Acme Software Inc.
+Account Executive: Riley Singh
+Offer Valid Through: 2027-01-02
+Quote Number: Q-231722
+Order Form ID: OF-0046
+
+Order Form - Subscription Services
+
+Sold To: 8473 Technology Drive, Chicago, IL 32599, USA
+Bill To: Attn: Accounts Payable, 5901 Market Street, Chicago, IL 67895, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@riverstonehealth.com
+Billing Contact Name: Casey Patel
+Billing Contact Email: ap@riverstonehealth.com
+Service Start Date: Dec 06, 2026
+Service End Date: 04-Dec-2028
+Up to Customer Employee Size: 2,500
+
+LICENSE AND SERVICE FEES
+
+SKU Description                          Qty       Unit Price   Total Contract Value
+Signature Success                          2    USD 26,649.52        USD 53,299.04
+  SKU: SIGNATURE_SUCCESS | Service: 2026-12-06 to 2028-12-04
+  Invoicing: hybrid/one-time | Terms: Net 30
+Elevate Success Plan                       5    USD 63,904.00       USD 319,520.00
+  SKU: ELEVATE_SUCCESS_PLAN | Service: 2026-12-06 to 2028-12-04
+  Invoicing: hybrid/one-time | Terms: Net 30
+Professional Service                       1   USD 106,075.30       USD 106,075.30
+  SKU: PROFESSIONAL_SERVICE | Service: 2026-12-06 to 2028-12-04
+  Invoicing: hybrid/one-time | Terms: Net 30
+
+TOTAL AMOUNT DUE: USD 478,894.34
+
+INVOICE PLAN
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition Core, Talent Acquisition CRM.
+
+Riverstone Health
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 22-Nov-2026
+
+Acme Software Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 27-Nov-2026
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

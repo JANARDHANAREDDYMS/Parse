@@ -1,0 +1,56 @@
+Prepared For: Helio Manufacturing
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Taylor Morgan
+Offer Valid Through: 2022-10-10
+Quote Number: Q-698589
+Order Form ID: OF-0020
+
+CUSTOMER ORDER SCHEDULE
+
+Sold To: 5021 Innovation Pkwy, San Jose, CA 97594, USA
+Bill To: Attn: Accounts Payable, 240 Harbor Boulevard, San Jose, CA 33889, USA
+Primary Contact: Avery Brown
+Primary Contact Email: avery@heliomanufacturing.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@heliomanufacturing.com
+Service Start Date: 2022-10-17
+Service End Date: Oct 15, 2025
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION FEES
+
+Product/Service                          Qty       Unit Price                Total
+Talent Intel. Platf.                       3   230,975.18 USD    24,945,319.44 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2022-10-17 to 2025-10-15
+  Invoicing: hybrid/monthly | Terms: Net 30
+
+TOTAL AMOUNT DUE: 24,945,319.44 USD
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Management Leader Experience, WhatsApp / SMS Credits.
+
+Helio Manufacturing
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Sep 23, 2022
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): Sep 25, 2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

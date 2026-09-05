@@ -1,0 +1,65 @@
+Prepared For: Riverstone Health
+Prepared By: Nimbus Data Platforms, Inc.
+Account Executive: Alex Carter
+Offer Valid Through: 2022-12-25
+Quote Number: Q-970515
+Order Form ID: OF-0019
+
+Order Form - Subscription Services
+
+Sold To: 6203 Enterprise Way, San Jose, CA 72979, USA
+Bill To: Attn: Accounts Payable, 2549 Innovation Pkwy, San Jose, CA 95408, USA
+Primary Contact: Taylor Morgan
+Primary Contact Email: taylor@riverstonehealth.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@riverstonehealth.com
+Service Start Date: Nov 21, 2022
+Service End Date: 19 Nov 2024
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION FEES
+
+Offering                                 Qty         Unit Fee                Total
+Talent Intel. Platf.                       5   USD 202,138.11     USD 2,021,381.10
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2022-11-21 to 2024-11-19
+  Invoicing: upfront/yearly | Terms: Net 30
+Talent Acquisition                         1     USD 8,899.39        USD 17,798.78
+  SKU: TALENT_ACQUISITION | Service: 2022-11-21 to 2024-11-19
+  Invoicing: upfront/yearly | Terms: Net 30
+Professional Service                       1   USD 212,177.59       USD 424,355.18
+  SKU: PROFESSIONAL_SERVICE | Service: 2022-11-21 to 2024-11-19
+  Invoicing: upfront/yearly | Terms: Net 30
+Prem. Support                              5   USD 217,308.66     USD 2,173,086.60
+  SKU: PREMIUM_SUPPORT | Service: 2022-11-21 to 2024-11-19
+  Invoicing: upfront/yearly | Terms: Net 30
+
+TOTAL AMOUNT DUE: USD 4,636,621.66
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Talent Acquisition AI Interviewer Agent Add-on, Copilot.
+
+Riverstone Health
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2022-11-14
+
+Nimbus Data Platforms, Inc.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 2022-11-15
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

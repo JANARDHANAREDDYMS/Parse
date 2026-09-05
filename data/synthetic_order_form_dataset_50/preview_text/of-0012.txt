@@ -1,0 +1,63 @@
+Prepared For: Atlas Retail Group
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Morgan Diaz
+Offer Valid Through: 2023-10-14
+Quote Number: Q-894692
+Order Form ID: OF-0012
+
+Order Form - Subscription Services
+
+Sold To: 1305 Harbor Boulevard, Chicago, IL 24932, USA
+Bill To: Attn: Accounts Payable, 5894 Innovation Pkwy, Chicago, IL 44929, USA
+Primary Contact: Alex Carter
+Primary Contact Email: alex@atlasretailgroup.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@atlasretailgroup.com
+Service Start Date: 2023-10-12
+Service End Date: 10-Oct-2024
+Up to Customer Employee Size: 25,000
+
+SUBSCRIPTION FEES
+
+SKU Description                          Qty       Unit Price                Total
+Talent Intel. Platf.                       3    10,834.60 USD       130,015.20 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM | Service: 2023-10-12 to 2024-10-10
+  Invoicing: hybrid/quarterly | Terms: Net 55
+Talent Intel. Platf. Prem. Ed. (Add-on)    2    10,243.66 USD        81,949.28 USD
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2023-10-12 to 2024-10-10
+  Invoicing: hybrid/quarterly | Terms: Net 55
+Talent Mgmt Ent.                           1    46,932.19 USD       187,728.76 USD
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2023-10-12 to 2024-10-10
+  Invoicing: hybrid/quarterly | Terms: Net 55
+
+TOTAL AMOUNT DUE: 399,693.24 USD
+
+BILLING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Sandbox, Premium Support.
+
+Atlas Retail Group
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 01-Oct-2023
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 03-Oct-2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM

@@ -1,0 +1,60 @@
+Prepared For: Brightwave Industries
+Prepared By: Northstar Systems LLC
+Account Executive: Taylor Morgan
+Offer Valid Through: 2023-01-13
+Quote Number: Q-575046
+Order Form ID: OF-0014
+
+ORDER FORM - SUBSCRIPTION SERVICES
+
+Sold To: 3899 Market Street, Boston, MA 76883, USA
+Bill To: Attn: Accounts Payable, 8175 Innovation Pkwy, Boston, MA 88494, USA
+Primary Contact: Morgan Diaz
+Primary Contact Email: morgan@brightwaveindustries.com
+Billing Contact Name: Jordan Lee
+Billing Contact Email: ap@brightwaveindustries.com
+Service Start Date: Jan 07, 2023
+Service End Date: 2025-01-05
+Up to Customer Employee Size: 5,000
+
+SUBSCRIPTION FEES
+
+Offering                                 Qty       Unit Price   Total Contract Value
+Talent Acquisition                         2   214,819.73 USD       429,639.46 USD
+  SKU: TALENT_ACQUISITION | Service: 2023-01-07 to 2025-01-05
+  Invoicing: upfront/one-time | Terms: Due on Receipt
+Talent Mgmt Ent.                           1   143,813.02 USD       143,813.02 USD
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2023-01-07 to 2025-01-05
+  Invoicing: upfront/one-time | Terms: Due on Receipt
+
+TOTAL AMOUNT DUE: 573,452.48 USD
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Overages - Talent Acquisition AI Interviewer Agent Add-on, Elevate Success Plan.
+
+Brightwave Industries
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 12/17/2022
+
+Northstar Systems LLC
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 12/20/2022
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? No, PO exception accepted.
+
+END OF ORDER FORM

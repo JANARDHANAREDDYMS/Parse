@@ -1,0 +1,170 @@
+[
+  {
+    "id": "00f6fbfc-a12b-42b1-9c7e-efbd9d90a37f",
+    "sku_code": "TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON",
+    "name": "Talent Intelligence Platform Premium Edition (Add-on)",
+    "description": "Premium add-on to Talent Intelligence Platform",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 43
+  },
+  {
+    "id": "d6f20b62-9bec-421b-8d33-489712746aee",
+    "sku_code": "TALENT_ACQUISITION",
+    "name": "Talent Acquisition",
+    "description": "Subscription to Talent Acquisition module",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 34
+  },
+  {
+    "id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+    "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+    "name": "Talent Management Enterprise",
+    "description": "Subscription to Talent Management Enterprise",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 30
+  },
+  {
+    "id": "a763df24-1ea6-4afc-a195-13ce52ea20cd",
+    "sku_code": "TALENT_INTELLIGENCE_PLATFORM",
+    "name": "Talent Intelligence Platform",
+    "description": "Subscription to the Talent Intelligence Platform",
+    "parsing_instructions": "- For this and ALL items: use the Order Form Start Date as the contract term start (not the signature date).\n- Revenue recognition for the mapped POB is straight-line by days across the service period.",
+    "usage_count": 21
+  },
+  {
+    "id": "2c825663-7215-4f20-883c-4e8099f64b8b",
+    "sku_code": "PREMIUM_SUPPORT",
+    "name": "Premium Support",
+    "description": "Premium support subscription",
+    "parsing_instructions": "- If minimum/maximum monthly hours are specified, capture them; otherwise leave quantity null.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 19
+  },
+  {
+    "id": "2a4fa79f-0fb7-42a3-a4ad-143f3cce8e36",
+    "sku_code": "PROFESSIONAL_SERVICE",
+    "name": "Professional Service",
+    "description": "Professional services delivered on a usage/progress basis",
+    "parsing_instructions": "- Capture delivery period and progress inputs (e.g., hours, milestones, percent complete) for percentage-of-completion.\n- If dates are absent, align service dates with the related SOW or Order Form where available.",
+    "usage_count": 18
+  },
+  {
+    "id": "6e0247a7-ae3b-49ef-971e-feb0641cf52d",
+    "sku_code": "SIGNATURE_SUCCESS",
+    "name": "Signature Success",
+    "description": "Recurring subscription to Signature Success",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 15
+  },
+  {
+    "id": "bc8b9193-a684-41c5-ac83-c0356cbcb7f3",
+    "sku_code": "SANDBOX",
+    "name": "Sandbox",
+    "description": "Sandbox environment access subscription",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 14
+  },
+  {
+    "id": "63d14b22-78d4-4cb0-9cd6-85127611f1d0",
+    "sku_code": "ELEVATE_SUCCESS_PLAN",
+    "name": "Elevate Success Plan",
+    "description": "Success plan subscription",
+    "parsing_instructions": "- Identify any negative-valued contract items in a modification document; strike off the related contract item(s) effective on the modification date.\n- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 12
+  },
+  {
+    "id": "1d910302-7e31-4e37-9a4b-b14d244af7c5",
+    "sku_code": "WHATSAPP_SMS_CREDITS",
+    "name": "WhatsApp / SMS Credits",
+    "description": "Recurring subscription for WhatsApp and SMS credits",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 11
+  },
+  {
+    "id": "436af129-f59f-4be4-aa40-e50f90046516",
+    "sku_code": "TALENT_ACQUISITION_CANDIDATE_EXPERIENCE",
+    "name": "Talent Acquisition Candidate Experience",
+    "description": "Candidate experience component of Talent Acquisition",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 8
+  },
+  {
+    "id": "89ab57ac-9aad-49a5-b9f5-4b99698dd292",
+    "sku_code": "TALENT_ACQUISITION_CORE",
+    "name": "Talent Acquisition Core",
+    "description": "Core package of Talent Acquisition",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 8
+  },
+  {
+    "id": "24857132-4f8f-46f9-a89e-db212c44a8aa",
+    "sku_code": "TALENT_ACQUISITION_CRM",
+    "name": "Talent Acquisition CRM",
+    "description": "CRM component of Talent Acquisition",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 8
+  },
+  {
+    "id": "35be6eb9-d0b6-472d-8d5a-65f2aae8c375",
+    "sku_code": "TALENT_MANAGEMENT_CORE",
+    "name": "Talent Management Core",
+    "description": "Core package of Talent Management",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 5
+  },
+  {
+    "id": "dd8cb75c-b04b-4f2a-992c-3cfd85a77677",
+    "sku_code": "TALENT_MANAGEMENT_LEADER_EXPERIENCE",
+    "name": "Talent Management Leader Experience",
+    "description": "Leader Experience component of Talent Management",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 3
+  },
+  {
+    "id": "b9d6a351-d317-46c4-be4e-8df01866127a",
+    "sku_code": "TALENT_DESIGN",
+    "name": "Talent Design",
+    "description": "Recurring subscription to Talent Design",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 2
+  },
+  {
+    "id": "927b1ee7-bff0-462f-83e5-8660240ed9f4",
+    "sku_code": "COPILOT",
+    "name": "Copilot",
+    "description": "Recurring subscription to Copilot",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 0
+  },
+  {
+    "id": "c87496b6-84a5-4a3e-a0af-86fc22f6cfa0",
+    "sku_code": "OVERAGES_TALENT_ACQUISITION_AI_INTERVIEWER_AGENT_ADDON",
+    "name": "Overages - Talent Acquisition AI Interviewer Agent Add-on",
+    "description": "Usage-based overages for the AI Interviewer Agent Add-on",
+    "parsing_instructions": "- Revenue recognized based on actual usage consumption.\n- Capture usage metrics as they occur for recognition.",
+    "usage_count": 0
+  },
+  {
+    "id": "54d9788d-fa28-4cbf-847b-9aac7c6cab8f",
+    "sku_code": "SKILLS_PORTFOLIO",
+    "name": "Skills Portfolio",
+    "description": "Recurring subscription to Skills Portfolio",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 0
+  },
+  {
+    "id": "ce9f8efe-0448-43e3-80ba-d0896c939b32",
+    "sku_code": "TALENT_ACQUISITION_AI_INTERVIEWER_AGENT_ADDON",
+    "name": "Talent Acquisition AI Interviewer Agent Add-on",
+    "description": "Recurring subscription to the AI Interviewer Agent Add-on for Talent Acquisition",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 0
+  },
+  {
+    "id": "9fd7ee3e-3938-487b-92a4-a82bda6a6a3a",
+    "sku_code": "TALENT_ACQUISITION_TALENT_TRACKING_ADDON",
+    "name": "Talent Acquisition Talent Tracking Add-on",
+    "description": "Recurring subscription to the Talent Tracking Add-on for Talent Acquisition",
+    "parsing_instructions": "- Use Order Form Start Date for service start.\n- Revenue recognition for the mapped POB is straight-line by days.",
+    "usage_count": 0
+  }
+]

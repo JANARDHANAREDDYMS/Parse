@@ -1,0 +1,37 @@
+{
+  "effective_date": "2022-12-11",
+  "contract_signed_date_buying_company": "2022-12-17",
+  "contract_signed_date_selling_company": "2022-12-20",
+  "contract_items": [
+    {
+      "sku_id": "d6f20b62-9bec-421b-8d33-489712746aee",
+      "sku_code": "TALENT_ACQUISITION",
+      "sku_name": "Talent Acquisition",
+      "currency": "USD",
+      "total_listed_value": 429639.46,
+      "service_start_date": "2023-01-07",
+      "service_end_date": "2025-01-05",
+      "quantity": 2.0,
+      "unit_price": 214819.73,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Subject to master subscription agreement."
+    },
+    {
+      "sku_id": "4e976929-ebff-4189-b7ab-1b650edabc4e",
+      "sku_code": "TALENT_MANAGEMENT_ENTERPRISE",
+      "sku_name": "Talent Management Enterprise",
+      "currency": "USD",
+      "total_listed_value": 143813.02,
+      "service_start_date": "2023-01-07",
+      "service_end_date": "2025-01-05",
+      "quantity": 1.0,
+      "unit_price": 143813.02,
+      "invoicing_schedule_type": "upfront",
+      "invoicing_frequency": "one-time",
+      "payment_terms": "Due on Receipt",
+      "special_notes": "Customer-specific pricing approved."
+    }
+  ]
+}

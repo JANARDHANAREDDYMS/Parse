@@ -1,0 +1,66 @@
+Prepared For: Riverstone Health
+Prepared By: Pioneer Intelligence Ltd.
+Account Executive: Jamie Kim
+Offer Valid Through: 2023-08-06
+Quote Number: Q-221666
+Order Form ID: OF-0007
+
+Order Form - Subscription Services
+
+Sold To: 688 Mission Street, San Francisco, CA 23880, USA
+Bill To: Attn: Accounts Payable, 5483 Market Street, San Francisco, CA 97597, USA
+Primary Contact: Riley Singh
+Primary Contact Email: riley@riverstonehealth.com
+Billing Contact Name: Avery Brown
+Billing Contact Email: ap@riverstonehealth.com
+Service Start Date: 10-Jul-2023
+Service End Date: Jul 08, 2024
+Up to Customer Employee Size: 50,000
+
+SUBSCRIPTION FEES
+
+Product/Service                          Qty       Unit Price   Total Contract Value
+Prem. Support                              3    USD 73,043.96       USD 219,131.88
+  SKU: PREMIUM_SUPPORT | Service: 2023-07-10 to 2024-07-08
+  Invoicing: hybrid/one-time | Terms: Net 45
+Talent Mgmt Ent.                           5    USD 45,189.04       USD 225,945.20
+  SKU: TALENT_MANAGEMENT_ENTERPRISE | Service: 2023-07-10 to 2024-07-08
+  Invoicing: hybrid/one-time | Terms: Net 45
+Sandbox                                    1   USD 198,407.38       USD 198,407.38
+  SKU: SANDBOX | Service: 2023-07-10 to 2024-07-08
+  Invoicing: hybrid/one-time | Terms: Net 45
+Talent Intel. Platf. Prem. Ed. (Add-on)    1   USD 220,811.91       USD 220,811.91
+  SKU: TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON | Service: 2023-07-10 to 2024-07-08
+  Invoicing: hybrid/one-time | Terms: Net 45
+
+TOTAL AMOUNT DUE: USD 864,296.37
+
+INVOICING SCHEDULE
+Invoices are sent in advance and governed by per-item billing frequencies.
+Operational note: annual payment summary shown for procurement convenience.
+Payment terms are binding from the invoice issue date.
+
+IMPLEMENTATION SERVICES
+Implementation services, if any, are delivered by certified implementation partners unless listed as subscription fees.
+
+TERMS & CONDITIONS
+The subscription services in this order form are governed by the applicable master subscription agreement.
+By signing below, each party confirms this is a legally binding contract.
+Reference catalog items not sold in this form: Signature Success, Talent Acquisition Core.
+
+Riverstone Health
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 27-Jun-2023
+
+Pioneer Intelligence Ltd.
+By: [signed]
+Name (Print): _____________________________
+Title (Print): _____________________________
+Date (Print): 01-Jul-2023
+
+PURCHASE ORDER INFORMATION
+Is a Purchase Order (PO) required? Yes, send a copy of the PO.
+
+END OF ORDER FORM
