@@ -1,6 +1,7 @@
 import uuid
 from dataclasses import dataclass
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -82,6 +83,52 @@ async def get_tenant_job(
 ) -> ProcessingJob | None:
     async with session_factory() as session:
         return await JobRepository(session).get_job(organization_id, job_id)
+
+
+async def schedule_document_analysis_job(
+    session_factory: async_sessionmaker[AsyncSession],
+    *,
+    organization_id: uuid.UUID,
+    document_id: uuid.UUID,
+    preprocessing_run_id: uuid.UUID,
+    retry_terminal: bool = False,
+) -> ProcessingJob:
+    """Create or return the one analysis job bound to one completed preprocessing run."""
+    async with session_factory() as session:
+        try:
+            async with session.begin():
+                existing = await session.scalar(
+                    select(ProcessingJob).where(
+                        ProcessingJob.preprocessing_run_id == preprocessing_run_id,
+                        ProcessingJob.job_type == JobType.DOCUMENT_ANALYSIS.value,
+                    )
+                )
+                if existing is not None and (not retry_terminal or existing.status in {"queued", "running"}):
+                    return existing
+                attempts = list((await session.scalars(select(ProcessingJob.attempt_number).where(
+                    ProcessingJob.preprocessing_run_id == preprocessing_run_id,
+                    ProcessingJob.job_type == JobType.DOCUMENT_ANALYSIS.value,
+                ))).all())
+                job = ProcessingJob(
+                    id=uuid.uuid4(), organization_id=organization_id,
+                    document_id=document_id, preprocessing_run_id=preprocessing_run_id,
+                    job_type=JobType.DOCUMENT_ANALYSIS.value, status="queued",
+                    attempt_number=(max(attempts) + 1) if attempts else 1,
+                )
+                session.add(job)
+                await session.flush()
+                return job
+        except IntegrityError:
+            async with session.begin():
+                existing = await session.scalar(
+                    select(ProcessingJob).where(
+                        ProcessingJob.preprocessing_run_id == preprocessing_run_id,
+                        ProcessingJob.job_type == JobType.DOCUMENT_ANALYSIS.value,
+                    )
+                )
+                if existing is not None:
+                    return existing
+            raise
 
 
 async def claim_next_job(

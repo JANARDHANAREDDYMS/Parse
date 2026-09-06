@@ -15,6 +15,8 @@ from maximor.document_analysis.schemas import (
     EvidenceReference,
     EvidenceRepresentation,
     ProductCandidate,
+    MAX_PRODUCT_CANDIDATES,
+    MAX_EVIDENCE_PER_ENTITY,
 )
 from maximor.preprocessing.schemas import ExtractionSource
 
@@ -40,7 +42,7 @@ def test_request_is_identifier_only_and_versioned():
         preprocessing_run_id=uuid.uuid4(),
         preprocessing_schema_version="1.0.0",
         document_analysis_schema_version="1.0.0",
-        prompt_version="prompt-1",
+        prompt_version="prompt-1", skill_version="skill-1",
         agent_version="agent-1",
     )
     assert request.preprocessing_schema_version == "1.0.0"
@@ -144,8 +146,41 @@ async def test_placeholder_agent_fails_explicitly():
     request = DocumentAnalysisRequest(
         organization_id=uuid.uuid4(), document_id=uuid.uuid4(),
         preprocessing_run_id=uuid.uuid4(), preprocessing_schema_version="1",
-        document_analysis_schema_version="1", prompt_version="p", agent_version="a",
+        document_analysis_schema_version="1", prompt_version="p", skill_version="s", agent_version="a",
     )
     with pytest.raises(DocumentAnalysisNotConfiguredError) as captured:
         await UnconfiguredDocumentAnalysisAgent().analyze(request, object())
     assert captured.value.code == "document_analysis_not_configured"
+
+
+def test_result_collections_text_and_evidence_are_bounded():
+    """Reject repetitive semantic output before it can consume unbounded storage or tokens."""
+
+    run_id = uuid.uuid4()
+    base = dict(
+        schema_version="1", organization_id=uuid.uuid4(), document_id=uuid.uuid4(),
+        preprocessing_run_id=run_id, preprocessing_schema_version="1",
+        prompt_version="p", agent_version="a",
+    )
+    with pytest.raises(ValidationError):
+        DocumentAnalysisResult(**base, product_candidates=tuple(
+            ProductCandidate(candidate_id=f"candidate:{index:04d}", raw_name="Service")
+            for index in range(MAX_PRODUCT_CANDIDATES + 1)
+        ))
+    item_evidence = EvidenceReference(
+        preprocessing_run_id=run_id, page_number=1,
+        block_id="native:p0001:b000000",
+        representation=EvidenceRepresentation.NATIVE_TEXT,
+    )
+    with pytest.raises(ValidationError):
+        ProductCandidate(
+            candidate_id="candidate:bounded", raw_name="Service",
+            evidence=(item_evidence,) * (MAX_EVIDENCE_PER_ENTITY + 1),
+        )
+    with pytest.raises(ValidationError):
+        ProductCandidate(candidate_id="candidate:text", raw_name="x" * 2_001)
+    with pytest.raises(ValidationError):
+        ProductCandidate(
+            candidate_id="candidate:attributes", raw_name="Service",
+            raw_attributes={f"field-{index}": "value" for index in range(26)},
+        )

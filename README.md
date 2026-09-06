@@ -77,8 +77,9 @@ PYTHONPATH=src src/.venv/bin/python -m maximor.worker --once
 curl --fail-with-body http://127.0.0.1:8000/v1/organizations/ORGANIZATION_UUID/jobs/JOB_UUID
 ```
 
-Uploaded objects are generated beneath the ignored `.runtime/documents`
-directory. PostgreSQL stores only relative object keys. Validated preprocessing
+Uploaded objects are generated beneath the ignored `src/.runtime/documents`
+directory (the configured relative root is resolved from the repository root, so
+root and `src/` launches use the same location). PostgreSQL stores only relative object keys. Validated preprocessing
 results are compact JSON stored losslessly as `.json.gz` artifacts; page, block, and
 table projections are stored relationally for targeted retrieval.
 

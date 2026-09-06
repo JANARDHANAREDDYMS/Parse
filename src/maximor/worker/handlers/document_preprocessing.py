@@ -5,6 +5,7 @@ from maximor.db.models import Document
 from maximor.jobs.errors import DocumentNotFoundError, JobExecutionError
 from maximor.jobs.repository import ClaimedJob, JobRepository
 from maximor.jobs.types import JobContext, JobType
+from maximor.jobs.service import schedule_document_analysis_job
 from maximor.preprocessing.contracts import DocumentPreprocessingRequest
 from maximor.preprocessing.persistence import PreprocessingResultRepository
 from maximor.preprocessing.service import DeterministicDocumentPreprocessor, PREPROCESSING_SCHEMA_VERSION, PREPROCESSOR_VERSION
@@ -29,6 +30,10 @@ class DocumentPreprocessingHandler:
             await self._results.save_completed_result(result)
             loaded=await self._results.load_preprocessed_document(context.organization_id,run_id)
             if loaded.preprocessing_run_id!=run_id or loaded.original_document_checksum!=checksum: raise ValueError('persisted result validation failed')
+            await schedule_document_analysis_job(
+                self._sessions, organization_id=context.organization_id,
+                document_id=context.document_id, preprocessing_run_id=run_id,
+            )
             async with self._sessions() as s:
                 async with s.begin():
                     document=await s.get(Document,context.document_id)

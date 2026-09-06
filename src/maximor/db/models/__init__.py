@@ -4,5 +4,11 @@ from maximor.db.models.organization import Organization
 from maximor.db.models.processing_job import ProcessingJob
 from maximor.db.models.sku import Sku
 from maximor.db.models.document_processing import DocumentProcessingRun, DocumentPage, DocumentBlock, DocumentTable
+from maximor.db.models.document_analysis import (
+    DocumentAnalysisEvidenceReference,
+    DocumentAnalysisRun,
+    DocumentCommercialStatusAssessment,
+    DocumentProductCandidate,
+)
 
-__all__ = ["CatalogVersion", "Document", "Organization", "ProcessingJob", "Sku", "DocumentProcessingRun", "DocumentPage", "DocumentBlock", "DocumentTable"]
+__all__ = ["CatalogVersion", "Document", "Organization", "ProcessingJob", "Sku", "DocumentProcessingRun", "DocumentPage", "DocumentBlock", "DocumentTable", "DocumentAnalysisRun", "DocumentProductCandidate", "DocumentCommercialStatusAssessment", "DocumentAnalysisEvidenceReference"]

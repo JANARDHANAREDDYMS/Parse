@@ -7,7 +7,7 @@ from pathlib import Path
 import typer
 from pydantic import TypeAdapter, ValidationError
 
-from maximor.catalog.repository import SkuRepository
+from maximor.catalog.repository import CatalogIngestionRepository
 from maximor.catalog.schemas import CatalogSkuInput
 from maximor.db.models.statuses import CatalogStatus
 from maximor.db.session import session_scope
@@ -58,7 +58,7 @@ async def load_catalog(
     records, checksum = read_catalog(catalog_path)
 
     async with session_scope() as session:
-        result = await SkuRepository(session).load_catalog(
+        result = await CatalogIngestionRepository(session).load_catalog(
             organization_slug=organization_slug,
             organization_name=organization_name,
             version_identifier=catalog_version,

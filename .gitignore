@@ -7,3 +7,5 @@ __pycache__/
 .mypy_cache/
 .runtime/
 src/tests/test_results/
+
+docs/Take-Home-Project-Description.pdf

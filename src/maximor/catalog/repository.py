@@ -20,7 +20,7 @@ class CatalogLoadResult:
     source_checksum: str
 
 
-class SkuRepository:
+class CatalogIngestionRepository:
     """Repository for authoritative, tenant-scoped SKU catalog administration."""
 
     def __init__(self, session: AsyncSession) -> None:

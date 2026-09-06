@@ -5,8 +5,7 @@ from maximor.db.session import get_session_factory
 from maximor.jobs.dispatcher import JobDispatcher
 from maximor.jobs.types import JobType
 from maximor.storage import LocalObjectStorage
-from maximor.worker.handlers import PipelineSmokeTestHandler
-from maximor.worker.handlers import DocumentPreprocessingHandler
+from maximor.worker.handlers import PipelineSmokeTestHandler, DocumentPreprocessingHandler, DocumentAnalysisHandler
 from maximor.preprocessing.pdf_inspector import PypdfPdfInspector
 from maximor.preprocessing.text_extractor import PymupdfNativeTextExtractor
 from maximor.preprocessing.layout_extractor import PdfplumberLayoutExtractor
@@ -16,6 +15,7 @@ from maximor.preprocessing.quality import RuleBasedPageQualityEvaluator
 from maximor.preprocessing.ocr import TesseractOcrExtractor
 from maximor.preprocessing.service import DeterministicDocumentPreprocessor
 from maximor.preprocessing.persistence import PreprocessingResultRepository
+from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
 from maximor.worker.runner import WorkerRunner
 
 
@@ -27,12 +27,14 @@ def build_worker() -> WorkerRunner:
     storage = LocalObjectStorage(settings.local_storage_root)
     preprocessor = DeterministicDocumentPreprocessor(storage, PypdfPdfInspector(), PymupdfNativeTextExtractor(), PdfplumberLayoutExtractor(), PdfplumberTableExtractor(), PymupdfPageRenderer(storage), RuleBasedPageQualityEvaluator(), TesseractOcrExtractor(storage))
     results = PreprocessingResultRepository(session_factory, storage)
+    analysis_results = DocumentAnalysisPersistenceService(session_factory, storage)
     dispatcher = JobDispatcher(
         {
             JobType.PIPELINE_SMOKE_TEST: PipelineSmokeTestHandler(
                 session_factory, storage
             ),
             JobType.DOCUMENT_PREPROCESSING: DocumentPreprocessingHandler(session_factory, preprocessor, results),
+            JobType.DOCUMENT_ANALYSIS: DocumentAnalysisHandler(settings, session_factory, storage, analysis_results),
         }
     )
     return WorkerRunner(

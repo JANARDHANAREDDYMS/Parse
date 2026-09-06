@@ -8,7 +8,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from maximor.api.schemas import HealthResponse, JobResponse, UploadResponse
+from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse
+from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
+from maximor.document_analysis.errors import DocumentAnalysisError
 from maximor.config import DatabaseSettings, get_database_settings
 from maximor.db.health import check_database_health
 from maximor.db.session import get_session_factory
@@ -41,6 +43,9 @@ def create_app(
     app.state.settings = configured
     app.state.storage = storage or LocalObjectStorage(configured.local_storage_root)
     app.state.session_factory = session_factory or get_session_factory()
+    app.state.analysis_persistence = DocumentAnalysisPersistenceService(
+        app.state.session_factory, app.state.storage
+    )
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(
@@ -163,6 +168,45 @@ def create_app(
             completed_at=job.completed_at,
             error_code=job.error_code if job.status == "failed" else None,
             error_message=job.error_message if job.status == "failed" else None,
+        )
+
+    @app.get(
+        "/v1/organizations/{organization_id}/documents/{document_id}/analysis",
+        response_model=DocumentAnalysisResponse,
+    )
+    async def document_analysis_status(
+        request: Request, organization_id: uuid.UUID, document_id: uuid.UUID
+    ):
+        service = request.app.state.analysis_persistence
+        try:
+            run = await service.latest_run(
+                organization_id=organization_id, document_id=document_id
+            )
+            if run is None:
+                return error_response(404, "analysis_not_found", "Document analysis is unavailable.")
+            result = None
+            if run.status == "completed":
+                result = (await service.load_completed_result(
+                    organization_id=organization_id, analysis_run_id=run.id
+                )).model_dump(mode="json")
+        except DocumentAnalysisError:
+            return error_response(503, "analysis_unavailable", "Document analysis is unavailable.")
+        return DocumentAnalysisResponse(
+            analysis_run_id=run.id, document_id=run.document_id,
+            preprocessing_run_id=run.preprocessing_run_id, status=run.status,
+            attempt_number=run.attempt_number, model=run.model,
+            schema_version=run.schema_version,
+            preprocessing_schema_version=run.preprocessing_schema_version,
+            prompt_version=run.prompt_version, skill_version=run.skill_version,
+            agent_version=run.agent_version, started_at=run.started_at,
+            completed_at=run.completed_at, input_tokens=run.input_tokens,
+            output_tokens=run.output_tokens, tool_call_count=run.tool_call_count,
+            turn_count=run.turn_count,
+            reported_cost_usd=str(run.reported_cost_usd) if run.reported_cost_usd is not None else None,
+            terminal_reason=run.terminal_reason,
+            error_code=run.error_code if run.status == "failed" else None,
+            error_message=run.error_message if run.status == "failed" else None,
+            result=result,
         )
 
     return app

@@ -10,6 +10,7 @@ class JobType(StrEnum):
 
     PIPELINE_SMOKE_TEST = "pipeline_smoke_test"
     DOCUMENT_PREPROCESSING = "document_preprocessing"
+    DOCUMENT_ANALYSIS = "document_analysis"
 
 
 @dataclass(frozen=True)

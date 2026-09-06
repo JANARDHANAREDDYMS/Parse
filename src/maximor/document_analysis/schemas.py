@@ -17,6 +17,14 @@ Identifier = Annotated[
     Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$"),
 ]
 
+MAX_EVIDENCE_PER_ENTITY = 50
+MAX_CONTRACT_SECTIONS = 100
+MAX_PRICING_SECTIONS = 100
+MAX_GLOBAL_TERMS = 250
+MAX_PRODUCT_CANDIDATES = 500
+MAX_STATUS_ASSESSMENTS = 500
+MAX_DOCUMENT_EVIDENCE = 2_000
+
 
 class AnalysisModel(BaseModel):
     """Forbid undocumented semantic fields and keep result contracts immutable."""
@@ -78,8 +86,8 @@ class ContractStructure(AnalysisModel):
 
     structure_id: Identifier
     raw_label: str | None = Field(default=None, max_length=500)
-    raw_value: str | None = Field(default=None, max_length=10_000)
-    evidence: tuple[EvidenceReference, ...] = ()
+    raw_value: str | None = Field(default=None, max_length=4_000)
+    evidence: tuple[EvidenceReference, ...] = Field(default=(), max_length=MAX_EVIDENCE_PER_ENTITY)
 
 
 class PricingSection(AnalysisModel):
@@ -87,17 +95,17 @@ class PricingSection(AnalysisModel):
 
     section_id: Identifier
     raw_title: str | None = Field(default=None, max_length=500)
-    raw_text: str | None = Field(default=None, max_length=20_000)
-    evidence: tuple[EvidenceReference, ...] = ()
+    raw_text: str | None = Field(default=None, max_length=8_000)
+    evidence: tuple[EvidenceReference, ...] = Field(default=(), max_length=MAX_EVIDENCE_PER_ENTITY)
 
 
 class GlobalTerm(AnalysisModel):
     """Represent one raw document-wide term without deterministic normalization."""
 
     term_id: Identifier
-    raw_name: str
-    raw_value: str | None = Field(default=None, max_length=10_000)
-    evidence: tuple[EvidenceReference, ...] = ()
+    raw_name: str = Field(min_length=1, max_length=500)
+    raw_value: str | None = Field(default=None, max_length=4_000)
+    evidence: tuple[EvidenceReference, ...] = Field(default=(), max_length=MAX_EVIDENCE_PER_ENTITY)
 
 
 class ProductCandidate(AnalysisModel):
@@ -110,18 +118,18 @@ class ProductCandidate(AnalysisModel):
     candidate_id: Identifier
     raw_name: str = Field(min_length=1, max_length=2_000)
     raw_attributes: dict[str, str | None] = Field(default_factory=dict)
-    evidence: tuple[EvidenceReference, ...] = ()
+    evidence: tuple[EvidenceReference, ...] = Field(default=(), max_length=MAX_EVIDENCE_PER_ENTITY)
 
     @model_validator(mode="after")
     def raw_attributes_are_bounded(self) -> "ProductCandidate":
         """Keep variable raw attributes compact while rejecting SKU-like mapping fields."""
 
-        if len(self.raw_attributes) > 50:
+        if len(self.raw_attributes) > 25:
             raise ValueError("product candidate has too many raw attributes")
         forbidden = {"sku", "sku_id", "sku_code", "mapped_sku", "final_sku"}
         if forbidden.intersection(key.lower() for key in self.raw_attributes):
             raise ValueError("product candidates must not contain SKU mapping values")
-        if any(not key or len(key) > 100 or (value is not None and len(value) > 10_000)
+        if any(not key or len(key) > 100 or (value is not None and len(value) > 2_000)
                for key, value in self.raw_attributes.items()):
             raise ValueError("product candidate raw attributes exceed safe bounds")
         return self
@@ -133,8 +141,8 @@ class CommercialStatusAssessment(AnalysisModel):
     assessment_id: Identifier
     status: CommercialStatus
     candidate_id: Identifier | None = None
-    raw_rationale: str | None = Field(default=None, max_length=10_000)
-    evidence: tuple[EvidenceReference, ...] = ()
+    raw_rationale: str | None = Field(default=None, max_length=4_000)
+    evidence: tuple[EvidenceReference, ...] = Field(default=(), max_length=MAX_EVIDENCE_PER_ENTITY)
 
 
 class DocumentAnalysisResult(AnalysisModel):
@@ -147,12 +155,12 @@ class DocumentAnalysisResult(AnalysisModel):
     preprocessing_schema_version: str = Field(min_length=1, max_length=50)
     prompt_version: str = Field(min_length=1, max_length=100)
     agent_version: str = Field(min_length=1, max_length=100)
-    contract_structure: tuple[ContractStructure, ...] = ()
-    pricing_sections: tuple[PricingSection, ...] = ()
-    global_terms: tuple[GlobalTerm, ...] = ()
-    product_candidates: tuple[ProductCandidate, ...] = ()
-    commercial_statuses: tuple[CommercialStatusAssessment, ...] = ()
-    evidence_references: tuple[EvidenceReference, ...] = ()
+    contract_structure: tuple[ContractStructure, ...] = Field(default=(), max_length=MAX_CONTRACT_SECTIONS)
+    pricing_sections: tuple[PricingSection, ...] = Field(default=(), max_length=MAX_PRICING_SECTIONS)
+    global_terms: tuple[GlobalTerm, ...] = Field(default=(), max_length=MAX_GLOBAL_TERMS)
+    product_candidates: tuple[ProductCandidate, ...] = Field(default=(), max_length=MAX_PRODUCT_CANDIDATES)
+    commercial_statuses: tuple[CommercialStatusAssessment, ...] = Field(default=(), max_length=MAX_STATUS_ASSESSMENTS)
+    evidence_references: tuple[EvidenceReference, ...] = Field(default=(), max_length=MAX_DOCUMENT_EVIDENCE)
 
     @model_validator(mode="after")
     def identifiers_are_unique_and_ordered(self) -> "DocumentAnalysisResult":

@@ -1,8 +1,12 @@
-"""Run a bounded Claude Agent SDK loop over request-scoped persisted document tools.
+"""Run a bounded Claude Agent SDK loop over one fixed SKU-mapping task.
 
-The concrete agent receives identifiers and a typed toolset, returns validated
-semantic output plus small operational metrics, and does not persist results or
-connect to workers. It never exposes arbitrary files, SQL, or unrestricted tools.
+The concrete agent receives one task and a typed toolset, returns a validated
+decision plus small operational metrics, and does not persist decisions or
+connect to workers. It never exposes arbitrary files, SQL, or unrestricted
+tools. Unlike `document_analysis`'s request (identifiers only, content
+discovered through tools), `SkuMappingTask` already carries its candidate's
+compact content — so the prompt below includes that content directly rather
+than requiring a tool call to discover it.
 """
 
 import asyncio
@@ -18,52 +22,57 @@ import claude_agent_sdk as sdk
 from pydantic import ValidationError
 
 from maximor.config import DatabaseSettings
+from maximor.document_analysis.tool_schemas import EvidenceRegionInput
+from maximor.sku_mapping.contracts import SkuMappingTask, SkuMappingToolset
+from maximor.sku_mapping.errors import (
+    SkuMappingConfigurationError,
+    SkuMappingNotConfiguredError,
+    SkuMappingRuntimeError,
+    SkuMappingToolError,
+    SkuMappingValidationError,
+)
+from maximor.sku_mapping.schemas import MAX_RETRIEVED_SKUS, SkuMappingDecision, SkuRecord
+from maximor.sku_mapping.tool_schemas import GetAuthoritativeSkuInput, RetrieveSkusInput
+from maximor.sku_mapping.validation import validate_sku_mapping_decision
 
-from maximor.document_analysis.contracts import DocumentAnalysisRequest, DocumentAnalysisToolset
-from maximor.document_analysis.errors import (DocumentAnalysisConfigurationError, DocumentAnalysisNotConfiguredError, DocumentAnalysisRuntimeError, DocumentAnalysisValidationError, DocumentToolError)
-from maximor.document_analysis.schemas import DocumentAnalysisResult
-from maximor.document_analysis.tool_schemas import (EvidenceRegionInput, GetPageBlocksInput, GetPageRenderInput, GetPageTablesInput, GetPageTextInput, SearchDocumentInput, ToolScope)
-from maximor.document_analysis.validation import validate_document_analysis_result
 
+class SkuMappingAgent(Protocol):
+    """Decide MATCH/NO_MATCH/AMBIGUOUS for one fixed candidate through typed narrow tools."""
 
-class DocumentAnalysisAgent(Protocol):
-    """Analyze selected persisted preprocessing evidence through typed narrow tools."""
-
-    async def analyze(
+    async def decide(
         self,
-        request: DocumentAnalysisRequest,
-        tools: DocumentAnalysisToolset,
-    ) -> DocumentAnalysisResult:
-        """Return a validated semantic result without performing SKU mapping."""
+        task: SkuMappingTask,
+        tools: SkuMappingToolset,
+    ) -> SkuMappingDecision:
+        """Return a validated mapping decision without persisting anything."""
 
         ...
 
 
-class UnconfiguredDocumentAnalysisAgent:
+class UnconfiguredSkuMappingAgent:
     """Fail explicitly until a concrete tool-using agent implementation is configured."""
 
-    async def analyze(
+    async def decide(
         self,
-        request: DocumentAnalysisRequest,
-        tools: DocumentAnalysisToolset,
-    ) -> DocumentAnalysisResult:
-        """Raise a typed failure and never synthesize a fake successful analysis."""
+        task: SkuMappingTask,
+        tools: SkuMappingToolset,
+    ) -> SkuMappingDecision:
+        """Raise a typed failure and never synthesize a fake successful decision."""
 
-        del request, tools
-        raise DocumentAnalysisNotConfiguredError
+        del task, tools
+        raise SkuMappingNotConfiguredError
 
 
-READ_ONLY_TOOL_NAMES = (
-    "get_document_overview", "search_document", "get_page_text", "get_page_blocks",
-    "get_page_tables", "get_page_render", "get_evidence_region",
-)
-FINALIZER_TOOL_NAME = "finalize_document_analysis"
+READ_ONLY_TOOL_NAMES = ("retrieve_skus", "get_authoritative_sku", "get_evidence_region")
+FINALIZER_TOOL_NAME = "submit_sku_mapping_decision"
 TOOL_NAMES = (*READ_ONLY_TOOL_NAMES, FINALIZER_TOOL_NAME)
-MCP_SERVER_NAME = "maximor_document"
+MCP_SERVER_NAME = "maximor_sku_mapping"
 MCP_TOOL_NAMES = tuple(f"mcp__{MCP_SERVER_NAME}__{name}" for name in TOOL_NAMES)
-CONTENT_TOOL_NAMES = ("search_document", "get_page_text", "get_page_blocks", "get_page_tables", "get_page_render")
-OUTPUT_COLLECTION_NAMES = ("contract_structure", "pricing_sections", "global_terms", "product_candidates", "commercial_statuses", "evidence_references")
-TRUSTED_IDENTITY_FIELDS = {"schema_version", "organization_id", "document_id", "preprocessing_run_id", "preprocessing_schema_version", "prompt_version", "skill_version", "agent_version"}
+OUTPUT_COLLECTION_NAMES = ("considered_sku_ids", "evidence")
+TRUSTED_IDENTITY_FIELDS = {
+    "schema_version", "organization_id", "document_id", "preprocessing_run_id",
+    "analysis_run_id", "candidate_id", "catalog_version_id",
+}
 MAX_RUNTIME_TIMING_EVENTS = 200
 MAX_RUNTIME_TOOL_DIAGNOSTICS = 100
 FINALIZER_RESULT_GRACE_SECONDS = 2.0
@@ -71,17 +80,27 @@ FINALIZER_RESULT_GRACE_SECONDS = 2.0
 
 @dataclass
 class _FinalizationCapture:
-    """Keep one request-scoped accepted result in memory without persistence."""
+    """Keep one request-scoped accepted decision in memory without persistence."""
 
     accepted_event: asyncio.Event = field(default_factory=asyncio.Event)
     rejection_event: asyncio.Event = field(default_factory=asyncio.Event)
-    accepted_result: DocumentAnalysisResult | None = None
+    accepted_result: SkuMappingDecision | None = None
     correctable_rejection_seen: bool = False
 
 
 @dataclass
-class DocumentAnalysisRuntimeSummary:
-    """Keep bounded operational facts for one invocation, never document bodies or secrets."""
+class SkuMappingRuntimeSummary:
+    """Keep bounded operational facts for one invocation, never document bodies or secrets.
+
+    `catalog_version_id` and `authoritative_skus_by_id` have no equivalent in
+    `DocumentAnalysisRuntimeSummary`: they exist because `retrieve_skus` and
+    `get_authoritative_sku` must stay pinned to one catalog snapshot within an
+    invocation, and because `validate_sku_mapping_decision` cross-checks a
+    proposed `MATCH` against whatever this runtime's own successful
+    `get_authoritative_sku` calls actually confirmed, rather than re-querying
+    the database itself.
+    """
+
     request_id: uuid.UUID
     started_at: datetime
     monotonic_started_at: float = field(default_factory=time.monotonic, repr=False)
@@ -94,6 +113,8 @@ class DocumentAnalysisRuntimeSummary:
     failed_tool_calls_by_name: dict[str, int] = field(default_factory=dict)
     referenced_pages: tuple[int, ...] = ()
     referenced_evidence_ids: tuple[str, ...] = ()
+    catalog_version_id: uuid.UUID | None = None
+    authoritative_skus_by_id: dict[uuid.UUID, SkuRecord] = field(default_factory=dict)
     input_tokens: int | None = None
     cache_creation_input_tokens: int | None = None
     cache_read_input_tokens: int | None = None
@@ -250,8 +271,10 @@ class DocumentAnalysisRuntimeSummary:
             "validation_issue_codes": list(self.validation_issue_codes[:50]),
             "validation_issues": list(self.validation_issues[:50]),
             "successful_tool_call_order": list(self.successful_tool_call_order[:100]),
-            "successful_overview_call_count": self.tool_calls_by_name.get("get_document_overview", 0),
-            "successful_content_retrieval_count": sum(self.tool_calls_by_name.get(name, 0) for name in CONTENT_TOOL_NAMES),
+            "successful_retrieval_count": self.tool_calls_by_name.get("retrieve_skus", 0),
+            "successful_authoritative_lookup_count": self.tool_calls_by_name.get("get_authoritative_sku", 0),
+            "catalog_version_id": str(self.catalog_version_id) if self.catalog_version_id else None,
+            "confirmed_sku_count": len(self.authoritative_skus_by_id),
             "pages_accessed": list(self.referenced_pages[:100]),
             "structured_output_present": self.structured_output_present,
             "output_field_names": list(self.output_field_names[:50]),
@@ -289,17 +312,21 @@ class DocumentAnalysisRuntimeSummary:
 
 
 @dataclass(frozen=True)
-class DocumentAnalysisExecution:
-    """Return validated semantic output and non-semantic runtime summary together."""
-    result: DocumentAnalysisResult
-    runtime: DocumentAnalysisRuntimeSummary
+class SkuMappingExecution:
+    """Return a validated decision and non-semantic runtime summary together."""
+
+    decision: SkuMappingDecision
+    runtime: SkuMappingRuntimeSummary
 
 
-class ClaudeDocumentAnalysisAgent:
-    """Use Claude through seven read-only tools and one in-memory submission tool.
+class ClaudeSkuMappingAgent:
+    """Use Claude through three read-only tools and one in-memory submission tool.
 
-    Claude receives operation-only arguments; tenant/run scope is captured from the
-    trusted request. This class performs no persistence, scheduling, or SKU mapping.
+    Claude receives the fixed candidate's compact content directly in the
+    prompt (not through a tool call) and operation-only tool arguments; trusted
+    identity and catalog-version scope are captured from the task and the
+    runtime's own successful `retrieve_skus` call. This class performs no
+    persistence, scheduling, or catalog administration.
     """
 
     def __init__(
@@ -316,21 +343,21 @@ class ClaudeDocumentAnalysisAgent:
         self._monotonic_clock = monotonic_clock
         self._utc_clock = utc_clock
 
-    def build_options(self, request: DocumentAnalysisRequest, tools: DocumentAnalysisToolset) -> sdk.ClaudeAgentOptions:
-        """Build isolated SDK options with seven readers and one guarded finalizer."""
+    def build_options(self, task: SkuMappingTask, tools: SkuMappingToolset) -> sdk.ClaudeAgentOptions:
+        """Build isolated SDK options with three readers and one guarded finalizer."""
         key = self._settings.anthropic_api_key
         if key is None or not key.get_secret_value():
-            raise DocumentAnalysisConfigurationError
-        adapters, runtime = self._build_adapters(request, tools)
+            raise SkuMappingConfigurationError
+        adapters, runtime = self._build_adapters(task, tools)
         server = sdk.create_sdk_mcp_server(MCP_SERVER_NAME, tools=adapters)
         options = sdk.ClaudeAgentOptions(
             tools=[], allowed_tools=list(MCP_TOOL_NAMES), disallowed_tools=["Bash", "Read", "Write", "Edit", "Glob", "Grep", "WebSearch"],
             mcp_servers={MCP_SERVER_NAME: server}, strict_mcp_config=True,
-            model=self._settings.document_analysis_model, max_turns=self._settings.document_analysis_max_turns,
-            max_thinking_tokens=self._settings.document_analysis_max_thinking_tokens,
-            max_budget_usd=self._settings.document_analysis_max_budget_usd,
-            cwd=self._settings.document_analysis_project_root.resolve(), settings=None,
-            setting_sources=["project"], skills=["order-form-analysis"], plugins=[],
+            model=self._settings.sku_mapping_model, max_turns=self._settings.sku_mapping_max_turns,
+            max_thinking_tokens=self._settings.sku_mapping_max_thinking_tokens,
+            max_budget_usd=self._settings.sku_mapping_max_budget_usd,
+            cwd=self._settings.sku_mapping_project_root.resolve(), settings=None,
+            setting_sources=["project"], skills=["sku-mapping"], plugins=[],
             env={"ANTHROPIC_API_KEY": key.get_secret_value()},
         )
         runtime.mcp_server_status = "configured"
@@ -339,23 +366,23 @@ class ClaudeDocumentAnalysisAgent:
         object.__setattr__(options, "_maximor_adapters", adapters)
         return options
 
-    async def analyze(self, request: DocumentAnalysisRequest, tools: DocumentAnalysisToolset) -> DocumentAnalysisResult:
-        """Run analysis and return the validated semantic result required by the agent protocol."""
-        return (await self.execute(request, tools)).result
+    async def decide(self, task: SkuMappingTask, tools: SkuMappingToolset) -> SkuMappingDecision:
+        """Run mapping and return the validated decision required by the agent protocol."""
+        return (await self.execute(task, tools)).decision
 
     async def execute(
         self,
-        request: DocumentAnalysisRequest,
-        tools: DocumentAnalysisToolset,
-    ) -> DocumentAnalysisExecution:
-        """Run the bounded SDK loop and return semantic output with bounded runtime metrics."""
-        options = self.build_options(request, tools)
+        task: SkuMappingTask,
+        tools: SkuMappingToolset,
+    ) -> SkuMappingExecution:
+        """Run the bounded SDK loop and return a decision with bounded runtime metrics."""
+        options = self.build_options(task, tools)
         runtime = getattr(options, "_maximor_runtime")
-        result: DocumentAnalysisResult | None = None
+        result: SkuMappingDecision | None = None
         client: Any | None = None
         stage = "initialization"
         try:
-            async with asyncio.timeout(self._settings.document_analysis_timeout_seconds):
+            async with asyncio.timeout(self._settings.sku_mapping_timeout_seconds):
                 initialization_started_at = self._utc_clock()
                 runtime.session_initialization_started_at = initialization_started_at
                 runtime._session_initialization_monotonic_started_at = self._monotonic_clock()
@@ -367,7 +394,7 @@ class ClaudeDocumentAnalysisAgent:
                 client = self._client_factory(options)
                 local_tools = await self._configured_mcp_tool_names(options)
                 if local_tools != tuple(sorted(TOOL_NAMES)):
-                    raise DocumentAnalysisRuntimeError("document_analysis_mcp_tool_discovery_failed", runtime=runtime)
+                    raise SkuMappingRuntimeError("sku_mapping_mcp_tool_discovery_failed", runtime=runtime)
                 runtime.announced_tool_names = local_tools
                 runtime.mcp_server_status = "local_verified"
                 await client.connect()
@@ -394,17 +421,17 @@ class ClaudeDocumentAnalysisAgent:
                     monotonic_now=initialization_finished_monotonic, succeeded=True,
                 )
                 stage = "transport"
-                await client.query(self._prompt(request))
+                await client.query(self._prompt(task))
                 capture = getattr(runtime, "_finalization_capture")
                 result = await self._await_finalization(client, runtime, capture)
         except TimeoutError:
             runtime.terminal_reason = "timeout"
             runtime.record_terminal("timeout", self._utc_clock(), self._monotonic_clock())
-            raise DocumentAnalysisRuntimeError("document_analysis_timeout", runtime=runtime) from None
-        except DocumentAnalysisRuntimeError:
+            raise SkuMappingRuntimeError("sku_mapping_timeout", runtime=runtime) from None
+        except SkuMappingRuntimeError:
             runtime.record_terminal("failure", self._utc_clock(), self._monotonic_clock())
             raise
-        except DocumentAnalysisValidationError:
+        except SkuMappingValidationError:
             runtime.record_terminal("validation_failure", self._utc_clock(), self._monotonic_clock())
             raise
         except asyncio.CancelledError:
@@ -412,9 +439,9 @@ class ClaudeDocumentAnalysisAgent:
             runtime.record_terminal("cancelled", self._utc_clock(), self._monotonic_clock())
             raise
         except Exception:
-            code = "document_analysis_sdk_initialization_failed" if stage == "initialization" else "document_analysis_sdk_transport_failed"
+            code = "sku_mapping_sdk_initialization_failed" if stage == "initialization" else "sku_mapping_sdk_transport_failed"
             runtime.record_terminal("failure", self._utc_clock(), self._monotonic_clock())
-            raise DocumentAnalysisRuntimeError(code, runtime=runtime) from None
+            raise SkuMappingRuntimeError(code, runtime=runtime) from None
         finally:
             if runtime.session_initialization_started_at is not None and runtime.session_initialization_completed_at is None:
                 runtime.session_initialization_completed_at = self._utc_clock()
@@ -446,13 +473,13 @@ class ClaudeDocumentAnalysisAgent:
                         runtime.terminal_reason = "cleanup_failed"
             runtime.finalize_timing(self._utc_clock(), self._monotonic_clock())
         if result is None:
-            raise DocumentAnalysisValidationError(runtime=runtime)
-        return DocumentAnalysisExecution(result=result, runtime=runtime)
+            raise SkuMappingValidationError(runtime=runtime)
+        return SkuMappingExecution(decision=result, runtime=runtime)
 
     async def _await_finalization(
-        self, client: Any, runtime: DocumentAnalysisRuntimeSummary,
+        self, client: Any, runtime: SkuMappingRuntimeSummary,
         capture: _FinalizationCapture,
-    ) -> DocumentAnalysisResult:
+    ) -> SkuMappingDecision:
         """Wait for an accepted in-memory submission or a safe terminal SDK outcome."""
 
         response_task = asyncio.create_task(
@@ -475,22 +502,22 @@ class ClaudeDocumentAnalysisAgent:
                 )
             if rejected_task in done:
                 await self._cancel_response_task(client, response_task)
-                raise DocumentAnalysisValidationError(runtime=runtime)
+                raise SkuMappingValidationError(runtime=runtime)
             terminal = await response_task
             if terminal is None:
                 runtime.failure_stage = "finalizer_not_called"
-                raise DocumentAnalysisRuntimeError(
-                    "document_analysis_finalizer_not_called", runtime=runtime,
+                raise SkuMappingRuntimeError(
+                    "sku_mapping_finalizer_not_called", runtime=runtime,
                 )
             if terminal.is_error or runtime.sdk_terminal_reason in {
                 "max_turns", "timeout", "budget", "aborted_streaming", "aborted_tools",
             }:
-                raise DocumentAnalysisRuntimeError(
+                raise SkuMappingRuntimeError(
                     self._terminal_code(runtime.sdk_terminal_reason, terminal), runtime=runtime,
                 )
             runtime.failure_stage = "finalizer_not_called"
-            raise DocumentAnalysisRuntimeError(
-                "document_analysis_finalizer_not_called", runtime=runtime,
+            raise SkuMappingRuntimeError(
+                "sku_mapping_finalizer_not_called", runtime=runtime,
             )
         finally:
             for task in (accepted_task, rejected_task):
@@ -499,14 +526,14 @@ class ClaudeDocumentAnalysisAgent:
             await asyncio.gather(accepted_task, rejected_task, return_exceptions=True)
 
     async def _complete_accepted_finalization(
-        self, client: Any, runtime: DocumentAnalysisRuntimeSummary,
+        self, client: Any, runtime: SkuMappingRuntimeSummary,
         capture: _FinalizationCapture, response_task: asyncio.Task,
-    ) -> DocumentAnalysisResult:
-        """Return an accepted result after a short optional terminal-message grace period."""
+    ) -> SkuMappingDecision:
+        """Return an accepted decision after a short optional terminal-message grace period."""
 
         result = capture.accepted_result
         if result is None:
-            raise DocumentAnalysisValidationError(runtime=runtime)
+            raise SkuMappingValidationError(runtime=runtime)
         runtime.terminal_reason = "accepted_by_finalizer"
         runtime.record_terminal(
             "accepted_by_finalizer", self._utc_clock(), self._monotonic_clock(),
@@ -534,7 +561,7 @@ class ClaudeDocumentAnalysisAgent:
         await asyncio.gather(response_task, return_exceptions=True)
 
     async def _receive_terminal_result(
-        self, client: Any, runtime: DocumentAnalysisRuntimeSummary,
+        self, client: Any, runtime: SkuMappingRuntimeSummary,
     ) -> sdk.ResultMessage | None:
         """Receive a terminal SDK message for metrics without accepting semantic output from it."""
 
@@ -553,17 +580,17 @@ class ClaudeDocumentAnalysisAgent:
         return terminal
 
     def _validate_structured_output(
-        self, request: DocumentAnalysisRequest, structured: Any,
-        runtime: DocumentAnalysisRuntimeSummary,
-    ) -> tuple[DocumentAnalysisResult | None, bool]:
-        """Validate one proposed result and retain only bounded value-free failure facts."""
+        self, task: SkuMappingTask, structured: Any,
+        runtime: SkuMappingRuntimeSummary,
+    ) -> tuple[SkuMappingDecision | None, bool]:
+        """Validate one proposed decision and retain only bounded value-free failure facts."""
 
         self._capture_output_shape(runtime, structured)
         if structured is None:
             runtime.failure_stage = "structured_output_missing"
             return None, False
         try:
-            result = DocumentAnalysisResult.model_validate(self._normalize_structured_order(structured))
+            decision = SkuMappingDecision.model_validate(structured)
         except ValidationError as exc:
             runtime.failure_stage = "pydantic_schema_validation"
             runtime.pydantic_errors = self._safe_pydantic_errors(exc)
@@ -572,25 +599,28 @@ class ClaudeDocumentAnalysisAgent:
                 for detail in runtime.pydantic_errors
             )
             return None, bool(runtime.pydantic_errors) and correctable
-        if (result.organization_id != request.organization_id or result.document_id != request.document_id or result.preprocessing_run_id != request.preprocessing_run_id or result.schema_version != request.document_analysis_schema_version or result.preprocessing_schema_version != request.preprocessing_schema_version or result.prompt_version != request.prompt_version or result.agent_version != request.agent_version):
+        if (decision.organization_id, decision.document_id, decision.preprocessing_run_id, decision.analysis_run_id, decision.candidate_id) != (task.organization_id, task.document_id, task.preprocessing_run_id, task.analysis_run_id, task.candidate_id):
             runtime.failure_stage = "trusted_identity_mismatch"
             runtime.validation_issue_codes = ("identity_or_version_mismatch",)
             return None, False
-        issues = validate_document_analysis_result(request, result, runtime)
+        issues = validate_sku_mapping_decision(task, decision, runtime)
         if issues:
             runtime.validation_issue_codes = tuple(issue.code for issue in issues[:50])
             runtime.validation_issues = tuple(
                 {"code": issue.code[:64], "location": self._safe_location(issue.location)}
                 for issue in issues[:50]
             )
-            evidence_codes = {"ungrounded_material_conclusion", "evidence_run_mismatch"}
-            runtime.failure_stage = "evidence_validation_failure" if any(issue.code in evidence_codes for issue in issues) else "completion_gate_failure"
+            runtime.failure_stage = (
+                "evidence_validation_failure"
+                if any(issue.code == "evidence_not_grounded_in_task" for issue in issues)
+                else "completion_gate_failure"
+            )
             return None, all(issue.correctable for issue in issues)
         runtime.failure_stage = None
         runtime.pydantic_errors = ()
         runtime.validation_issue_codes = ()
         runtime.validation_issues = ()
-        return result, False
+        return decision, False
 
     @staticmethod
     def _safe_pydantic_errors(exc: ValidationError) -> tuple[dict[str, str], ...]:
@@ -602,8 +632,8 @@ class ClaudeDocumentAnalysisAgent:
             for part in error.get("loc", ())[:8]:
                 value = str(part)
                 location_parts.append(value if value.replace("_", "").replace("-", "").isalnum() and len(value) <= 64 else "field")
-            error_type = ClaudeDocumentAnalysisAgent._map_pydantic_error(error)
-            details.append({"location": ".".join(location_parts) or "result", "type": error_type})
+            error_type = ClaudeSkuMappingAgent._map_pydantic_error(error)
+            details.append({"location": ".".join(location_parts) or "decision", "type": error_type})
         return tuple(details)
 
     @staticmethod
@@ -615,13 +645,13 @@ class ClaudeDocumentAnalysisAgent:
         if isinstance(context, dict):
             text = f"{text} {context.get('error', '')}".lower()
         mappings = (
-            ("duplicate_identifier", ("unique and ordered", "duplicate")),
-            ("identifiers_not_canonical", ("must be canonical",)),
-            ("unknown_status_candidate", ("unknown product candidate",)),
-            ("evidence_run_mismatch", ("evidence references must belong",)),
-            ("candidate_contains_sku_mapping", ("sku mapping", "sku decision")),
-            ("candidate_attribute_bounds_exceeded", ("raw attributes", "too many raw attributes")),
-            ("evidence_target_invalid", ("exactly one block_id", "table evidence must", "representation requires table_id")),
+            ("match_missing_sku_fields", ("requires sku_id, sku_code, and sku_name",)),
+            ("non_match_carries_sku_fields", ("only a match decision may carry",)),
+            ("ambiguous_missing_considered_skus", ("at least two considered skus",)),
+            ("considered_skus_duplicated", ("must not repeat",)),
+            ("non_ambiguous_carries_considered_skus", ("only an ambiguous decision may carry",)),
+            ("decision_missing_evidence", ("requires at least one evidence reference",)),
+            ("decision_evidence_run_mismatch", ("evidence must belong to the decision's preprocessing run",)),
         )
         for code, needles in mappings:
             if any(needle in text for needle in needles):
@@ -629,33 +659,13 @@ class ClaudeDocumentAnalysisAgent:
         return str(error.get("type", "validation_error"))[:64]
 
     @staticmethod
-    def _normalize_structured_order(structured: Any) -> Any:
-        """Sort stable-ID collections without repairing duplicates or references."""
-
-        if not isinstance(structured, dict):
-            return structured
-        normalized = copy.deepcopy(structured)
-        collection_keys = (
-            ("contract_structure", "structure_id"),
-            ("pricing_sections", "section_id"),
-            ("global_terms", "term_id"),
-            ("product_candidates", "candidate_id"),
-            ("commercial_statuses", "assessment_id"),
-        )
-        for collection, identifier in collection_keys:
-            values = normalized.get(collection)
-            if isinstance(values, list) and all(isinstance(item, dict) and identifier in item for item in values):
-                normalized[collection] = sorted(values, key=lambda item: str(item[identifier]))
-        return normalized
-
-    @staticmethod
     def _safe_location(location: str) -> str:
         """Bound an issue location to identifier-safe characters without field values."""
 
-        return location[:200] if location and all(character.isalnum() or character in "._:-[]" for character in location[:200]) else "result"
+        return location[:200] if location and all(character.isalnum() or character in "._:-[]" for character in location[:200]) else "decision"
 
     @staticmethod
-    def _capture_output_shape(runtime: DocumentAnalysisRuntimeSummary, structured: Any) -> None:
+    def _capture_output_shape(runtime: SkuMappingRuntimeSummary, structured: Any) -> None:
         """Record expected top-level field names and collection counts without values."""
 
         runtime.structured_output_present = structured is not None
@@ -663,7 +673,7 @@ class ClaudeDocumentAnalysisAgent:
             runtime.output_field_names = ()
             runtime.output_collection_counts = {}
             return
-        expected = set(DocumentAnalysisResult.model_fields)
+        expected = set(SkuMappingDecision.model_fields)
         runtime.output_field_names = tuple(sorted(str(name) for name in structured if name in expected))
         runtime.output_collection_counts = {
             name: len(structured[name])
@@ -675,7 +685,7 @@ class ClaudeDocumentAnalysisAgent:
     def _finalizer_input_schema() -> dict[str, Any]:
         """Derive a semantic-only submission schema with trusted fields removed."""
 
-        result_schema = copy.deepcopy(DocumentAnalysisResult.model_json_schema())
+        result_schema = copy.deepcopy(SkuMappingDecision.model_json_schema())
         definitions = result_schema.pop("$defs", None)
         properties = result_schema.get("properties", {})
         required = result_schema.get("required", [])
@@ -683,29 +693,35 @@ class ClaudeDocumentAnalysisAgent:
             properties.pop(field_name, None)
             if field_name in required:
                 required.remove(field_name)
-        schema = _schema({"result": result_schema}, ["result"])
+        schema = _schema({"decision": result_schema}, ["decision"])
         # Pydantic references definitions from the schema root, not its nested
-        # ``result`` property; preserve them at the finalizer input root.
+        # ``decision`` property; preserve them at the finalizer input root.
         if definitions:
             schema["$defs"] = definitions
         return schema
 
     @staticmethod
-    def _trusted_result_fields(request: DocumentAnalysisRequest) -> dict[str, Any]:
-        """Return only application-owned result identity and version values."""
+    def _trusted_result_fields(task: SkuMappingTask, runtime: SkuMappingRuntimeSummary) -> dict[str, Any]:
+        """Return only application-owned decision identity and catalog-version values.
+
+        `catalog_version_id` comes from the runtime, not the task: it is only
+        known once this invocation's own `retrieve_skus` call has actually
+        run, so the finalizer can never accept a decision scoped to a
+        different catalog snapshot than the one this invocation retrieved.
+        """
 
         return {
-            "organization_id": str(request.organization_id),
-            "document_id": str(request.document_id),
-            "preprocessing_run_id": str(request.preprocessing_run_id),
-            "schema_version": request.document_analysis_schema_version,
-            "preprocessing_schema_version": request.preprocessing_schema_version,
-            "prompt_version": request.prompt_version,
-            "agent_version": request.agent_version,
+            "schema_version": task.schema_version,
+            "organization_id": str(task.organization_id),
+            "document_id": str(task.document_id),
+            "preprocessing_run_id": str(task.preprocessing_run_id),
+            "analysis_run_id": str(task.analysis_run_id),
+            "candidate_id": task.candidate_id,
+            "catalog_version_id": str(runtime.catalog_version_id) if runtime.catalog_version_id else None,
         }
 
     @staticmethod
-    def _safe_finalizer_issues(runtime: DocumentAnalysisRuntimeSummary) -> list[dict[str, str]]:
+    def _safe_finalizer_issues(runtime: SkuMappingRuntimeSummary) -> list[dict[str, str]]:
         """Return only bounded issue codes and locations to the correction call."""
 
         issues = [
@@ -717,10 +733,10 @@ class ClaudeDocumentAnalysisAgent:
                 {"code": item["code"], "location": item["location"]}
                 for item in runtime.validation_issues[:50]
             ]
-        return issues or [{"code": "invalid_finalization_input", "location": "result"}]
+        return issues or [{"code": "invalid_finalization_input", "location": "decision"}]
 
     @staticmethod
-    def _accumulate_usage(runtime: DocumentAnalysisRuntimeSummary, message: sdk.ResultMessage) -> None:
+    def _accumulate_usage(runtime: SkuMappingRuntimeSummary, message: sdk.ResultMessage) -> None:
         """Accumulate token classes and per-model usage while trusting SDK total cost."""
 
         usage = message.usage or {}
@@ -764,45 +780,62 @@ class ClaudeDocumentAnalysisAgent:
             return ()
 
     @staticmethod
-    async def _confirm_mcp_ready(client: Any, runtime: DocumentAnalysisRuntimeSummary) -> None:
+    async def _confirm_mcp_ready(client: Any, runtime: SkuMappingRuntimeSummary) -> None:
         """Record SDK MCP status, treating an idle absent in-process server as not reported."""
 
         try:
             status = await client.get_mcp_status()
         except Exception:
-            raise DocumentAnalysisRuntimeError("document_analysis_mcp_initialization_failed", runtime=runtime) from None
+            raise SkuMappingRuntimeError("sku_mapping_mcp_initialization_failed", runtime=runtime) from None
         servers = status.get("mcpServers", ()) if isinstance(status, dict) else ()
         server = next((item for item in servers if item.get("name") == MCP_SERVER_NAME), None)
         if server is None:
             runtime.mcp_server_status = "not_reported"
             return
         if server.get("status") == "failed":
-            raise DocumentAnalysisRuntimeError("document_analysis_mcp_initialization_failed", runtime=runtime)
+            raise SkuMappingRuntimeError("sku_mapping_mcp_initialization_failed", runtime=runtime)
         if server.get("status") == "connected":
             discovered = tuple(sorted(item.get("name") for item in server.get("tools", ()) if item.get("name")))
             if discovered != tuple(sorted(TOOL_NAMES)):
-                raise DocumentAnalysisRuntimeError("document_analysis_mcp_tool_discovery_failed", runtime=runtime)
+                raise SkuMappingRuntimeError("sku_mapping_mcp_tool_discovery_failed", runtime=runtime)
             runtime.mcp_server_status = "connected"
             runtime.announced_tool_names = discovered
             return
-        raise DocumentAnalysisRuntimeError("document_analysis_mcp_initialization_failed", runtime=runtime)
+        raise SkuMappingRuntimeError("sku_mapping_mcp_initialization_failed", runtime=runtime)
 
     @staticmethod
-    def _prompt(request: DocumentAnalysisRequest) -> str:
-        """Build compact identifier-only instructions without document content or paths."""
-        return ("Analyze the referenced preprocessed order form. Follow the order-form-analysis skill. "
-                "Call get_document_overview first, then at least one content-retrieval tool. Search before broad retrieval. "
-                "After relevant pricing/product sections and supporting evidence are available, submit promptly; do not continue exploring unnecessarily. "
-                "When finished, call finalize_document_analysis exactly once with the complete semantic result; it is the only completion mechanism. "
-                "Do not return a final answer before that call. Reserve enough time for one correction. If it returns safe validation issues, correct only those issues and submit once more when allowed. "
-                "Do not perform SKU mapping, invent absent values, or hide ambiguity. Every material conclusion needs persisted evidence. "
-                f"organization_id={request.organization_id}; document_id={request.document_id}; preprocessing_run_id={request.preprocessing_run_id}; "
-                f"preprocessing_schema_version={request.preprocessing_schema_version}; document_analysis_schema_version={request.document_analysis_schema_version}; "
-                f"prompt_version={request.prompt_version}; skill_version={request.skill_version}; agent_version={request.agent_version}.")
+    def _prompt(task: SkuMappingTask) -> str:
+        """Build compact instructions embedding the fixed candidate's own content.
+
+        Unlike `document_analysis`'s prompt (identifiers only, content behind
+        tools), this includes the candidate's already-known, already-bounded
+        facts directly: there is no tool that would let the agent "discover"
+        them, since they are not being searched for, they are fixed.
+        """
+        attributes = json.dumps(task.raw_attributes, sort_keys=True, default=str) if task.raw_attributes else "{}"
+        evidence_summary = "; ".join(
+            f"page {reference.page_number} " + (f"block {reference.block_id}" if reference.block_id else f"table {reference.table_id}")
+            for reference in task.all_evidence
+        ) or "none"
+        return (
+            "Decide the authoritative catalog SKU, if any, for exactly one fixed product candidate. "
+            "Follow the sku-mapping skill. "
+            "Always call retrieve_skus first; it scores this fixed candidate, it does not take search text from you. "
+            "Before proposing a match, call get_authoritative_sku for the specific SKU you intend to choose. "
+            "Use get_evidence_region on the candidate's own evidence when the facts below are not enough to decide confidently; "
+            "a low-scoring or empty retrieval is not proof nothing matches. "
+            "When finished, call submit_sku_mapping_decision exactly once with the complete decision; it is the only completion mechanism. "
+            "Do not return a final answer before that call. Reserve enough time for one correction. If it returns safe validation issues, correct only those issues and submit once more when allowed. "
+            "Do not perform money or date arithmetic, normalize other contract-item attributes, or reconsider the commercial status. "
+            "Cite only evidence that is already listed below; never invent an evidence reference. "
+            f"candidate_id={task.candidate_id}; raw_name={task.raw_name!r}; raw_attributes={attributes}; "
+            f"commercial_status={task.commercial_status.value}; commercial_status_rationale={task.commercial_status_rationale!r}; "
+            f"evidence=[{evidence_summary}]."
+        )
 
     @staticmethod
     def _record_sdk_event(
-        runtime: DocumentAnalysisRuntimeSummary,
+        runtime: SkuMappingRuntimeSummary,
         message: Any,
         *,
         timestamp: datetime | None = None,
@@ -853,49 +886,47 @@ class ClaudeDocumentAnalysisAgent:
     @staticmethod
     def _terminal_code(reason: str | None, message: Any) -> str:
         """Map recognized SDK terminal conditions to stable safe errors."""
-        if getattr(message, "api_error_status", None) in {401, 403}: return "document_analysis_authentication_failed"
-        return {"max_turns": "document_analysis_max_turns", "timeout": "document_analysis_timeout", "budget": "document_analysis_budget_exceeded"}.get(reason or "", "document_analysis_runtime_failed")
+        if getattr(message, "api_error_status", None) in {401, 403}: return "sku_mapping_authentication_failed"
+        return {"max_turns": "sku_mapping_max_turns", "timeout": "sku_mapping_timeout", "budget": "sku_mapping_budget_exceeded"}.get(reason or "", "sku_mapping_runtime_failed")
 
-    def _build_adapters(self, request: DocumentAnalysisRequest, tools: DocumentAnalysisToolset):
-        """Create seven read-only adapters and one in-memory guarded finalizer."""
-        runtime = DocumentAnalysisRuntimeSummary(
+    def _build_adapters(self, task: SkuMappingTask, tools: SkuMappingToolset):
+        """Create three read-only adapters and one in-memory guarded finalizer."""
+        runtime = SkuMappingRuntimeSummary(
             request_id=uuid.uuid4(), started_at=self._utc_clock(),
             monotonic_started_at=self._monotonic_clock(),
         )
         capture = _FinalizationCapture()
         setattr(runtime, "_finalization_capture", capture)
-        pages:set[int]=set(); evidence_ids:set[str]=set()
-        async def invoke(name:str, model, args:dict[str,Any]):
+        async def invoke(name: str, model, args: dict[str, Any], trusted_kwargs: dict[str, Any] | None = None):
             sequence_number = runtime.begin_tool_invocation(
                 name, self._utc_clock(), self._monotonic_clock(),
             )
             schema_validated = False
             try:
-                if {"organization_id", "document_id", "preprocessing_run_id"}.intersection(args):
+                if trusted_kwargs and set(trusted_kwargs).intersection(args):
                     raise ValueError("trusted scope cannot be overridden")
-                value = model(organization_id=request.organization_id, preprocessing_run_id=request.preprocessing_run_id, **args)
+                value = model(**(trusted_kwargs or {}), **args)
                 schema_validated = True
                 result = await getattr(tools, name)(value)
-                page_number = getattr(value, "page_number", None)
-                if page_number is not None:
-                    pages.add(page_number)
-                if hasattr(value, "evidence"):
-                    evidence = value.evidence; pages.add(evidence.page_number); evidence_ids.add(evidence.block_id or evidence.table_id)
+                if name == "retrieve_skus":
+                    runtime.catalog_version_id = result.catalog_version_id
+                elif name == "get_authoritative_sku":
+                    runtime.authoritative_skus_by_id[result.id] = result
+                elif hasattr(value, "evidence"):
+                    reference = value.evidence
+                    runtime.referenced_pages = tuple(sorted({*runtime.referenced_pages, reference.page_number}))
+                    runtime.referenced_evidence_ids = tuple(sorted({*runtime.referenced_evidence_ids, reference.block_id or reference.table_id}))
                 runtime.tool_call_count += 1
                 runtime.tool_calls_by_name[name] = runtime.tool_calls_by_name.get(name, 0) + 1
                 runtime.successful_tool_call_order = (*runtime.successful_tool_call_order, name)
-                runtime.referenced_pages = tuple(sorted(pages)); runtime.referenced_evidence_ids = tuple(sorted(evidence_ids))
-                if name == "get_page_render":
-                    response = {"content": [{"type":"image", "data":result.content, "mimeType":result.media_type}]}
-                else:
-                    response = {"content": [{"type":"text", "text":json.dumps(result, default=lambda x: x.model_dump(mode="json") if hasattr(x,"model_dump") else str(x), sort_keys=True)}]}
+                response = {"content": [{"type": "text", "text": json.dumps(result, default=lambda x: x.model_dump(mode="json") if hasattr(x, "model_dump") else str(x), sort_keys=True)}]}
                 runtime.finish_tool_invocation(
                     sequence_number, name, succeeded=True,
                     timestamp=self._utc_clock(), monotonic_now=self._monotonic_clock(),
                 )
                 runtime.record_adapter_invocation(name, schema_validated=True, succeeded=True)
                 return response
-            except (DocumentToolError, ValidationError, ValueError, TypeError) as exc:
+            except (SkuMappingToolError, ValidationError, ValueError, TypeError) as exc:
                 runtime.failed_tool_call_count += 1
                 runtime.failed_tool_calls_by_name[name] = runtime.failed_tool_calls_by_name.get(name, 0) + 1
                 runtime.tool_event_types = tuple(sorted(set(runtime.tool_event_types) | {f"ToolAdapterError:{exc.__class__.__name__}"}))
@@ -908,7 +939,7 @@ class ClaudeDocumentAnalysisAgent:
                     succeeded=False,
                     failure_category="schema_rejected" if isinstance(exc, (ValidationError, ValueError, TypeError)) else "tool_error",
                 )
-                return {"content":[{"type":"text","text":"Tool request could not be completed."}],"is_error":True}
+                return {"content": [{"type": "text", "text": "Tool request could not be completed."}], "is_error": True}
             except Exception as exc:
                 runtime.failed_tool_call_count += 1
                 runtime.failed_tool_calls_by_name[name] = runtime.failed_tool_calls_by_name.get(name, 0) + 1
@@ -918,7 +949,7 @@ class ClaudeDocumentAnalysisAgent:
                     timestamp=self._utc_clock(), monotonic_now=self._monotonic_clock(),
                 )
                 runtime.record_adapter_invocation(name, schema_validated=True, succeeded=False, failure_category="adapter_error")
-                return {"content":[{"type":"text","text":"Tool request could not be completed."}],"is_error":True}
+                return {"content": [{"type": "text", "text": "Tool request could not be completed."}], "is_error": True}
             except BaseException:
                 runtime.finish_tool_invocation(
                     sequence_number, name, succeeded=False,
@@ -926,39 +957,23 @@ class ClaudeDocumentAnalysisAgent:
                 )
                 runtime.record_adapter_invocation(name, schema_validated=True, succeeded=False, failure_category="cancelled")
                 raise
-        @sdk.tool("get_document_overview", "Return compact document inventory.", _schema())
-        async def overview(args): return await invoke("get_document_overview", ToolScope, args)
-        @sdk.tool("search_document", "Search bounded persisted document content.", _schema(
-            {"query": {"type": "string"}, "page_number": {"type": "integer", "minimum": 1},
-             "representations": {"type": "array", "items": {"type": "string"}},
-             "limit": {"type": "integer", "minimum": 1}}, ["query"],
+        @sdk.tool("retrieve_skus", "Score the fixed candidate against the active catalog.", _schema(
+            {"limit": {"type": "integer", "minimum": 1, "maximum": MAX_RETRIEVED_SKUS}}, [],
         ))
-        async def search(args): return await invoke("search_document", SearchDocumentInput, args)
-        @sdk.tool("get_page_text", "Return native or OCR blocks for one page.", _schema(
-            {"page_number": {"type": "integer", "minimum": 1}, "representation": {"type": "string", "enum": ["native", "ocr"]},
-             "limit": {"type": "integer", "minimum": 1}}, ["page_number", "representation"],
+        async def retrieve(args): return await invoke("retrieve_skus", RetrieveSkusInput, args)
+        @sdk.tool("get_authoritative_sku", "Independently confirm one catalog SKU by id or code.", _schema(
+            {"sku_id": {"type": "string"}, "sku_code": {"type": "string"}}, [],
         ))
-        async def page_text(args): return await invoke("get_page_text", GetPageTextInput, args)
-        @sdk.tool("get_page_blocks", "Return bounded blocks for one page.", _schema(
-            {"page_number": {"type": "integer", "minimum": 1}, "representation": {"type": "string", "enum": ["native", "layout", "ocr"]},
-             "block_type": {"type": "string"}, "limit": {"type": "integer", "minimum": 1}},
-            ["page_number", "representation"],
-        ))
-        async def page_blocks(args): return await invoke("get_page_blocks", GetPageBlocksInput, args)
-        @sdk.tool("get_page_tables", "Return bounded physical tables for one page.", _schema(
-            {"page_number": {"type": "integer", "minimum": 1}, "limit": {"type": "integer", "minimum": 1}}, ["page_number"],
-        ))
-        async def page_tables(args): return await invoke("get_page_tables", GetPageTablesInput, args)
-        @sdk.tool("get_page_render", "Return validated image render for one page.", _schema(
-            {"page_number": {"type": "integer", "minimum": 1}, "maximum_bytes": {"type": "integer", "minimum": 1}}, ["page_number"],
-        ))
-        async def page_render(args): return await invoke("get_page_render", GetPageRenderInput, args)
+        async def authoritative(args): return await invoke("get_authoritative_sku", GetAuthoritativeSkuInput, args)
         @sdk.tool("get_evidence_region", "Resolve one exact persisted evidence region.", _schema(
             {"evidence": {"type": "object"}}, ["evidence"],
         ))
-        async def evidence(args): return await invoke("get_evidence_region", EvidenceRegionInput, args)
+        async def evidence_region(args): return await invoke(
+            "get_evidence_region", EvidenceRegionInput, args,
+            {"organization_id": task.organization_id, "preprocessing_run_id": task.preprocessing_run_id},
+        )
 
-        @sdk.tool(FINALIZER_TOOL_NAME, "Submit one validated analysis result and stop.", self._finalizer_input_schema())
+        @sdk.tool(FINALIZER_TOOL_NAME, "Submit one validated SKU-mapping decision and stop.", self._finalizer_input_schema())
         async def finalize(args):
             sequence_number = runtime.begin_tool_invocation(
                 FINALIZER_TOOL_NAME, self._utc_clock(), self._monotonic_clock(),
@@ -966,21 +981,21 @@ class ClaudeDocumentAnalysisAgent:
             runtime.finalization_submission_count += 1
             schema_validated = False
             try:
-                if set(args) != {"result"} or not isinstance(args.get("result"), dict):
+                if set(args) != {"decision"} or not isinstance(args.get("decision"), dict):
                     raise ValueError("invalid finalization input")
-                submitted = args["result"]
+                submitted = args["decision"]
                 schema_validated = True
                 if TRUSTED_IDENTITY_FIELDS.intersection(submitted):
                     runtime.failure_stage = "trusted_identity_mismatch"
                     runtime.validation_issue_codes = ("trusted_identity_override",)
                     runtime.validation_issues = (
-                        {"code": "trusted_identity_override", "location": "result"},
+                        {"code": "trusted_identity_override", "location": "decision"},
                     )
                     result, correctable = None, False
                 else:
-                    proposed = {**submitted, **self._trusted_result_fields(request)}
+                    proposed = {**submitted, **self._trusted_result_fields(task, runtime)}
                     result, correctable = self._validate_structured_output(
-                        request, proposed, runtime,
+                        task, proposed, runtime,
                     )
                 if result is not None:
                     capture.accepted_result = result
@@ -994,7 +1009,7 @@ class ClaudeDocumentAnalysisAgent:
                     )
                     runtime.record_adapter_invocation(FINALIZER_TOOL_NAME, schema_validated=True, succeeded=True)
                     capture.accepted_event.set()
-                    return {"content": [{"type": "text", "text": "Analysis accepted. Stop now."}]}
+                    return {"content": [{"type": "text", "text": "Decision accepted. Stop now."}]}
 
                 runtime.failed_tool_call_count += 1
                 runtime.failed_tool_calls_by_name[FINALIZER_TOOL_NAME] = runtime.failed_tool_calls_by_name.get(FINALIZER_TOOL_NAME, 0) + 1
@@ -1014,7 +1029,7 @@ class ClaudeDocumentAnalysisAgent:
                 correction_allowed = (
                     correctable
                     and not capture.correctable_rejection_seen
-                    and self._settings.document_analysis_max_corrections > 0
+                    and self._settings.sku_mapping_max_corrections > 0
                 )
                 if correction_allowed:
                     capture.correctable_rejection_seen = True
@@ -1030,7 +1045,7 @@ class ClaudeDocumentAnalysisAgent:
                 }
             except (ValidationError, ValueError, TypeError):
                 runtime.failure_stage = "pydantic_schema_validation"
-                runtime.pydantic_errors = ({"location": "result", "type": "invalid_input"},)
+                runtime.pydantic_errors = ({"location": "decision", "type": "invalid_input"},)
                 runtime.failed_tool_call_count += 1
                 runtime.failed_tool_calls_by_name[FINALIZER_TOOL_NAME] = runtime.failed_tool_calls_by_name.get(FINALIZER_TOOL_NAME, 0) + 1
                 runtime.finish_tool_invocation(
@@ -1051,7 +1066,7 @@ class ClaudeDocumentAnalysisAgent:
                 )
                 runtime.record_adapter_invocation(FINALIZER_TOOL_NAME, schema_validated=schema_validated, succeeded=False, failure_category="cancelled")
                 raise
-        return [overview,search,page_text,page_blocks,page_tables,page_render,evidence,finalize], runtime
+        return [retrieve, authoritative, evidence_region, finalize], runtime
 
 
 def _schema(properties: dict[str, Any] | None = None, required: list[str] | None = None) -> dict[str, Any]:

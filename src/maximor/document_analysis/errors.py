@@ -70,3 +70,36 @@ class RenderMissingError(DocumentToolError):
 class RenderIntegrityError(DocumentToolError):
     """Report a page-render checksum or metadata mismatch safely."""
     def __init__(self) -> None: super().__init__("render_integrity_failed", "The page render could not be validated.")
+
+
+class DocumentAnalysisConfigurationError(DocumentAnalysisError):
+    """Report missing safe agent configuration without disclosing secrets."""
+    def __init__(self) -> None: super().__init__("document_analysis_not_configured", "Document analysis configuration is unavailable.")
+
+
+class DocumentAnalysisRuntimeError(DocumentAnalysisError):
+    """Report a bounded SDK execution failure safely."""
+
+    def __init__(self, code: str = "document_analysis_runtime_failed", *, runtime: object | None = None) -> None:
+        """Attach optional bounded runtime diagnostics without exposing SDK details."""
+
+        super().__init__(code, "Document analysis could not be completed.")
+        self.runtime = runtime
+
+
+class DocumentAnalysisValidationError(DocumentAnalysisError):
+    """Report invalid or missing structured agent output without returning it."""
+
+    def __init__(self, *, runtime: object | None = None) -> None:
+        """Retain optional bounded diagnostics when output validation fails."""
+
+        super().__init__("document_analysis_invalid_output", "Document analysis returned an invalid result.")
+        self.runtime = runtime
+
+
+class DocumentAnalysisPersistenceError(DocumentAnalysisError):
+    """Report a safe canonical-artifact or relational-persistence failure."""
+
+    def __init__(self, code: str = "document_analysis_persistence_failed") -> None:
+        """Create a stable persistence error without source content or internal details."""
+        super().__init__(code, "Document analysis persistence could not be completed.")

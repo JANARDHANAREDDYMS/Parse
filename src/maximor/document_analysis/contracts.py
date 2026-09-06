@@ -20,8 +20,10 @@ class DocumentAnalysisRequest(BaseModel):
     organization_id:uuid.UUID; document_id:uuid.UUID; preprocessing_run_id:uuid.UUID
     preprocessing_schema_version:str=Field(min_length=1,max_length=50)
     document_analysis_schema_version:str=Field(min_length=1,max_length=50)
-    prompt_version:str=Field(min_length=1,max_length=100); agent_version:str=Field(min_length=1,max_length=100)
-    @field_validator('preprocessing_schema_version','document_analysis_schema_version','prompt_version','agent_version')
+    prompt_version:str=Field(min_length=1,max_length=100)
+    skill_version:str=Field(min_length=1,max_length=100)
+    agent_version:str=Field(min_length=1,max_length=100)
+    @field_validator('preprocessing_schema_version','document_analysis_schema_version','prompt_version','skill_version','agent_version')
     @classmethod
     def version_is_not_blank(cls,value:str)->str:
         """Reject whitespace-only version labels before future tool calls."""

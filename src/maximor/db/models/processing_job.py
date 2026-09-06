@@ -7,9 +7,12 @@ from sqlalchemy import (
     ForeignKey,
     ForeignKeyConstraint,
     Integer,
+    Index,
     String,
     Text,
+    text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from maximor.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -32,12 +35,21 @@ class ProcessingJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             "'review_required')",
             name="status_allowed",
         ),
+        Index(
+            "uq_processing_jobs_analysis_preprocessing_run",
+            "preprocessing_run_id",
+            unique=True,
+            postgresql_where=text("job_type = 'document_analysis' AND status IN ('queued', 'running')"),
+        ),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
     )
     document_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
+    preprocessing_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("document_processing_runs.id", ondelete="RESTRICT", name="fk_jobs_preproc_run"), index=True
+    )
     job_type: Mapped[str] = mapped_column(String(64), nullable=False)
     status: Mapped[str] = mapped_column(
         String(32), default=ProcessingJobStatus.QUEUED.value, nullable=False
@@ -47,4 +59,3 @@ class ProcessingJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     error_message: Mapped[str | None] = mapped_column(Text)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
