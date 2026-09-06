@@ -15,9 +15,23 @@ from maximor.document_analysis.schemas import (
     ProductCandidate,
 )
 from maximor.preprocessing.schemas import ExtractionSource
-from maximor.sku_mapping.contracts import SkuMappingTask, build_sku_mapping_task
+from maximor.sku_mapping.contracts import SkuMappingRunArtifact, SkuMappingTask, build_sku_mapping_task
 from maximor.sku_mapping.errors import SkuMappingTaskConstructionError
-from maximor.sku_mapping.versions import SKU_MAPPING_TASK_SCHEMA_VERSION
+from maximor.sku_mapping.schemas import (
+    RetrievedSku,
+    SkuMappingDecision,
+    SkuMappingOutcome,
+    SkuMatchSource,
+    SkuRecord,
+    SkuRetrievalResult,
+)
+from maximor.sku_mapping.versions import (
+    HYBRID_SKU_RETRIEVER_VERSION,
+    SKU_MAPPING_ARTIFACT_SCHEMA_VERSION,
+    SKU_MAPPING_DECISION_SCHEMA_VERSION,
+    SKU_MAPPING_TASK_SCHEMA_VERSION,
+    SKU_RETRIEVAL_SCHEMA_VERSION,
+)
 
 
 def _evidence(preprocessing_run_id: uuid.UUID, block_id: str = "native:p0001:b000000") -> EvidenceReference:
@@ -217,3 +231,78 @@ def test_build_sku_mapping_task_rejects_ambiguous_multiple_statuses():
             schema_version=SKU_MAPPING_TASK_SCHEMA_VERSION,
         )
     assert excinfo.value.code == "sku_mapping_status_ambiguous"
+
+
+def _run_artifact_parts(preprocessing_run_id: uuid.UUID):
+    """Build a consistent (task, retrieval, decision) triple for one candidate."""
+
+    organization_id = uuid.uuid4()
+    candidate_id = "candidate-0001"
+    evidence = _evidence(preprocessing_run_id)
+    task = SkuMappingTask(
+        schema_version=SKU_MAPPING_TASK_SCHEMA_VERSION, organization_id=organization_id,
+        document_id=uuid.uuid4(), preprocessing_run_id=preprocessing_run_id, analysis_run_id=uuid.uuid4(),
+        document_analysis_schema_version="a", document_analysis_agent_version="a",
+        candidate_id=candidate_id, raw_name="Premium Support",
+        commercial_status=CommercialStatus.PURCHASED, candidate_evidence=(evidence,),
+    )
+    catalog_version_id = uuid.uuid4()
+    sku = SkuRecord(
+        id=uuid.uuid4(), source_sku_id=uuid.uuid4(), organization_id=organization_id,
+        catalog_version_id=catalog_version_id, sku_code="PREMIUM_SUPPORT", name="Premium Support",
+    )
+    retrieval = SkuRetrievalResult(
+        schema_version=SKU_RETRIEVAL_SCHEMA_VERSION, retriever_version=HYBRID_SKU_RETRIEVER_VERSION,
+        organization_id=organization_id, catalog_version_id=catalog_version_id,
+        catalog_version_identifier="v1", candidate_id=candidate_id,
+        candidates=(RetrievedSku(sku=sku, score=1.0, matched_sources=(SkuMatchSource.EXACT,), matched_text=sku.name),),
+    )
+    decision = SkuMappingDecision(
+        schema_version=SKU_MAPPING_DECISION_SCHEMA_VERSION, organization_id=organization_id,
+        document_id=task.document_id, preprocessing_run_id=preprocessing_run_id,
+        analysis_run_id=task.analysis_run_id, candidate_id=candidate_id, catalog_version_id=catalog_version_id,
+        outcome=SkuMappingOutcome.MATCH, sku_id=sku.id, sku_code=sku.sku_code, sku_name=sku.name,
+        evidence=(evidence,),
+    )
+    return task, retrieval, decision
+
+
+def test_run_artifact_accepts_a_consistent_bundle():
+    """Bundle a matching task/retrieval/decision triple for one candidate."""
+
+    preprocessing_run_id = uuid.uuid4()
+    task, retrieval, decision = _run_artifact_parts(preprocessing_run_id)
+
+    artifact = SkuMappingRunArtifact(
+        schema_version=SKU_MAPPING_ARTIFACT_SCHEMA_VERSION, task=task, retrieval=retrieval, decision=decision,
+    )
+
+    assert artifact.task is task
+    assert artifact.retrieval is retrieval
+    assert artifact.decision is decision
+
+
+def test_run_artifact_rejects_a_candidate_id_mismatch():
+    """Reject a bundle whose retrieval names a different candidate than the task."""
+
+    preprocessing_run_id = uuid.uuid4()
+    task, retrieval, decision = _run_artifact_parts(preprocessing_run_id)
+    mismatched_retrieval = retrieval.model_copy(update={"candidate_id": "candidate-9999"})
+
+    with pytest.raises(ValidationError):
+        SkuMappingRunArtifact(
+            schema_version=SKU_MAPPING_ARTIFACT_SCHEMA_VERSION, task=task, retrieval=mismatched_retrieval, decision=decision,
+        )
+
+
+def test_run_artifact_rejects_a_catalog_version_mismatch():
+    """Reject a bundle where the retrieval and decision disagree on catalog_version_id."""
+
+    preprocessing_run_id = uuid.uuid4()
+    task, retrieval, decision = _run_artifact_parts(preprocessing_run_id)
+    mismatched_decision = decision.model_copy(update={"catalog_version_id": uuid.uuid4()})
+
+    with pytest.raises(ValidationError):
+        SkuMappingRunArtifact(
+            schema_version=SKU_MAPPING_ARTIFACT_SCHEMA_VERSION, task=task, retrieval=retrieval, decision=mismatched_decision,
+        )

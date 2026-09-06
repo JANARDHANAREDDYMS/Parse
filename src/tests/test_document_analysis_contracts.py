@@ -12,9 +12,11 @@ from maximor.document_analysis.schemas import (
     CommercialStatus,
     CommercialStatusAssessment,
     DocumentAnalysisResult,
+    ApplicabilityScope,
     EvidenceReference,
     EvidenceRepresentation,
     ProductCandidate,
+    GlobalTerm,
     MAX_PRODUCT_CANDIDATES,
     MAX_EVIDENCE_PER_ENTITY,
 )
@@ -137,6 +139,35 @@ def test_result_enforces_candidate_status_links_and_deterministic_order():
     )
     with pytest.raises(ValidationError):
         DocumentAnalysisResult(**invalid_values)
+
+
+def test_global_term_applicability_scopes_are_explicit_and_bounded():
+    """Preserve document, candidate, and unknown applicability without normalization."""
+
+    candidate = ProductCandidate(candidate_id="candidate:000001", raw_name="Service")
+    base = dict(term_id="term:000001", raw_name="Payment terms")
+    assert GlobalTerm(**base).applicability_scope == ApplicabilityScope.UNKNOWN
+    assert GlobalTerm(**base, applicability_scope=ApplicabilityScope.DOCUMENT).applies_to_candidate_ids == ()
+    scoped = GlobalTerm(**base, applicability_scope=ApplicabilityScope.CANDIDATE, applies_to_candidate_ids=(candidate.candidate_id,))
+    run_id = uuid.uuid4()
+    result = DocumentAnalysisResult(
+        schema_version="1", organization_id=uuid.uuid4(), document_id=uuid.uuid4(),
+        preprocessing_run_id=run_id, preprocessing_schema_version="1", prompt_version="p", agent_version="a",
+        product_candidates=(candidate,), global_terms=(scoped,),
+    )
+    assert result.global_terms[0].applicability_scope == ApplicabilityScope.CANDIDATE
+    with pytest.raises(ValidationError):
+        GlobalTerm(**base, applicability_scope=ApplicabilityScope.CANDIDATE)
+    with pytest.raises(ValidationError):
+        GlobalTerm(**base, applicability_scope=ApplicabilityScope.UNKNOWN, applies_to_candidate_ids=(candidate.candidate_id,))
+    with pytest.raises(ValidationError):
+        GlobalTerm(**base, applicability_scope=ApplicabilityScope.CANDIDATE, applies_to_candidate_ids=("candidate:000002", candidate.candidate_id))
+    with pytest.raises(ValidationError):
+        DocumentAnalysisResult(
+            schema_version="1", organization_id=uuid.uuid4(), document_id=uuid.uuid4(),
+            preprocessing_run_id=run_id, preprocessing_schema_version="1", prompt_version="p", agent_version="a",
+            global_terms=(GlobalTerm(**base, applicability_scope=ApplicabilityScope.CANDIDATE, applies_to_candidate_ids=("candidate:missing",)),),
+        )
 
 
 @pytest.mark.asyncio

@@ -81,34 +81,6 @@ untouched; the new read-only retrieval interface lives in a new
 
 ## Run Log
 
-### 2026-09-05 — Run 1: Context gathering, no code written
-
-- Read `PROJECT_NOTES.md`, `README.md`, `docs/Take-Home-assignment.pdf`,
-  `.claude/skills/order-form-analysis/SKILL.md`.
-- Read `maximor/catalog/{schemas,repository,loader,__init__}.py`.
-- Read DB models: `sku.py`, `catalog_version.py`, `db/models/__init__.py`,
-  `document_analysis.py`; and migrations `0001` (foundation, incl. pgvector
-  extension) through `0008` (analysis diagnostics).
-- Read `maximor/document_analysis/{schemas,contracts,validation,versions,
-  persistence,errors,export,__init__}.py`, the worker handler
-  `worker/handlers/document_analysis.py`, and job scheduling in
-  `jobs/service.py` / `jobs/types.py`.
-- Confirmed in the running Postgres container: `vector` extension is
-  installed/active; `pg_trgm` is available but not yet created; `skus` table
-  currently holds the real 21-SKU catalog for one organization/catalog
-  version already loaded via `catalog/loader.py`.
-- Inspected a real persisted `DocumentAnalysisResult` sample
-  (`tests/test_results/document_analysis/of-0001/attempt-9-result.json`) to
-  confirm the actual shape of `product_candidates` / `commercial_statuses`
-  coming out of the document-analysis agent.
-- Identified the exact handoff point into the SKU-mapping subsystem per
-  `PROJECT_NOTES.md`'s architecture diagram: eligible `ProductCandidate`s
-  (with their evidence and linked commercial status) from a completed
-  `DocumentAnalysisResult`. Eligibility rules (which commercial statuses
-  qualify) are not yet pinned down anywhere — flagged as an open decision.
-- Flagged the `SkuRepository` naming collision above before writing any code.
-- Was asked to pause before implementing; created this notes file per
-  instruction. No source files were changed this run.
 
 ### 2026-09-05 — Run 2: Naming decision + worker infra verification, no code written
 
@@ -573,3 +545,401 @@ class, F. Skill file, G. Validation module, H/I. Versions & errors.
   fixed specifically *because* this was tested live rather than only via
   `FakeClient`-based unit tests — worth remembering as a case for live
   smoke-testing before wiring anything into production paths.
+
+### 2026-09-05 — Run 10: Confirmed decision-storage gap; three concerns queued, all paused
+
+- Confirmed precisely (via `getattr`/printed fields, no fabrication) what a
+  real `SkuMappingDecision` looks like and, more importantly, where it's
+  stored: **nowhere**. No table, no object-storage artifact — the object
+  lived only in the scratch script's process memory and was discarded on
+  exit. This is the direct, concrete consequence of the still-open
+  "decision persistence" scoping question from Run 8/9.
+- Confirmed (with real evidence, not speculation) a second real gap the user
+  flagged independently: per-candidate numeric facts (`extended_price`,
+  `qty`, `unit_fee`) are already cleanly scoped to `candidate_id` in
+  `ProductCandidate.raw_attributes`, so normalizing those per mapped SKU is
+  straightforward — but document-wide facts (dates, payment terms,
+  invoicing frequency) are captured as `GlobalTerm` entries with **no
+  candidate-linking field at all** (`GlobalTerm` has `term_id`/`raw_name`/
+  `raw_value`/`evidence` — nothing else). Verified this directly against
+  `of-0001`'s real `global_terms` (e.g. `gt_end_date: "31 Jul 2027"`) — genuinely
+  unresolved anywhere in the pipeline, matching the assignment's own warning
+  that different contract items can have different terms. Flagged that
+  fixing this properly is a `document_analysis`-side schema change (adding
+  candidate-attribution to `GlobalTerm`), which is a different subsystem
+  than SKU-mapping and has been treated as off-limits this whole session —
+  did not propose doing it, just named it as a separate future conversation.
+- User consolidated the remaining work into three named concerns and asked
+  for a detailed, self-contained write-up of each (to paste into a separate
+  ChatGPT conversation that has broader context on this system's overall
+  design/architecture history). Full detail below — this is the actual
+  content handed to the user, not a summary of it.
+- **User has not decided and is deferring the decision to that other
+  conversation**, and will come back with a direction. **All three concerns
+  are paused. No code was written this run.** Next session should wait for
+  the user's direction before starting (1), (3), or opening the
+  (2)/`document_analysis` conversation.
+
+#### Concern 1 — Where and how should `SkuMappingDecision` be persisted?
+
+The SKU-mapping subsystem is fully built and verified end-to-end with real
+paid Claude API calls against real order-form data: `SkuMappingTask`,
+`SkuRepository`/`PostgresSkuRepository`, `HybridSkuRetriever`/
+`DeterministicHybridSkuRetriever`, `SkuMappingDecision`, a three-tool
+`SkuMappingToolset` (`retrieve_skus`, `get_authoritative_sku`,
+`get_evidence_region`), `validate_sku_mapping_decision`, a `sku-mapping`
+Claude Agent SDK skill, and `ClaudeSkuMappingAgent` (full SDK harness:
+session lifecycle, guarded finalizer, one-correction retry, bounded runtime
+diagnostics). It correctly mapped all 3 real candidates from a test order
+form, including one with abbreviated/OCR-style text and one with an
+ambiguous commercial status.
+
+The gap: **zero persistence**. `SkuMappingDecision` exists only in memory
+for one process invocation and is discarded on exit — no table, no
+object-storage artifact.
+
+Existing precedent to weigh against — `document_analysis` already has a
+full persistence layer: `document_analysis_runs` table (one row per
+attempt: status, model, tokens, cost, turn count, a
+`canonical_result_storage_key` pointing to a compressed JSON artifact in
+object storage, with a DB check constraint enforcing that `status='completed'`
+requires the artifact/checksums/validation to all be present);
+`DocumentAnalysisPersistenceService` (`create_run()` /
+`save_completed_result()` — validates before persisting, atomic, cleans up
+orphaned storage on failure — / `load_completed_result()` — re-validates
+checksums and identity on read); relational projections
+(`document_product_candidates`, `document_commercial_status_assessments`,
+`document_analysis_evidence_references`) mirroring the same data into
+queryable SQL alongside the canonical artifact.
+
+Decisions needed:
+1. Full treatment mirroring `document_analysis` (a `sku_mapping_runs`-style
+   table + persistence service + canonical artifact + relational
+   projections), or something lighter (one simple table, accepted decision
+   fields only, no run/attempt tracking, no runtime diagnostics)?
+2. Should failed/rejected attempts be persisted at all, or only accepted
+   decisions?
+3. Should the stored record capture `catalog_version_id` for reproducibility
+   (trace a decision back to the exact catalog snapshot that produced it)?
+4. Should decisions be versioned/re-computable — if the catalog changes
+   after a decision was made, keep the old decision as historical record, or
+   do something else (revalidate, flag as stale)?
+
+#### Concern 2 — How do we link document-wide facts (dates, payment terms, invoicing frequency) to the correct SKU?
+
+`DocumentAnalysisResult` splits extracted facts into two shapes:
+`ProductCandidate.raw_attributes` (a `dict[str, str | None]` scoped to one
+`candidate_id` — verified in real data to correctly hold per-item facts like
+`extended_price`, `qty`, `unit_fee`, `sku_description`, already 1:1 tied to
+the candidate that will get SKU-mapped); and `GlobalTerm`
+(`{term_id, raw_name, raw_value, evidence}`) — **document-wide facts with no
+field linking them to any specific candidate_id at all.**
+
+Verified concretely against real data (`of-0001`): `GlobalTerm` entries
+included `"End Date": "31 Jul 2027"`, `"Order Form Effective Date"`, an
+employee-size cap, and governing-agreement text — none referencing which of
+the document's 3 product candidates they apply to.
+
+Why it matters: the take-home assignment's own brief explicitly warns
+*"different contract items can have different terms"* — you cannot safely
+assume one global term (e.g. a service end date) applies uniformly to every
+mapped SKU. Nothing in the pipeline currently resolves this attribution
+question — it is a genuine, currently-unaddressed gap, not handled
+elsewhere.
+
+Three candidate approaches:
+1. **Fix it upstream in `DocumentAnalysisAgent`'s own output schema** — have
+   it explicitly record which `candidate_id`(s) each `GlobalTerm` applies to
+   (e.g. an `applies_to_candidate_ids: tuple[str, ...] | None` field), since
+   that agent already has full document context to judge this. A
+   schema/behavior change to `document_analysis`.
+2. **Defer to a later Normalization stage** — leave `document_analysis`'s
+   output unchanged; a separate, not-yet-designed Normalization step
+   re-derives the linkage by reasoning over `global_terms` +
+   `product_candidates` + evidence together, after SKU mapping.
+3. **A deterministic-default hybrid** — assume a global term applies to all
+   candidates unless a candidate's own `raw_attributes` explicitly overrides
+   it, falling back to a narrow LLM judgment call only on an actual
+   conflict.
+
+Also worth deciding: should this be part of the SKU-mapping subsystem's
+responsibility at all, or strictly owned by a separate, not-yet-built
+Normalization subsystem?
+
+#### Concern 3 — How should worker/job infrastructure connect `SkuMappingAgent` to candidates as they're produced by `DocumentAnalysisAgent`?
+
+Existing infrastructure pattern: a generic runner/dispatcher/handler
+architecture. `WorkerRunner` polls `processing_jobs`
+(`SELECT ... FOR UPDATE SKIP LOCKED`, safe for concurrent workers),
+`JobDispatcher` routes by `job_type` to a registered `JobHandler`
+(`async def execute(context) -> None`, must raise on failure), and **only
+the runner** ever sets a job's terminal status — handlers never touch that
+themselves, though a handler may own its own domain-specific run-status row.
+Stage-chaining is a handler side effect on success:
+`DocumentPreprocessingHandler` calls `schedule_document_analysis_job(...)`
+after completing, an idempotent create-or-return guarded by a partial
+unique index on `processing_jobs` scoped to `job_type='document_analysis'`.
+
+Why SKU-mapping's chaining is structurally different, not a copy-paste: one
+`document_analysis_run` produces *multiple* product candidates (not 1:1 like
+preprocessing→analysis), and the design is one `SkuMappingTask`/decision
+**per candidate**. So a `sku_mapping` job must be keyed by the compound pair
+`(analysis_run_id, candidate_id)`, not a single foreign key — needs two new
+nullable columns on `processing_jobs` plus a compound partial-unique index
+(extending the existing pattern, not reusing it as-is).
+
+The blocking design question — eligibility: should `DocumentAnalysisHandler`
+automatically schedule a `sku_mapping` job for every candidate the instant
+analysis completes? Candidates carry a `CommercialStatus` (`purchased` /
+`included` / `optional` / `excluded` / `mentioned` / `ambiguous`), and which
+of these should actually be sent to SKU mapping has been deliberately left
+undecided all session — auto-chaining without that decision means silently
+baking in an unreviewed default (e.g. "only `purchased`").
+
+Decisions needed:
+1. Exact job-to-candidate linking migration/schema (new columns, index
+   shape, FK to `document_analysis_runs`)?
+2. Automatic scheduling (`DocumentAnalysisHandler` auto-chains on
+   completion, using some explicit provisional eligibility default) vs.
+   manual (a standalone `schedule_sku_mapping_job(analysis_run_id,
+   candidate_id)` function, invoked explicitly, until the eligibility policy
+   is properly settled)?
+3. What should `SkuMappingHandler` actually do with the decision once the
+   agent returns it — connects directly to Concern 1 (persistence).
+
+### 2026-09-06 — Run 11: Concern 1 (persistence) settled via external design conversation
+
+- User returned with a full, detailed persistence design for Concern 1
+  (decided in a separate ChatGPT conversation with broader system-design
+  context, per Run 10). No code written yet — this run is decision capture.
+- Full design: `sku_mapping_runs` table mirroring `document_analysis_runs`
+  (org/document/analysis-run identifiers, versions, `catalog_version_id`,
+  token/cost diagnostics, validation status); one compressed canonical JSON
+  artifact per **accepted** run (task identity, retrieved shortlist,
+  decision, evidence ids, catalog version identity); relational projections
+  for accepted decisions only; failed/rejected attempts persisted as
+  metadata-only, never as an accepted artifact — matching
+  `document_analysis_runs`'s existing discipline exactly.
+- Two refinements from the user that are real, non-obvious improvements over
+  what I'd have defaulted to on my own:
+  1. **Derived supersession, not mutation.** A catalog change produces a new
+     `sku_mapping_runs` row carrying `supersedes_mapping_run_id →
+     old_run.id` (explicit forward lineage). The old accepted row's
+     `status` never changes from `completed` — "superseded" is *derived*
+     (does any row point back at this one), not a field flipped on the old
+     row. Persistence service must enforce the replacement shares the same
+     organization/document/analysis_run/candidate as what it supersedes.
+  2. **`document_product_candidate_id` (UUID FK to `document_product_candidates.id`)
+     is the linking key on `sku_mapping_runs`**, not the external string
+     `candidate_id` (e.g. `pc_talent_acquisition_core`) `SkuMappingTask`
+     itself uses everywhere. The external string stays inside the canonical
+     artifact/projection as reference data only. This means the future
+     persistence service must resolve `(analysis_run_id, external_candidate_id)`
+     → `document_product_candidates.id` before creating a `sku_mapping_runs`
+     row — a real new step, not yet built anywhere.
+- Added a new "## Decision Log" section to `PROJECT_NOTES.md` (dated
+  2026-09-06, appended at the end, no existing content touched) capturing
+  this settled decision in full, per explicit instruction and per that
+  file's own working agreement ("keep an explicit decision log for settled
+  architectural choices"). This is the first entry in that file's decision
+  log; `PROJECT_NOTES.md` had not been edited by Claude at all before this
+  run, only read.
+- Concerns 2 and 3 remain open/paused, explicitly noted as such in the new
+  `PROJECT_NOTES.md` section too. Have not yet asked/confirmed whether to
+  start implementing Concern 1 now or wait for 2/3 — next step is to ask
+  that, not assume.
+
+### 2026-09-06 — Run 12: Implemented Concern 1 (full SKU-mapping persistence)
+
+User said "implement now." Built the full settled design from Run 11 as six
+tracked sub-tasks. All 237 tests in the entire suite pass afterward (91
+sku_mapping + 146 everything else), zero regressions, migration verified to
+upgrade/downgrade/re-upgrade cleanly.
+
+- **Runtime addition (necessary prerequisite, not originally one of the 7
+  parts):** `SkuMappingRuntimeSummary` gained `last_retrieval_result:
+  SkuRetrievalResult | None`, captured in `agent.py`'s `invoke()` alongside
+  the existing `catalog_version_id` capture — needed because the canonical
+  artifact must bundle task+retrieval+decision together, and nothing
+  previously retained the retrieval result after the tool call returned.
+- **`SkuMappingRunArtifact`** (new, in `contracts.py` — not `schemas.py`,
+  to avoid a circular import since it must reference `SkuMappingTask`):
+  bundles `task` + `retrieval` + `decision`, with a validator requiring all
+  three to agree on `candidate_id`/`organization_id`, and requiring
+  `retrieval.catalog_version_id == decision.catalog_version_id`. New
+  `SKU_MAPPING_ARTIFACT_SCHEMA_VERSION` constant.
+- **DB models** (`db/models/sku_mapping.py`, new): `SkuMappingRun` mirrors
+  `document_analysis_runs` field-for-field, plus the settled adjustments —
+  `document_product_candidate_id` (FK to `document_product_candidates.id`,
+  not the external string), `catalog_version_id` (FK to `catalog_versions.id`,
+  **nullable** — a real design gap I caught while building, not in the
+  original spec: unlike `preprocessing_run_id` in `document_analysis_runs`,
+  it genuinely isn't known until this run's own `retrieve_skus` call
+  succeeds mid-execution, so it can't be `NOT NULL` from creation; the
+  `completed_result_required` check constraint requires it non-null only at
+  `status='completed'`), and `supersedes_mapping_run_id` (self-FK, forward
+  lineage per the settled design). `SkuMappingDecisionProjection` (one row
+  per accepted run) and `SkuMappingEvidenceReference` (had to drop
+  "decision" from the **table** name specifically — `sku_mapping_decision_evidence_references`
+  combined with a column like `preprocessing_run_id` exceeds PostgreSQL's
+  63-character identifier limit for the auto-generated index name; the
+  Python class name still says `SkuMappingEvidenceReference` too, kept
+  consistent).
+- **Migration `0009_sku_mapping_persistence.py`**: hit and fixed two real
+  bugs before it applied cleanly — a `server_default` for a JSONB column
+  needs `sa.text("'[]'::jsonb")`, not a raw Python string (raw string got
+  double-quoted by SQLAlchemy, invalid JSON); and the identifier-length
+  issue above. Amended the migration in place (not a follow-up migration)
+  for the nullable `catalog_version_id` fix since it had zero data riding on
+  it yet. Verified upgrade → downgrade → upgrade round-trips clean.
+- **`SkuMappingPersistenceService`** (`persistence.py`, new): mirrors
+  `DocumentAnalysisPersistenceService`'s shape (`create_run` /
+  `save_completed_result` / `mark_run_failed` / `load_completed_result` /
+  `latest_run`) with three real additions beyond a straight port:
+  1. `create_run` takes the **external** `candidate_id` string (what
+     `SkuMappingTask` actually carries) and resolves it to
+     `document_product_candidates.id` internally via `_validate_source` —
+     the "real new step, not yet built anywhere" flagged back in Run 11.
+  2. When `supersedes_mapping_run_id` is given, `_validate_supersedes`
+     enforces the referenced run shares this run's organization/document/
+     analysis_run/candidate, exactly as instructed.
+  3. `save_completed_result` re-verifies a `MATCH` decision's SKU against
+     the **live** `skus` table (`_resolve_sku`) as a second, independent
+     check beyond the pure `validate_sku_mapping_decision` gate — catches
+     staleness between when the agent confirmed a SKU and when persistence
+     actually runs (e.g. the SKU was deactivated in between), which a
+     DB-free validator structurally cannot see. Added
+     `SkuMappingPersistenceError`.
+- **Tests** (`test_sku_mapping_persistence.py`, 7, all passing): round-trip
+  success with both projections verified in SQL; failed-run diagnostics;
+  completion-gate rejection; the live-staleness SKU re-check (a decision
+  that's internally consistent with its own runtime, so the pure validator
+  passes, but the live `Sku` row was deactivated after — this is the one
+  that actually exercises `_resolve_sku`, not the same case the pure
+  validator already covers); duplicate attempt-number rejection; unknown-
+  candidate rejection; supersedes lineage enforcement (both the allowed
+  same-lineage case and the rejected cross-lineage case). Hit and fixed
+  three test-setup bugs along the way (`LocalObjectStorage` needs a `Path`
+  not a `str`; the shared test-document-checksum collided across two
+  `_source()` calls in one test; an organization can only have one *active*
+  catalog version, so a second unrelated `_source()` call needed a
+  `with_catalog=False` escape hatch) — none were service bugs.
+- Concerns 2 (global-term-to-SKU linking) and 3 (worker/job wiring) remain
+  open and untouched this run, as agreed.
+
+### 2026-09-06 — Run 13: Implemented Concern 3 (worker/job wiring) on top of Run 12's persistence
+
+User's framing: Concern 3 depends on Concern 1 — a handler cannot safely
+complete if it has nowhere durable to save the decision — so this run first
+re-verified Run 12's persistence against the newly re-specified requirements
+(matched exactly, no changes needed), then built the full worker-integration
+layer in one pass. Explicit hard constraints carried forward and honored: no
+live Claude calls, no reopening PDFs, no touching ground truth/supplied data,
+no full-suite runs (focused test files only).
+
+- **`JobType.SKU_MAPPING`** added to `jobs/types.py`.
+- **`processing_jobs` schema** (`db/models/processing_job.py`, full rewrite):
+  two new nullable columns, `analysis_run_id` and
+  `document_product_candidate_id` (plain columns — no per-column FK, both
+  covered by composite FKs instead); `CheckConstraint
+  sku_mapping_link_required` enforcing both fields set together iff
+  `job_type='sku_mapping'`; two composite `ForeignKeyConstraint`s —
+  `(organization_id, document_id, analysis_run_id) →
+  document_analysis_runs` and `(organization_id, analysis_run_id,
+  document_product_candidate_id) → document_product_candidates` — chosen
+  over per-column FKs specifically so a job cannot reference another
+  tenant's or another document's analysis run/candidate, not just an
+  arbitrary valid UUID; a partial unique `Index` on
+  `(analysis_run_id, document_product_candidate_id)` scoped to
+  `job_type='sku_mapping'` and non-terminal status, preventing concurrent
+  duplicate jobs for the same candidate while still allowing a fresh
+  attempt after a terminal one (same shape as the existing
+  `schedule_document_analysis_job` idempotency pattern). Needed two new
+  supporting composite-unique constraints on `document_analysis_runs` and
+  `document_product_candidates` (`db/models/document_analysis.py`) purely
+  so the composite FKs above have something to point at.
+- **Migration `0010_sku_mapping_job_link.py`** (`down_revision = "0009_sku_mapping_persistence"`):
+  one real bug — `sa.dialects.postgresql.UUID` doesn't exist via a bare
+  `import sqlalchemy as sa`; needed `from sqlalchemy.dialects import
+  postgresql` and `postgresql.UUID(as_uuid=True)` explicitly. Verified
+  upgrade → downgrade → upgrade round-trip clean, then applied for real
+  (`alembic -c alembic.ini upgrade head`, confirmed at
+  `0010_sku_mapping_job_link (head)`).
+- **`SkuMappingEligibilityPolicy`** (`sku_mapping/eligibility.py`, new):
+  versioned (`SKU_MAPPING_ELIGIBILITY_POLICY_VERSION = "1.0.0"`), pure
+  lookup table from `CommercialStatus` to an `EligibilityDisposition`
+  (`SCHEDULE`/`SKIP`/`REVIEW`) — `purchased`/`included` → schedule;
+  `optional`/`excluded`/`mentioned` → skip; `ambiguous` → review, which is
+  deliberately **not** schedule (an ambiguous commercial status shouldn't
+  silently trigger a SKU lookup that presumes the item was ordered).
+- **`schedule_sku_mapping_job`** (`jobs/service.py`, new function): mirrors
+  `schedule_document_analysis_job`'s idempotent create-or-return +
+  `IntegrityError`-fallback pattern exactly, keyed by
+  `(analysis_run_id, document_product_candidate_id)` instead of
+  `(document_id,)`.
+- **`DocumentAnalysisHandler`** (`worker/handlers/document_analysis.py`):
+  gained an injectable `eligibility: SkuMappingEligibilityPolicy | None`
+  constructor param, and a new `_schedule_eligible_sku_mapping_jobs` step
+  called only *after* the existing persist-then-reload-validate check
+  succeeds. Deliberately reads the just-written
+  `document_product_candidates`/`document_commercial_status_assessments`
+  rows back from the DB rather than using the in-memory `execution.result`
+  — those persisted rows are the only place the internal
+  `document_product_candidate_id` a job needs actually exists (the
+  in-memory result only has the external string candidate id).
+- **`SkuMappingHandler`** (`worker/handlers/sku_mapping.py`, new): loads the
+  tenant-scoped `ProcessingJob` + `DocumentProductCandidate`, loads the
+  completed analysis result, builds the existing `SkuMappingTask`, runs the
+  existing retriever/tools/`ClaudeSkuMappingAgent` unchanged, persists via
+  `SkuMappingPersistenceService`, reload-validates. Central design point,
+  stated explicitly by the user and implemented as such: **`match`,
+  `no_match`, and `ambiguous` are all business outcomes and all count as a
+  completed job** — the handler returns normally for all three; only a
+  genuine technical failure (source/candidate unavailable, retrieval
+  missing, persistence/reload failure, unhandled exception) raises
+  `JobExecutionError`. Registered in `worker/handlers/__init__.py` and
+  `worker/__init__.py`'s dispatcher map, given its own
+  `SkuMappingPersistenceService` instance alongside the existing
+  `DocumentAnalysisPersistenceService`.
+- **Tests**, two new files, both focused (never touched supplied/ground-truth
+  data, no live Claude calls anywhere):
+  - `test_sku_mapping_eligibility.py` (5, all passing): every
+    `CommercialStatus` maps to its documented disposition; ambiguous is
+    `review` specifically (not schedule, not skip); the policy's dict
+    covers every enum member; version constant sanity check.
+  - `test_sku_mapping_worker_integration.py` (11, all passing): schema
+    constraint tests (link-required CHECK rejects partial fields and
+    rejects fields on non-`sku_mapping` job types; composite FK rejects a
+    candidate genuinely belonging to a different analysis run; partial
+    unique index rejects a second concurrent active job for the same
+    candidate); `schedule_sku_mapping_job` idempotency and
+    retry-after-terminal-status; `DocumentAnalysisHandler` schedules a job
+    only for the eligible (purchased) candidate out of three seeded
+    (ambiguous/optional/purchased); `SkuMappingHandler` completes a MATCH
+    decision, treats NO_MATCH and AMBIGUOUS as completions too
+    (parametrized), and raises on a missing source — the last three use a
+    `_FakeSkuMappingAgent` returning a pre-built `SkuMappingExecution`, no
+    real agent/Claude involved.
+  - Real bugs hit and fixed along the way, none in production code:
+    (1) a Python cleanup pass I ran to strip redundant local imports left
+    broken indentation in one parametrized test body — fixed by rewriting
+    that test cleanly rather than patching the indentation; (2) four
+    constraint tests were structured as
+    `async with session.begin(): session.add(...)` followed by a separate
+    `pytest.raises(IntegrityError): await session.commit()` — wrong,
+    because `session.begin()`'s `__aexit__` already commits and raises the
+    real error *before* the `pytest.raises` block is reached; fixed by
+    removing the inner `session.begin()` wrapper so the add and the
+    asserted-failing commit are in the same block; (3) the same
+    duplicate-active-catalog-version collision fixed twice already in Run
+    12 (`test_sku_mapping_persistence.py`) recurred here because the
+    cross-lineage FK test calls `_seed()` twice under one organization —
+    fixed with the identical `with_catalog: bool = True` escape-hatch
+    pattern, `False` on the second, unrelated seed call.
+- **Focused regression run** (sku_mapping suite + document_analysis +
+  worker + api, 193 tests, all passing) confirms nothing in the existing
+  pipeline regressed. Full suite was not run, per instruction.
+- Added a dated `PROJECT_NOTES.md` decision-log entry covering the schema
+  changes, composite FKs, partial unique index, eligibility policy, and the
+  match/no_match/ambiguous-are-completions design point.
+- Deferred, unchanged: Concern 2 (linking `GlobalTerm` facts to SKUs).

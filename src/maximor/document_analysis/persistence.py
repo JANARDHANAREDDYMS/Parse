@@ -19,6 +19,8 @@ from maximor.db.models import (
     DocumentAnalysisRun,
     DocumentBlock,
     DocumentCommercialStatusAssessment,
+    DocumentGlobalTerm,
+    DocumentGlobalTermCandidate,
     DocumentPage,
     DocumentProcessingRun,
     DocumentProductCandidate,
@@ -433,6 +435,33 @@ class DocumentAnalysisPersistenceService:
                 commercial_status=assessment.status.value, raw_rationale=assessment.raw_rationale,
                 source_order=order, created_at=now,
             ))
+        term_rows: dict[str, DocumentGlobalTerm] = {}
+        for order, term in enumerate(result.global_terms):
+            row = DocumentGlobalTerm(
+                analysis_run_id=run.id, organization_id=run.organization_id,
+                external_term_id=term.term_id, raw_name=term.raw_name,
+                raw_value=term.raw_value, applicability_scope=term.applicability_scope.value,
+                source_order=order, evidence_count=len(term.evidence), created_at=now,
+            )
+            session.add(row)
+            term_rows[term.term_id] = row
+        await session.flush()
+        for term in result.global_terms:
+            if term.applicability_scope.value != "candidate":
+                continue
+            term_row = term_rows[term.term_id]
+            for candidate_id in term.applies_to_candidate_ids:
+                candidate_row = candidate_rows.get(candidate_id)
+                if candidate_row is None:
+                    raise DocumentAnalysisPersistenceError("analysis_term_candidate_mismatch")
+                session.add(DocumentGlobalTermCandidate(
+                    global_term_id=term_row.id,
+                    product_candidate_id=candidate_row.id,
+                    analysis_run_id=run.id,
+                    organization_id=run.organization_id,
+                    candidate_external_id=candidate_id,
+                    created_at=now,
+                ))
         for owner_type, owner_id, order, reference, target in evidence:
             is_block = isinstance(target, DocumentBlock)
             session.add(DocumentAnalysisEvidenceReference(

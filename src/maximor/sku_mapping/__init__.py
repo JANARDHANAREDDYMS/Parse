@@ -11,10 +11,12 @@ from maximor.sku_mapping.agent import (
     SkuMappingRuntimeSummary,
     UnconfiguredSkuMappingAgent,
 )
+from maximor.sku_mapping.eligibility import EligibilityDisposition, SkuMappingEligibilityPolicy
 from maximor.sku_mapping.contracts import (
     EvidenceResolver,
     HybridSkuRetriever,
     SemanticSkuSource,
+    SkuMappingRunArtifact,
     SkuMappingTask,
     SkuMappingToolset,
     SkuRepository,
@@ -27,12 +29,14 @@ from maximor.sku_mapping.errors import (
     SkuMappingConfigurationError,
     SkuMappingError,
     SkuMappingNotConfiguredError,
+    SkuMappingPersistenceError,
     SkuMappingRuntimeError,
     SkuMappingTaskConstructionError,
     SkuMappingToolError,
     SkuMappingValidationError,
     SkuNotFoundError,
 )
+from maximor.sku_mapping.persistence import SkuMappingPersistenceService
 from maximor.sku_mapping.repository import PostgresSkuRepository
 from maximor.sku_mapping.retrieval import DeterministicHybridSkuRetriever
 from maximor.sku_mapping.schemas import (
@@ -59,6 +63,7 @@ __all__ = [
     "CatalogVersionRecord",
     "ClaudeSkuMappingAgent",
     "DeterministicHybridSkuRetriever",
+    "EligibilityDisposition",
     "EvidenceResolver",
     "GetAuthoritativeSkuInput",
     "HybridSkuRetriever",
@@ -72,12 +77,16 @@ __all__ = [
     "SkuMappingCompletionRuntime",
     "SkuMappingConfigurationError",
     "SkuMappingDecision",
+    "SkuMappingEligibilityPolicy",
     "SkuMappingError",
     "SkuMappingExecution",
     "SkuMappingNotConfiguredError",
     "SkuMappingOutcome",
+    "SkuMappingPersistenceError",
+    "SkuMappingPersistenceService",
     "SkuMappingRuntimeError",
     "SkuMappingRuntimeSummary",
+    "SkuMappingRunArtifact",
     "SkuMappingTask",
     "SkuMappingTaskConstructionError",
     "SkuMappingToolError",

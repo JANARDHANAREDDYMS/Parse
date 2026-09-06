@@ -373,3 +373,115 @@ representations in authoritative storage.
 Failed attempts may still be stored for audit and debugging, but only with a non-accepted status such as `FAILED_VALIDATION` or `REVIEW_REQUIRED`.
 
 This is a settled design decision. Any future proposal to broaden tool permissions or bypass guarded finalization must be called out explicitly before implementation.
+
+## Decision Log
+
+### 2026-09-06 — SKU-mapping persistence: full audit-grade model
+
+The SKU-mapping subsystem (`SkuMappingTask`, `SkuRepository`/`PostgresSkuRepository`,
+`HybridSkuRetriever`/`DeterministicHybridSkuRetriever`, `SkuMappingDecision`,
+`SkuMappingToolset`, `validate_sku_mapping_decision`, the `sku-mapping` skill,
+`ClaudeSkuMappingAgent`) is implemented and has been verified end to end with real
+paid Claude API calls against a real order form, correctly mapping all candidates
+including an abbreviated-text case and an ambiguous-commercial-status case. It
+currently has no persistence at all: a `SkuMappingDecision` exists only in memory
+for one process invocation and is discarded on exit.
+
+Settled decision: give it the **same full audit-grade persistence model** as
+`document_analysis`, not a single lightweight decisions table. A SKU decision is a
+high-value audit record — it determines what the system reports as purchased and
+which catalog item it maps to, and normalization will build on it later — so how it
+was reached must be preserved, not just its final answer.
+
+- **`sku_mapping_runs`** — one row per candidate mapping attempt, mirroring
+  `document_analysis_runs`: organization/document/analysis-run identifiers, a
+  `document_product_candidate_id` foreign key (the internal UUID row in
+  `document_product_candidates` — **not** the external string candidate id such as
+  `pc_talent_acquisition_core`, which stays inside the canonical artifact/projection
+  as reference data only), a `processing_job_id` for when worker wiring is added,
+  attempt number and status, model/prompt/skill/agent/schema/retriever version
+  fields, `catalog_version_id`, token/cost/runtime diagnostics, and a validation
+  status with a safe failure reason.
+- **Accepted artifact**: one compressed canonical JSON artifact in object storage
+  per accepted run, holding the mapping task identity, the retrieved SKU shortlist
+  with scores/sources, the accepted `SkuMappingDecision`, cited evidence ids, and
+  catalog version identity.
+- **Relational projections** for accepted decisions only: outcome
+  (`match`/`no_match`/`ambiguous`), selected internal SKU UUID/code/name when
+  matched, rationale, considered SKU ids when ambiguous, evidence references.
+- **Failed/rejected attempts** are persisted too, but only as run metadata and safe
+  diagnostics — never as an accepted artifact. Same discipline
+  `document_analysis_runs` already enforces (a non-completed run has no canonical
+  artifact).
+- **`catalog_version_id` is always stored** — a decision is only reproducible if the
+  exact catalog snapshot Claude and retrieval used is known.
+- **Immutability with derived supersession, not mutation.** Catalog changes never
+  overwrite a historical decision. A new catalog snapshot produces a *new*
+  `sku_mapping_runs` row carrying `supersedes_mapping_run_id → old_run.id` (an
+  explicit forward lineage link). The old accepted run's `status` stays
+  `completed` and its result remains historically true as-is; "superseded" is a
+  *derived* fact (whether any later run points back at it), never a field mutated
+  on the old row. The persistence service must enforce that a replacement run
+  shares the same organization, document, analysis run, and candidate as the run
+  it supersedes.
+
+Auditable chain this produces: `PDF → preprocessing run → document analysis run →
+candidate → SKU mapping run → catalog version → accepted decision`, with lineage
+across catalog versions traceable via `supersedes_mapping_run_id`.
+
+Not yet decided (separate, later conversations): linking document-wide `GlobalTerm`
+facts (dates, payment terms, invoicing frequency) to the correct SKU (a
+`document_analysis`-side gap, confirmed against real data — `GlobalTerm` has no
+candidate-linking field at all); and the worker/job wiring shape connecting
+`SkuMappingAgent` to candidates as `DocumentAnalysisAgent` produces them.
+
+### 2026-09-06 — SKU-mapping worker wiring: automatic scheduling and job execution
+
+The persistence model above is now load-bearing: `SkuMappingHandler` runs as a
+real `processing_jobs` job type, and `DocumentAnalysisHandler` schedules that job
+automatically for every eligible candidate once its own analysis run is
+persisted and reload-validated.
+
+- **`JobType.SKU_MAPPING`** added. `processing_jobs` gained two nullable columns,
+  `analysis_run_id` and `document_product_candidate_id`, populated for
+  `sku_mapping` jobs only. A `CHECK` constraint (`sku_mapping_link_required`)
+  enforces both fields are set together exactly when `job_type = 'sku_mapping'`
+  and null otherwise — a job's type alone determines whether it carries a SKU
+  target.
+- **Tenant-safe composite foreign keys**, not per-column FKs: `(organization_id,
+  document_id, analysis_run_id)` → `document_analysis_runs`, and
+  `(organization_id, analysis_run_id, document_product_candidate_id)` →
+  `document_product_candidates`. This makes it impossible at the database level
+  for a job to reference an analysis run belonging to another organization/
+  document, or a candidate belonging to another analysis run — verified by a
+  dedicated cross-lineage rejection test, not just by application code.
+  Supporting composite-unique constraints were added to
+  `document_analysis_runs` and `document_product_candidates` to make these FKs
+  possible.
+- **Partial unique index** on `(analysis_run_id, document_product_candidate_id)`
+  scoped to `job_type = 'sku_mapping'` and non-terminal status (`queued`,
+  `claimed`, `running`) prevents two concurrent SKU-mapping jobs for the same
+  candidate, while still allowing a fresh sequential attempt once a prior job
+  reaches a terminal status — the same idempotent-scheduling shape
+  `schedule_document_analysis_job` already uses.
+- **`SkuMappingEligibilityPolicy` (versioned, deterministic)**: `purchased` and
+  `included` candidates schedule a mapping job; `optional`, `excluded`, and
+  `mentioned` are skipped outright; `ambiguous` is a `review` disposition and is
+  explicitly **not** auto-scheduled — an ambiguous commercial status should not
+  silently trigger a SKU lookup that presumes the item was ordered.
+- **Scheduling reads persisted projections, not the in-memory result.**
+  `DocumentAnalysisHandler._schedule_eligible_sku_mapping_jobs` runs only after
+  the existing persist-then-reload-validate step succeeds, and queries the
+  `document_product_candidates`/`document_commercial_status_assessments` rows
+  it just wrote — those rows are the only place the internal
+  `document_product_candidate_id` a job needs actually exists.
+- **`SkuMappingHandler` treats `match`, `no_match`, and `ambiguous` as completed
+  jobs**, not failures. All three are business outcomes the agent is explicitly
+  designed to reach; only a genuine technical failure (source/candidate
+  unavailable, retrieval missing, persistence/reload failure, an unhandled
+  exception) raises `JobExecutionError`. This mirrors `DocumentAnalysisHandler`:
+  the generic worker runner remains the sole owner of `processing_jobs`
+  terminal status, and a handler's own domain-run status (`sku_mapping_runs`)
+  is tracked separately.
+
+Deferred, unchanged from the prior entry: linking `GlobalTerm` facts to SKUs.

@@ -795,6 +795,8 @@ class ClaudeDocumentAnalysisAgent:
                 "After relevant pricing/product sections and supporting evidence are available, submit promptly; do not continue exploring unnecessarily. "
                 "When finished, call finalize_document_analysis exactly once with the complete semantic result; it is the only completion mechanism. "
                 "Do not return a final answer before that call. Reserve enough time for one correction. If it returns safe validation issues, correct only those issues and submit once more when allowed. "
+                "Classify each term's applicability as document, candidate, or unknown; cite evidence for the term and applicability. "
+                "Do not assume a document-level date, payment term, currency, or limit applies to every candidate. "
                 "Do not perform SKU mapping, invent absent values, or hide ambiguity. Every material conclusion needs persisted evidence. "
                 f"organization_id={request.organization_id}; document_id={request.document_id}; preprocessing_run_id={request.preprocessing_run_id}; "
                 f"preprocessing_schema_version={request.preprocessing_schema_version}; document_analysis_schema_version={request.document_analysis_schema_version}; "

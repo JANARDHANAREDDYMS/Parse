@@ -22,7 +22,14 @@ from maximor.document_analysis.schemas import (
 )
 from maximor.document_analysis.tool_schemas import BlockResult, EvidenceRegionInput, TableResult
 from maximor.sku_mapping.errors import SkuMappingTaskConstructionError
-from maximor.sku_mapping.schemas import CatalogVersionRecord, RetrievedSku, SkuMappingModel, SkuRecord, SkuRetrievalResult
+from maximor.sku_mapping.schemas import (
+    CatalogVersionRecord,
+    RetrievedSku,
+    SkuMappingDecision,
+    SkuMappingModel,
+    SkuRecord,
+    SkuRetrievalResult,
+)
 from maximor.sku_mapping.tool_schemas import GetAuthoritativeSkuInput, RetrieveSkusInput
 
 
@@ -76,6 +83,36 @@ class SkuMappingTask(SkuMappingModel):
         for reference in (*self.candidate_evidence, *self.commercial_status_evidence):
             if reference.preprocessing_run_id != self.preprocessing_run_id:
                 raise ValueError("task evidence must belong to the task's preprocessing run")
+        return self
+
+
+class SkuMappingRunArtifact(SkuMappingModel):
+    """Bundle one mapping run's task, retrieved shortlist, and accepted decision.
+
+    This is the canonical persisted artifact shape, not an input or output
+    contract on its own: a future `SkuMappingPersistenceService` writes one of
+    these per accepted run so the exact task, the shortlist the retriever
+    actually returned, and the decision that resulted from it stay together
+    as one reproducible, versioned record. Catalog version identity is
+    already present inside `retrieval` (`catalog_version_id`/
+    `catalog_version_identifier`); this type does not repeat it.
+    """
+
+    schema_version: str = Field(min_length=1, max_length=50)
+    task: SkuMappingTask
+    retrieval: SkuRetrievalResult
+    decision: SkuMappingDecision
+
+    @model_validator(mode="after")
+    def bundle_is_internally_consistent(self) -> "SkuMappingRunArtifact":
+        """Require the task, retrieval, and decision to all describe the same candidate."""
+
+        if not (self.task.candidate_id == self.retrieval.candidate_id == self.decision.candidate_id):
+            raise ValueError("task, retrieval, and decision must reference the same candidate_id")
+        if self.task.organization_id != self.retrieval.organization_id or self.task.organization_id != self.decision.organization_id:
+            raise ValueError("task, retrieval, and decision must reference the same organization")
+        if self.retrieval.catalog_version_id != self.decision.catalog_version_id:
+            raise ValueError("retrieval and decision must reference the same catalog_version_id")
         return self
 
 

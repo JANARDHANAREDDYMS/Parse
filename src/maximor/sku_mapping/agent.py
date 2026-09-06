@@ -31,7 +31,7 @@ from maximor.sku_mapping.errors import (
     SkuMappingToolError,
     SkuMappingValidationError,
 )
-from maximor.sku_mapping.schemas import MAX_RETRIEVED_SKUS, SkuMappingDecision, SkuRecord
+from maximor.sku_mapping.schemas import MAX_RETRIEVED_SKUS, SkuMappingDecision, SkuRecord, SkuRetrievalResult
 from maximor.sku_mapping.tool_schemas import GetAuthoritativeSkuInput, RetrieveSkusInput
 from maximor.sku_mapping.validation import validate_sku_mapping_decision
 
@@ -92,13 +92,18 @@ class _FinalizationCapture:
 class SkuMappingRuntimeSummary:
     """Keep bounded operational facts for one invocation, never document bodies or secrets.
 
-    `catalog_version_id` and `authoritative_skus_by_id` have no equivalent in
-    `DocumentAnalysisRuntimeSummary`: they exist because `retrieve_skus` and
-    `get_authoritative_sku` must stay pinned to one catalog snapshot within an
-    invocation, and because `validate_sku_mapping_decision` cross-checks a
-    proposed `MATCH` against whatever this runtime's own successful
-    `get_authoritative_sku` calls actually confirmed, rather than re-querying
-    the database itself.
+    `catalog_version_id`, `authoritative_skus_by_id`, and
+    `last_retrieval_result` have no equivalent in
+    `DocumentAnalysisRuntimeSummary`: the first two exist because
+    `retrieve_skus` and `get_authoritative_sku` must stay pinned to one
+    catalog snapshot within an invocation, and because
+    `validate_sku_mapping_decision` cross-checks a proposed `MATCH` against
+    whatever this runtime's own successful `get_authoritative_sku` calls
+    actually confirmed, rather than re-querying the database itself.
+    `last_retrieval_result` retains the most recent successful `retrieve_skus`
+    response so a persistence layer can bundle the retrieved shortlist
+    alongside the decision in one canonical artifact, without a second
+    retrieval call.
     """
 
     request_id: uuid.UUID
@@ -115,6 +120,7 @@ class SkuMappingRuntimeSummary:
     referenced_evidence_ids: tuple[str, ...] = ()
     catalog_version_id: uuid.UUID | None = None
     authoritative_skus_by_id: dict[uuid.UUID, SkuRecord] = field(default_factory=dict)
+    last_retrieval_result: SkuRetrievalResult | None = None
     input_tokens: int | None = None
     cache_creation_input_tokens: int | None = None
     cache_read_input_tokens: int | None = None
@@ -951,6 +957,7 @@ class ClaudeSkuMappingAgent:
                 result = await getattr(tools, name)(value)
                 if name == "retrieve_skus":
                     runtime.catalog_version_id = result.catalog_version_id
+                    runtime.last_retrieval_result = result
                 elif name == "get_authoritative_sku":
                     runtime.authoritative_skus_by_id[result.id] = result
                 elif hasattr(value, "evidence"):

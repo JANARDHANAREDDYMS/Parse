@@ -8,7 +8,14 @@ from maximor.db.models.document_analysis import (
     DocumentAnalysisEvidenceReference,
     DocumentAnalysisRun,
     DocumentCommercialStatusAssessment,
+    DocumentGlobalTerm,
+    DocumentGlobalTermCandidate,
     DocumentProductCandidate,
 )
+from maximor.db.models.sku_mapping import (
+    SkuMappingEvidenceReference,
+    SkuMappingDecisionProjection,
+    SkuMappingRun,
+)
 
-__all__ = ["CatalogVersion", "Document", "Organization", "ProcessingJob", "Sku", "DocumentProcessingRun", "DocumentPage", "DocumentBlock", "DocumentTable", "DocumentAnalysisRun", "DocumentProductCandidate", "DocumentCommercialStatusAssessment", "DocumentAnalysisEvidenceReference"]
+__all__ = ["CatalogVersion", "Document", "Organization", "ProcessingJob", "Sku", "DocumentProcessingRun", "DocumentPage", "DocumentBlock", "DocumentTable", "DocumentAnalysisRun", "DocumentProductCandidate", "DocumentCommercialStatusAssessment", "DocumentGlobalTerm", "DocumentGlobalTermCandidate", "DocumentAnalysisEvidenceReference", "SkuMappingRun", "SkuMappingDecisionProjection", "SkuMappingEvidenceReference"]

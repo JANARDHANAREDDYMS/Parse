@@ -308,6 +308,7 @@ async def test_adapters_are_directly_invocable_and_scope_bound():
     assert len(tools.calls) == 3 == runtime.tool_call_count
     assert runtime.catalog_version_id == target.catalog_version_id
     assert runtime.authoritative_skus_by_id[target.id] == target
+    assert runtime.last_retrieval_result == retrieval_result(value, target)
 
     rejected = await adapters[2].handler({**evidence_arg, "organization_id": str(uuid.uuid4())})
     assert rejected["is_error"] and runtime.failed_tool_call_count == 1

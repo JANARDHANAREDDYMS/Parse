@@ -105,3 +105,11 @@ class SkuMappingValidationError(SkuMappingError):
 
         super().__init__("sku_mapping_invalid_output", "SKU mapping returned an invalid decision.")
         self.runtime = runtime
+
+
+class SkuMappingPersistenceError(SkuMappingError):
+    """Report a safe canonical-artifact or relational-persistence failure."""
+
+    def __init__(self, code: str = "sku_mapping_persistence_failed") -> None:
+        """Create a stable persistence error without source content or internal details."""
+        super().__init__(code, "SKU-mapping persistence could not be completed.")

@@ -27,6 +27,10 @@ class DocumentAnalysisRun(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             ondelete="CASCADE",
         ),
         UniqueConstraint("preprocessing_run_id", "attempt_number", name="uq_analysis_runs_preprocessing_attempt"),
+        # Supports a tenant-safe composite FK from processing_jobs (organization_id,
+        # document_id, analysis_run_id) -> here, so a sku_mapping job's analysis_run_id
+        # is provably scoped to the job's own organization and document.
+        UniqueConstraint("organization_id", "document_id", "id", name="uq_document_analysis_runs_tenant_document_id"),
         CheckConstraint("attempt_number >= 1", name="attempt_number_positive"),
         CheckConstraint("status IN ('running', 'completed', 'failed')", name="status_allowed"),
         CheckConstraint(
@@ -90,6 +94,11 @@ class DocumentProductCandidate(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "document_product_candidates"
     __table_args__ = (
         UniqueConstraint("analysis_run_id", "external_candidate_id", name="uq_analysis_candidates_external_id"),
+        # Supports a tenant-safe composite FK from processing_jobs (organization_id,
+        # analysis_run_id, document_product_candidate_id) -> here, so a sku_mapping
+        # job's candidate is provably scoped to the job's own organization and
+        # exactly the analysis run it claims.
+        UniqueConstraint("organization_id", "analysis_run_id", "id", name="uq_document_product_candidates_tenant_run_id"),
     )
 
     analysis_run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("document_analysis_runs.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -155,4 +164,44 @@ class DocumentAnalysisEvidenceReference(UUIDPrimaryKeyMixin, Base):
     x1: Mapped[float | None] = mapped_column()
     y1: Mapped[float | None] = mapped_column()
     evidence_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class DocumentGlobalTerm(UUIDPrimaryKeyMixin, Base):
+    """Project one raw contract term and its explicit applicability scope."""
+
+    __tablename__ = "document_global_terms"
+    __table_args__ = (
+        UniqueConstraint("analysis_run_id", "external_term_id", name="uq_analysis_global_terms_external_id"),
+    )
+
+    analysis_run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("document_analysis_runs.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    external_term_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    raw_name: Mapped[str] = mapped_column(Text, nullable=False)
+    raw_value: Mapped[str | None] = mapped_column(Text)
+    applicability_scope: Mapped[str] = mapped_column(String(16), nullable=False)
+    source_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    evidence_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class DocumentGlobalTermCandidate(UUIDPrimaryKeyMixin, Base):
+    """Associate a candidate-scoped term with an internal candidate projection."""
+
+    __tablename__ = "document_global_term_candidates"
+    __table_args__ = (
+        UniqueConstraint("global_term_id", "product_candidate_id", name="uq_global_term_candidate_link"),
+        ForeignKeyConstraint(
+            ["organization_id", "analysis_run_id", "product_candidate_id"],
+            ["document_product_candidates.organization_id", "document_product_candidates.analysis_run_id", "document_product_candidates.id"],
+            name="fk_global_term_candidates_tenant_candidate", ondelete="CASCADE",
+        ),
+    )
+
+    global_term_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("document_global_terms.id", ondelete="CASCADE"), nullable=False, index=True)
+    product_candidate_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("document_product_candidates.id", ondelete="CASCADE"), nullable=False, index=True)
+    analysis_run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("document_analysis_runs.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    candidate_external_id: Mapped[str] = mapped_column(String(128), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

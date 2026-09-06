@@ -28,6 +28,18 @@ class ProcessingJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             name="fk_processing_jobs_tenant_document",
             ondelete="CASCADE",
         ),
+        ForeignKeyConstraint(
+            ["organization_id", "document_id", "analysis_run_id"],
+            ["document_analysis_runs.organization_id", "document_analysis_runs.document_id", "document_analysis_runs.id"],
+            name="fk_jobs_tenant_analysis_run",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "analysis_run_id", "document_product_candidate_id"],
+            ["document_product_candidates.organization_id", "document_product_candidates.analysis_run_id", "document_product_candidates.id"],
+            name="fk_jobs_tenant_analysis_candidate",
+            ondelete="RESTRICT",
+        ),
         CheckConstraint("job_type <> ''", name="job_type_not_empty"),
         CheckConstraint("attempt_number >= 1", name="attempt_number_positive"),
         CheckConstraint(
@@ -35,11 +47,22 @@ class ProcessingJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             "'review_required')",
             name="status_allowed",
         ),
+        CheckConstraint(
+            "(job_type = 'sku_mapping' AND analysis_run_id IS NOT NULL AND document_product_candidate_id IS NOT NULL) "
+            "OR (job_type <> 'sku_mapping' AND analysis_run_id IS NULL AND document_product_candidate_id IS NULL)",
+            name="sku_mapping_link_required",
+        ),
         Index(
             "uq_processing_jobs_analysis_preprocessing_run",
             "preprocessing_run_id",
             unique=True,
             postgresql_where=text("job_type = 'document_analysis' AND status IN ('queued', 'running')"),
+        ),
+        Index(
+            "uq_processing_jobs_sku_mapping_analysis_candidate",
+            "analysis_run_id", "document_product_candidate_id",
+            unique=True,
+            postgresql_where=text("job_type = 'sku_mapping' AND status IN ('queued', 'running')"),
         ),
     )
 
@@ -50,6 +73,8 @@ class ProcessingJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     preprocessing_run_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("document_processing_runs.id", ondelete="RESTRICT", name="fk_jobs_preproc_run"), index=True
     )
+    analysis_run_id: Mapped[uuid.UUID | None] = mapped_column(index=True)
+    document_product_candidate_id: Mapped[uuid.UUID | None] = mapped_column(index=True)
     job_type: Mapped[str] = mapped_column(String(64), nullable=False)
     status: Mapped[str] = mapped_column(
         String(32), default=ProcessingJobStatus.QUEUED.value, nullable=False

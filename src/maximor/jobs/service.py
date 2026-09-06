@@ -131,6 +131,63 @@ async def schedule_document_analysis_job(
             raise
 
 
+async def schedule_sku_mapping_job(
+    session_factory: async_sessionmaker[AsyncSession],
+    *,
+    organization_id: uuid.UUID,
+    document_id: uuid.UUID,
+    analysis_run_id: uuid.UUID,
+    document_product_candidate_id: uuid.UUID,
+    retry_terminal: bool = False,
+) -> ProcessingJob:
+    """Create or return the one SKU-mapping job bound to one candidate of one analysis run.
+
+    Keyed by `(analysis_run_id, document_product_candidate_id)` together,
+    not `analysis_run_id` alone — one analysis run has many candidates, each
+    needing its own independently scheduled and retried job, unlike
+    preprocessing->analysis chaining's 1:1 relationship.
+    """
+    async with session_factory() as session:
+        try:
+            async with session.begin():
+                existing = await session.scalar(
+                    select(ProcessingJob).where(
+                        ProcessingJob.analysis_run_id == analysis_run_id,
+                        ProcessingJob.document_product_candidate_id == document_product_candidate_id,
+                        ProcessingJob.job_type == JobType.SKU_MAPPING.value,
+                    )
+                )
+                if existing is not None and (not retry_terminal or existing.status in {"queued", "running"}):
+                    return existing
+                attempts = list((await session.scalars(select(ProcessingJob.attempt_number).where(
+                    ProcessingJob.analysis_run_id == analysis_run_id,
+                    ProcessingJob.document_product_candidate_id == document_product_candidate_id,
+                    ProcessingJob.job_type == JobType.SKU_MAPPING.value,
+                ))).all())
+                job = ProcessingJob(
+                    id=uuid.uuid4(), organization_id=organization_id,
+                    document_id=document_id, analysis_run_id=analysis_run_id,
+                    document_product_candidate_id=document_product_candidate_id,
+                    job_type=JobType.SKU_MAPPING.value, status="queued",
+                    attempt_number=(max(attempts) + 1) if attempts else 1,
+                )
+                session.add(job)
+                await session.flush()
+                return job
+        except IntegrityError:
+            async with session.begin():
+                existing = await session.scalar(
+                    select(ProcessingJob).where(
+                        ProcessingJob.analysis_run_id == analysis_run_id,
+                        ProcessingJob.document_product_candidate_id == document_product_candidate_id,
+                        ProcessingJob.job_type == JobType.SKU_MAPPING.value,
+                    )
+                )
+                if existing is not None:
+                    return existing
+            raise
+
+
 async def claim_next_job(
     session_factory: async_sessionmaker[AsyncSession],
     eligible_job_types: tuple[JobType, ...],

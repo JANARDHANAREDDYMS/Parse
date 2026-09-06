@@ -57,6 +57,14 @@ class CommercialStatus(StrEnum):
     AMBIGUOUS = "ambiguous"
 
 
+class ApplicabilityScope(StrEnum):
+    """State whether a raw contract term applies document-wide or to candidates."""
+
+    DOCUMENT = "document"
+    CANDIDATE = "candidate"
+    UNKNOWN = "unknown"
+
+
 class EvidenceReference(AnalysisModel):
     """Point to one stable persisted block or table without embedding source content."""
 
@@ -100,11 +108,26 @@ class PricingSection(AnalysisModel):
 
 
 class GlobalTerm(AnalysisModel):
-    """Represent one raw document-wide term without deterministic normalization."""
+    """Represent one raw contract term with explicit, evidence-backed applicability."""
 
     term_id: Identifier
     raw_name: str = Field(min_length=1, max_length=500)
     raw_value: str | None = Field(default=None, max_length=4_000)
+    applicability_scope: ApplicabilityScope = ApplicabilityScope.UNKNOWN
+    applies_to_candidate_ids: tuple[Identifier, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_applicability(self) -> "GlobalTerm":
+        """Require candidate scope to name unique, ordered candidate identifiers."""
+
+        ids = self.applies_to_candidate_ids
+        if ids != tuple(sorted(ids)) or len(ids) != len(set(ids)):
+            raise ValueError("term candidate identifiers must be unique and ordered")
+        if self.applicability_scope == ApplicabilityScope.CANDIDATE and not ids:
+            raise ValueError("candidate applicability requires candidate identifiers")
+        if self.applicability_scope != ApplicabilityScope.CANDIDATE and ids:
+            raise ValueError("document or unknown applicability cannot name candidates")
+        return self
     evidence: tuple[EvidenceReference, ...] = Field(default=(), max_length=MAX_EVIDENCE_PER_ENTITY)
 
 
@@ -180,6 +203,9 @@ class DocumentAnalysisResult(AnalysisModel):
         candidate_ids = {item.candidate_id for item in self.product_candidates}
         if any(item.candidate_id is not None and item.candidate_id not in candidate_ids for item in self.commercial_statuses):
             raise ValueError("commercial status references an unknown product candidate")
+        for term in self.global_terms:
+            if any(candidate_id not in candidate_ids for candidate_id in term.applies_to_candidate_ids):
+                raise ValueError("global term references an unknown product candidate")
         nested_evidence = list(self.evidence_references)
         for item in (*self.contract_structure, *self.pricing_sections, *self.global_terms,
                      *self.product_candidates, *self.commercial_statuses):
