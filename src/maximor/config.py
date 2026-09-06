@@ -34,21 +34,51 @@ class DatabaseSettings(BaseSettings):
         default="claude-sonnet-5",
         validation_alias=AliasChoices("DOCUMENT_ANALYSIS_MODEL", "MAXIMOR_DOCUMENT_ANALYSIS_MODEL"),
     )
-    document_analysis_max_turns: int = Field(default=12, ge=1, le=100)
-    document_analysis_max_thinking_tokens: int = Field(default=4096, ge=256, le=32_000)
-    document_analysis_timeout_seconds: float = Field(default=120, gt=0, le=900)
-    document_analysis_max_budget_usd: float | None = Field(default=None, gt=0, le=100)
-    document_analysis_max_corrections: int = Field(default=1, ge=0, le=1)
+    document_analysis_max_turns: int = Field(
+        default=12, ge=1, le=100,
+        validation_alias=AliasChoices("DOCUMENT_ANALYSIS_MAX_TURNS", "MAXIMOR_DOCUMENT_ANALYSIS_MAX_TURNS"),
+    )
+    document_analysis_max_thinking_tokens: int = Field(
+        default=4096, ge=256, le=32_000,
+        validation_alias=AliasChoices("DOCUMENT_ANALYSIS_MAX_THINKING_TOKENS", "MAXIMOR_DOCUMENT_ANALYSIS_MAX_THINKING_TOKENS"),
+    )
+    document_analysis_timeout_seconds: float = Field(
+        default=120, gt=0, le=900,
+        validation_alias=AliasChoices("DOCUMENT_ANALYSIS_TIMEOUT_SECONDS", "MAXIMOR_DOCUMENT_ANALYSIS_TIMEOUT_SECONDS"),
+    )
+    document_analysis_max_budget_usd: float | None = Field(
+        default=None, gt=0, le=100,
+        validation_alias=AliasChoices("DOCUMENT_ANALYSIS_MAX_BUDGET_USD", "MAXIMOR_DOCUMENT_ANALYSIS_MAX_BUDGET_USD"),
+    )
+    document_analysis_max_corrections: int = Field(
+        default=1, ge=0, le=1,
+        validation_alias=AliasChoices("DOCUMENT_ANALYSIS_MAX_CORRECTIONS", "MAXIMOR_DOCUMENT_ANALYSIS_MAX_CORRECTIONS"),
+    )
     document_analysis_project_root: Path = Path(".")
     sku_mapping_model: str = Field(
         default="claude-sonnet-5",
         validation_alias=AliasChoices("SKU_MAPPING_MODEL", "MAXIMOR_SKU_MAPPING_MODEL"),
     )
-    sku_mapping_max_turns: int = Field(default=8, ge=1, le=100)
-    sku_mapping_max_thinking_tokens: int = Field(default=2048, ge=256, le=32_000)
-    sku_mapping_timeout_seconds: float = Field(default=60, gt=0, le=900)
-    sku_mapping_max_budget_usd: float | None = Field(default=None, gt=0, le=100)
-    sku_mapping_max_corrections: int = Field(default=1, ge=0, le=1)
+    sku_mapping_max_turns: int = Field(
+        default=8, ge=1, le=100,
+        validation_alias=AliasChoices("SKU_MAPPING_MAX_TURNS", "MAXIMOR_SKU_MAPPING_MAX_TURNS"),
+    )
+    sku_mapping_max_thinking_tokens: int = Field(
+        default=2048, ge=256, le=32_000,
+        validation_alias=AliasChoices("SKU_MAPPING_MAX_THINKING_TOKENS", "MAXIMOR_SKU_MAPPING_MAX_THINKING_TOKENS"),
+    )
+    sku_mapping_timeout_seconds: float = Field(
+        default=60, gt=0, le=900,
+        validation_alias=AliasChoices("SKU_MAPPING_TIMEOUT_SECONDS", "MAXIMOR_SKU_MAPPING_TIMEOUT_SECONDS"),
+    )
+    sku_mapping_max_budget_usd: float | None = Field(
+        default=None, gt=0, le=100,
+        validation_alias=AliasChoices("SKU_MAPPING_MAX_BUDGET_USD", "MAXIMOR_SKU_MAPPING_MAX_BUDGET_USD"),
+    )
+    sku_mapping_max_corrections: int = Field(
+        default=1, ge=0, le=1,
+        validation_alias=AliasChoices("SKU_MAPPING_MAX_CORRECTIONS", "MAXIMOR_SKU_MAPPING_MAX_CORRECTIONS"),
+    )
     sku_mapping_project_root: Path = Path(".")
 
     @field_validator("local_storage_root")

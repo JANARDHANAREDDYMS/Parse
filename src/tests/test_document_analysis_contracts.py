@@ -170,6 +170,18 @@ def test_global_term_applicability_scopes_are_explicit_and_bounded():
         )
 
 
+def test_global_term_candidate_ids_are_deterministic_and_legacy_defaults_unknown():
+    """Require lexical candidate ordering and preserve missing legacy fields as unknown."""
+
+    with pytest.raises(ValidationError):
+        GlobalTerm(term_id="term:000001", raw_name="Limit", applicability_scope=ApplicabilityScope.CANDIDATE, applies_to_candidate_ids=("candidate:000002", "candidate:000001"))
+    with pytest.raises(ValidationError):
+        GlobalTerm(term_id="term:000001", raw_name="Limit", applicability_scope=ApplicabilityScope.CANDIDATE, applies_to_candidate_ids=("candidate:000001", "candidate:000001"))
+    legacy = GlobalTerm.model_validate({"term_id": "term:legacy", "raw_name": "Payment"})
+    assert legacy.applicability_scope == ApplicabilityScope.UNKNOWN
+    assert legacy.applies_to_candidate_ids == ()
+
+
 @pytest.mark.asyncio
 async def test_placeholder_agent_fails_explicitly():
     """Ensure the skeleton never returns a fabricated successful analysis."""

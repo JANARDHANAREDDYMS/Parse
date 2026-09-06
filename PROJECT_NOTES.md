@@ -485,3 +485,26 @@ persisted and reload-validated.
   is tracked separately.
 
 Deferred, unchanged from the prior entry: linking `GlobalTerm` facts to SKUs.
+
+### 2026-09-06 — Global-term applicability
+
+Term applicability is owned by `DocumentAnalysisAgent`; raw term values remain
+unnormalized, and unknown applicability is preserved for later review.
+
+### 2026-09-06 — Global-term applicability decoupled from DocumentAnalysisAgent (supersedes the entry above)
+
+Previous decision (above, same day): `DocumentAnalysisAgent` itself classified term
+applicability. A live timeout investigation against `of-0006` found this reasoning step
+measurably increased model output/reasoning time, and a prompt-only attempt to make it
+more conservative did not resolve a second live timeout. Settled change:
+`DocumentAnalysisAgent` extracts raw terms and evidence only (`term_id`, `raw_name`,
+`raw_value`, evidence) — it no longer reasons about, receives, or emits applicability.
+Applicability resolution is deferred to a separate, not-yet-built post-analysis
+subsystem (`TermApplicabilityAgent`); `unknown`/`()`, assigned server-side, is the
+correct persisted initial state for every term until that subsystem exists.
+
+`ApplicabilityScope`, `GlobalTerm`'s fields, tables, migrations, and persistence
+projections are unchanged. A new compact `DraftGlobalTerm`/`DraftDocumentAnalysisResult`
+pair (`maximor/document_analysis/draft.py`) is the only shape the finalizer now accepts;
+`promote_draft_result` is the sole, deterministic conversion to the canonical
+`DocumentAnalysisResult`.

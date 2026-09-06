@@ -12,6 +12,8 @@ from maximor.db.models import (
     DocumentAnalysisRun,
     DocumentBlock,
     DocumentCommercialStatusAssessment,
+    DocumentGlobalTerm,
+    DocumentGlobalTermCandidate,
     DocumentPage,
     DocumentProcessingRun,
     DocumentProductCandidate,
@@ -25,9 +27,11 @@ from maximor.document_analysis.persistence import DocumentAnalysisPersistenceSer
 from maximor.document_analysis.schemas import (
     CommercialStatus,
     CommercialStatusAssessment,
+    ApplicabilityScope,
     DocumentAnalysisResult,
     EvidenceReference,
     EvidenceRepresentation,
+    GlobalTerm,
     ProductCandidate,
 )
 from maximor.preprocessing.persistence import canonical_json_bytes, compress_canonical_json
@@ -57,7 +61,7 @@ async def _source(organization_id: uuid.UUID) -> tuple[uuid.UUID, uuid.UUID, uui
 def _result(organization_id: uuid.UUID, document_id: uuid.UUID, preprocessing_run_id: uuid.UUID) -> DocumentAnalysisResult:
     """Build one generated, deterministic result with candidate/status/evidence projections."""
     evidence = EvidenceReference(preprocessing_run_id=preprocessing_run_id, page_number=1, block_id="native:p0001:b000000", representation=EvidenceRepresentation.NATIVE_TEXT, extraction_source=ExtractionSource.NATIVE, bounding_box=BoundingBox(x0=1, y0=2, x1=30, y1=12))
-    return DocumentAnalysisResult(schema_version="analysis-v1", organization_id=organization_id, document_id=document_id, preprocessing_run_id=preprocessing_run_id, preprocessing_schema_version="prep-v1", prompt_version="prompt-v1", agent_version="agent-v1", product_candidates=(ProductCandidate(candidate_id="candidate-0001", raw_name="Generated service", evidence=(evidence,)),), commercial_statuses=(CommercialStatusAssessment(assessment_id="status-0001", status=CommercialStatus.PURCHASED, candidate_id="candidate-0001", evidence=(evidence,)),), evidence_references=(evidence,))
+    return DocumentAnalysisResult(schema_version="analysis-v1", organization_id=organization_id, document_id=document_id, preprocessing_run_id=preprocessing_run_id, preprocessing_schema_version="prep-v1", prompt_version="prompt-v1", agent_version="agent-v1", product_candidates=(ProductCandidate(candidate_id="candidate-0001", raw_name="Generated service", evidence=(evidence,)),), commercial_statuses=(CommercialStatusAssessment(assessment_id="status-0001", status=CommercialStatus.PURCHASED, candidate_id="candidate-0001", evidence=(evidence,)),), global_terms=(GlobalTerm(term_id="term-0001", raw_name="Billing frequency", raw_value="Monthly", applicability_scope=ApplicabilityScope.CANDIDATE, applies_to_candidate_ids=("candidate-0001",), evidence=(evidence,)),), evidence_references=(evidence,))
 
 
 def _runtime() -> DocumentAnalysisRuntimeSummary:
@@ -88,10 +92,14 @@ async def test_completed_result_round_trips_with_candidate_status_and_evidence_p
         candidates = list((await session.scalars(__import__('sqlalchemy').select(DocumentProductCandidate).where(DocumentProductCandidate.analysis_run_id == run_id))).all())
         statuses = list((await session.scalars(__import__('sqlalchemy').select(DocumentCommercialStatusAssessment).where(DocumentCommercialStatusAssessment.analysis_run_id == run_id))).all())
         evidence = list((await session.scalars(__import__('sqlalchemy').select(DocumentAnalysisEvidenceReference).where(DocumentAnalysisEvidenceReference.analysis_run_id == run_id))).all())
+        terms = list((await session.scalars(__import__('sqlalchemy').select(DocumentGlobalTerm).where(DocumentGlobalTerm.analysis_run_id == run_id))).all())
+        term_links = list((await session.scalars(__import__('sqlalchemy').select(DocumentGlobalTermCandidate).where(DocumentGlobalTermCandidate.analysis_run_id == run_id))).all())
     assert run.status == "completed" and run.validation_status == "validated"
     assert candidates[0].external_candidate_id == "candidate-0001"
     assert statuses[0].product_candidate_id == candidates[0].id
-    assert len(evidence) == 3 and all(row.document_block_id is not None for row in evidence)
+    assert len(evidence) == 4 and all(row.document_block_id is not None for row in evidence)
+    assert terms[0].applicability_scope == "candidate" and terms[0].evidence_count == 1
+    assert len(term_links) == 1 and term_links[0].candidate_external_id == "candidate-0001"
 
 
 @pytest.mark.asyncio

@@ -11,13 +11,15 @@ Retrieve only relevant page text, blocks, and tables. Request a page render only
 when persisted text and layout cannot resolve visible structure. Connect facts across
 pages when necessary.
 
-Create document-level contract structure and global terms. For every global term,
-classify `applicability_scope` as `document`, `candidate`, or `unknown`; use
-`applies_to_candidate_ids` only for candidate scope and cite evidence for both the
-term and its applicability. Never assume a document-level date, payment term,
-currency, or limit applies to every candidate. Create product candidates
-for document-described products or services, then separately classify commercial
-status as purchased, included, optional, excluded, mentioned, or ambiguous.
+Create document-level contract structure and global terms. For each global term,
+extract its raw name and value with cited evidence only; do not omit a term
+because its meaning or scope is unclear. Do not classify how a term applies to
+candidates, decide whether it is document-wide or candidate-specific, or assume a
+date, payment term, currency, or limit applies to every candidate -- applicability
+is resolved later by a separate process, not by this analysis. Create product
+candidates for document-described products or services, then separately classify
+commercial status as purchased, included, optional, excluded, mentioned, or
+ambiguous.
 
 Attach precise persisted evidence to every material conclusion, including negative
 or non-purchased classifications. Preserve raw semantic values for later deterministic

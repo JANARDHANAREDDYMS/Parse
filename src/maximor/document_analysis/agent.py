@@ -20,6 +20,7 @@ from pydantic import ValidationError
 from maximor.config import DatabaseSettings
 
 from maximor.document_analysis.contracts import DocumentAnalysisRequest, DocumentAnalysisToolset
+from maximor.document_analysis.draft import DraftDocumentAnalysisResult, promote_draft_result
 from maximor.document_analysis.errors import (DocumentAnalysisConfigurationError, DocumentAnalysisNotConfiguredError, DocumentAnalysisRuntimeError, DocumentAnalysisValidationError, DocumentToolError)
 from maximor.document_analysis.schemas import DocumentAnalysisResult
 from maximor.document_analysis.tool_schemas import (EvidenceRegionInput, GetPageBlocksInput, GetPageRenderInput, GetPageTablesInput, GetPageTextInput, SearchDocumentInput, ToolScope)
@@ -563,7 +564,8 @@ class ClaudeDocumentAnalysisAgent:
             runtime.failure_stage = "structured_output_missing"
             return None, False
         try:
-            result = DocumentAnalysisResult.model_validate(self._normalize_structured_order(structured))
+            draft = DraftDocumentAnalysisResult.model_validate(self._normalize_structured_order(structured))
+            result = promote_draft_result(draft)
         except ValidationError as exc:
             runtime.failure_stage = "pydantic_schema_validation"
             runtime.pydantic_errors = self._safe_pydantic_errors(exc)
@@ -673,9 +675,14 @@ class ClaudeDocumentAnalysisAgent:
 
     @staticmethod
     def _finalizer_input_schema() -> dict[str, Any]:
-        """Derive a semantic-only submission schema with trusted fields removed."""
+        """Derive a semantic-only submission schema with trusted fields removed.
 
-        result_schema = copy.deepcopy(DocumentAnalysisResult.model_json_schema())
+        Built from `DraftDocumentAnalysisResult`, not the canonical result:
+        Claude never sees `applicability_scope` or `applies_to_candidate_ids`
+        on a global term, because the draft shape has no such fields.
+        """
+
+        result_schema = copy.deepcopy(DraftDocumentAnalysisResult.model_json_schema())
         definitions = result_schema.pop("$defs", None)
         properties = result_schema.get("properties", {})
         required = result_schema.get("required", [])
@@ -795,8 +802,8 @@ class ClaudeDocumentAnalysisAgent:
                 "After relevant pricing/product sections and supporting evidence are available, submit promptly; do not continue exploring unnecessarily. "
                 "When finished, call finalize_document_analysis exactly once with the complete semantic result; it is the only completion mechanism. "
                 "Do not return a final answer before that call. Reserve enough time for one correction. If it returns safe validation issues, correct only those issues and submit once more when allowed. "
-                "Classify each term's applicability as document, candidate, or unknown; cite evidence for the term and applicability. "
-                "Do not assume a document-level date, payment term, currency, or limit applies to every candidate. "
+                "Extract every global term's raw name and value with cited evidence; do not omit a term because its meaning or scope is unclear. "
+                "Do not classify how a term applies to candidates, decide whether it is document-wide or candidate-specific, or assume a date, payment term, currency, or limit applies to every candidate; a separate later process resolves applicability. "
                 "Do not perform SKU mapping, invent absent values, or hide ambiguity. Every material conclusion needs persisted evidence. "
                 f"organization_id={request.organization_id}; document_id={request.document_id}; preprocessing_run_id={request.preprocessing_run_id}; "
                 f"preprocessing_schema_version={request.preprocessing_schema_version}; document_analysis_schema_version={request.document_analysis_schema_version}; "

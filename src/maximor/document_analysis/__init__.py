@@ -13,7 +13,7 @@ from maximor.document_analysis.agent import (
 )
 from maximor.document_analysis.contracts import DocumentAnalysisRequest, DocumentAnalysisToolset
 from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
-from maximor.document_analysis.schemas import DocumentAnalysisResult
+from maximor.document_analysis.schemas import ApplicabilityScope, DocumentAnalysisResult
 
 __all__ = [
     "DocumentAnalysisAgent",
@@ -21,6 +21,7 @@ __all__ = [
     "DocumentAnalysisExecution",
     "DocumentAnalysisRequest",
     "DocumentAnalysisResult",
+    "ApplicabilityScope",
     "DocumentAnalysisRuntimeSummary",
     "DocumentAnalysisPersistenceService",
     "DocumentAnalysisToolset",
