@@ -485,3 +485,91 @@ class, F. Skill file, G. Validation module, H/I. Versions & errors.
   actually get a task built and sent through this agent at all — flagged as
   the next real design decision several runs ago and still unresolved), and
   any evaluation against the real 50-document ground-truth set.
+
+### 2026-09-05 — Run 9: First real, paid Claude call through the whole subsystem
+
+- User asked to backburner worker/job wiring (two real forks surfaced there:
+  job-to-candidate linking needs a compound `(analysis_run_id, candidate_id)`
+  key since one analysis run has many candidates, unlike the existing
+  `preprocessing_run_id`-only chaining pattern; and auto-chaining is blocked
+  on the still-unresolved eligibility policy) and instead run the real
+  `ClaudeSkuMappingAgent` end to end against `of-0001`'s actual persisted
+  analysis output, before touching worker wiring at all.
+- **Data prep, not just code:** discovered `of-0001`'s document belongs to
+  organization `preprocess-demo-fa422e41721d` (`fa422e41-...`), a
+  preprocessing-test org with **zero SKUs / no active catalog version** — a
+  different org from the one holding the real 21-SKU catalog. Loaded the real
+  catalog into *that* org (`catalog/loader.py`, same slug, upserts in place)
+  so retrieval could run against real persisted document + real catalog data
+  together. Confirmed 124 real `document_blocks` exist for its preprocessing
+  run (needed for real `get_evidence_region` resolution) and identified the
+  correct analysis run (`82385e20-...`, 3 real candidates — matches the
+  `of-0001/attempt-9-result.json` fixture used throughout this project).
+- Wrote a one-off script (`run_sku_mapping_live.py`, in the job scratch dir,
+  not part of the app) wiring the *real* `PostgresSkuRepository`,
+  `DeterministicHybridSkuRetriever`, real `PersistedDocumentTools` (for
+  evidence), `PersistedSkuMappingTools`, and a real `ClaudeSkuMappingAgent`
+  (no fake `client_factory`) against that data.
+- **First real run: all 3 candidates failed.** Found and fixed two genuine
+  bugs, each verified by re-running against real Claude, not by inspection
+  alone:
+  1. `_prompt()` never told the agent `task.preprocessing_run_id`, but the
+     agent needed to echo that value inside each submitted evidence object
+     (a nested required field, not a top-level trusted field it can't touch).
+     Every submission failed `decision_evidence_run_mismatch`, and since the
+     agent had no way to *learn* the correct value, it burned its whole
+     turn/time budget trying to "correct" an uncorrectable error
+     (`sku_mapping_max_turns` / `sku_mapping_timeout`).
+  2. After that fix, a deeper issue: the finalizer required the agent to
+     resubmit a full structured `EvidenceReference` object
+     (`representation`, `extraction_source`, `bounding_box`, ...)
+     reconstructed from a compact prompt summary that only ever showed
+     `page_number`+`block_id`. Even a genuinely correct citation failed
+     exact-equality against the task's stored evidence. **Fixed
+     architecturally, not by adding more prompt detail:** the finalizer
+     schema now exposes `evidence_ids` (plain `block_id`/`table_id` strings,
+     already shown in the prompt) instead of `evidence`; a new
+     `_resolve_evidence_ids` static method on `ClaudeSkuMappingAgent` looks
+     each identifier up against `task.all_evidence` and substitutes the
+     exact stored object server-side before validation. This makes the
+     whole failure class structurally impossible rather than papering over
+     one instance of it. Unresolvable/malformed identifiers reject as
+     correctable (`evidence_identifier_unresolved`).
+  - Added regression tests for both: `test_prompt_explains_evidence_id_citation`,
+    `test_resolve_evidence_ids_returns_exact_task_evidence`,
+    `test_resolve_evidence_ids_rejects_anything_unresolvable`, updated
+    `test_finalizer_schema_excludes_all_trusted_fields` to check `evidence`
+    is gone / `evidence_ids` is required. Updated `valid_decision_payload`
+    test fixture to the new shape. Full `test_sku_mapping_agent.py`: 31/31
+    passing (no live call in the test suite itself).
+- **Second run (all 3 real candidates): full success.** ~$0.086 total,
+  5 turns / ~$0.02–0.04 each:
+  - `pc_talent_acquisition_core` (purchased) → `MATCH` `TALENT_ACQUISITION_CORE`
+    — matches the deterministic-retriever spot check from Run 6.
+  - `pc_talent_intel_platform_prem` (purchased, abbreviated OCR-style text)
+    → `MATCH` `TALENT_INTELLIGENCE_PLATFORM_PREMIUM_ADDON` — the retriever's
+    own score here was a thin 0.619 vs. 0.556 for the wrong sibling (flagged
+    as a known-thin case in Run 6); the LLM correctly reasoned through the
+    abbreviation ("Talent Intel. Platf. Prem. Ed." = "Talent Intelligence
+    Platform Premium Edition") rather than just trusting the score — real
+    evidence the two-stage (deterministic shortlist + LLM judgment)
+    architecture earns its complexity.
+  - `pc_professional_service` (**ambiguous** commercial status) → `MATCH`
+    `PROFESSIONAL_SERVICE`, with the rationale explicitly noting "commercial
+    status ambiguity is noted... but is not reconsidered here" — correct
+    per the skill's instruction not to re-litigate commercial status, and a
+    concrete real-data illustration of why the eligibility-policy question
+    is real: this candidate now has a clean SKU match sitting on top of an
+    unresolved question of whether it should count as a purchase at all.
+  - All three needed exactly one correction round before succeeding — a
+    suspiciously uniform pattern worth investigating later (unconfirmed
+    hypothesis: possible case-sensitivity on the `outcome` enum, e.g. the
+    model first submitting `"MATCH"` before `"match"` — not yet verified
+    against actual first-attempt rejection data, since the runtime only
+    retains the latest attempt's validation state).
+- Net: the subsystem's actual decision quality checked out against real
+  Claude on real data for all 3 available candidates, including a hard case
+  and an ambiguous-status case. Two real, non-obvious bugs were caught and
+  fixed specifically *because* this was tested live rather than only via
+  `FakeClient`-based unit tests — worth remembering as a case for live
+  smoke-testing before wiring anything into production paths.

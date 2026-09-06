@@ -683,7 +683,18 @@ class ClaudeSkuMappingAgent:
 
     @staticmethod
     def _finalizer_input_schema() -> dict[str, Any]:
-        """Derive a semantic-only submission schema with trusted fields removed."""
+        """Derive a semantic-only submission schema with trusted fields removed.
+
+        `evidence` is replaced with `evidence_ids` (plain `block_id`/`table_id`
+        strings). A live run against Claude showed the structured
+        `EvidenceReference` shape (`representation`, `extraction_source`,
+        `bounding_box`, ...) cannot be reliably reconstructed from the compact
+        facts in the prompt, causing correct evidence citations to fail an
+        exact-equality check against the task's own evidence. Citing by
+        identifier and resolving server-side (`_resolve_evidence_ids`) makes
+        that whole failure class structurally impossible instead of relying
+        on the model to reproduce a nested object byte-for-byte.
+        """
 
         result_schema = copy.deepcopy(SkuMappingDecision.model_json_schema())
         definitions = result_schema.pop("$defs", None)
@@ -693,12 +704,40 @@ class ClaudeSkuMappingAgent:
             properties.pop(field_name, None)
             if field_name in required:
                 required.remove(field_name)
+        properties.pop("evidence", None)
+        if "evidence" in required:
+            required.remove("evidence")
+        properties["evidence_ids"] = {
+            "type": "array", "items": {"type": "string"}, "minItems": 1,
+            "description": "block_id or table_id values taken from the candidate's own listed evidence.",
+        }
+        required.append("evidence_ids")
         schema = _schema({"decision": result_schema}, ["decision"])
         # Pydantic references definitions from the schema root, not its nested
         # ``decision`` property; preserve them at the finalizer input root.
         if definitions:
             schema["$defs"] = definitions
         return schema
+
+    @staticmethod
+    def _resolve_evidence_ids(task: SkuMappingTask, evidence_ids: Any) -> list[dict[str, Any]] | None:
+        """Resolve submitted block_id/table_id identifiers to the task's own exact evidence.
+
+        Returns `None` on any unresolvable or malformed identifier so the
+        caller can reject the submission as a correctable content mistake,
+        never a partial or best-effort evidence list.
+        """
+
+        if not isinstance(evidence_ids, list) or not evidence_ids or not all(isinstance(item, str) for item in evidence_ids):
+            return None
+        by_identifier = {(reference.block_id or reference.table_id): reference for reference in task.all_evidence}
+        resolved: list[dict[str, Any]] = []
+        for identifier in evidence_ids:
+            reference = by_identifier.get(identifier)
+            if reference is None:
+                return None
+            resolved.append(reference.model_dump(mode="json"))
+        return resolved
 
     @staticmethod
     def _trusted_result_fields(task: SkuMappingTask, runtime: SkuMappingRuntimeSummary) -> dict[str, Any]:
@@ -827,8 +866,10 @@ class ClaudeSkuMappingAgent:
             "When finished, call submit_sku_mapping_decision exactly once with the complete decision; it is the only completion mechanism. "
             "Do not return a final answer before that call. Reserve enough time for one correction. If it returns safe validation issues, correct only those issues and submit once more when allowed. "
             "Do not perform money or date arithmetic, normalize other contract-item attributes, or reconsider the commercial status. "
-            "Cite only evidence that is already listed below; never invent an evidence reference. "
-            f"candidate_id={task.candidate_id}; raw_name={task.raw_name!r}; raw_attributes={attributes}; "
+            "Cite evidence_ids as the exact block/table identifiers already listed below (the part after "
+            "'block '/'table '), never a full evidence object and never an identifier not listed here. "
+            f"candidate_id={task.candidate_id}; "
+            f"raw_name={task.raw_name!r}; raw_attributes={attributes}; "
             f"commercial_status={task.commercial_status.value}; commercial_status_rationale={task.commercial_status_rationale!r}; "
             f"evidence=[{evidence_summary}]."
         )
@@ -993,10 +1034,23 @@ class ClaudeSkuMappingAgent:
                     )
                     result, correctable = None, False
                 else:
-                    proposed = {**submitted, **self._trusted_result_fields(task, runtime)}
-                    result, correctable = self._validate_structured_output(
-                        task, proposed, runtime,
-                    )
+                    resolved_evidence = self._resolve_evidence_ids(task, submitted.get("evidence_ids"))
+                    if resolved_evidence is None:
+                        runtime.failure_stage = "evidence_identifier_unresolved"
+                        runtime.validation_issue_codes = ("evidence_identifier_unresolved",)
+                        runtime.validation_issues = (
+                            {"code": "evidence_identifier_unresolved", "location": "decision:evidence_ids"},
+                        )
+                        result, correctable = None, True
+                    else:
+                        proposed = {
+                            **submitted, "evidence": resolved_evidence,
+                            **self._trusted_result_fields(task, runtime),
+                        }
+                        proposed.pop("evidence_ids", None)
+                        result, correctable = self._validate_structured_output(
+                            task, proposed, runtime,
+                        )
                 if result is not None:
                     capture.accepted_result = result
                     runtime.finalization_accepted = True

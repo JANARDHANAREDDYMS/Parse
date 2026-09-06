@@ -83,12 +83,17 @@ def retrieval_result(task_value: SkuMappingTask, sku_value: SkuRecord) -> SkuRet
 
 
 def valid_decision_payload(task_value: SkuMappingTask, sku_value: SkuRecord) -> dict:
-    """Return the smallest schema-valid MATCH submission for the given task/SKU."""
+    """Return the smallest schema-valid MATCH submission for the given task/SKU.
 
-    evidence = task_value.candidate_evidence[0].model_dump(mode="json")
+    Cites evidence by identifier (`evidence_ids`), matching what the real
+    finalizer schema now accepts — not a full `EvidenceReference` object.
+    """
+
+    reference = task_value.candidate_evidence[0]
+    evidence_id = reference.block_id or reference.table_id
     return {
         "outcome": "match", "sku_id": str(sku_value.id), "sku_code": sku_value.sku_code,
-        "sku_name": sku_value.name, "evidence": [evidence],
+        "sku_name": sku_value.name, "evidence_ids": [evidence_id],
     }
 
 
@@ -211,6 +216,41 @@ def test_options_have_exact_namespaced_tools_and_project_skill():
     assert "secret-test-key" not in repr(getattr(options, "_maximor_runtime"))
 
 
+def test_prompt_explains_evidence_id_citation():
+    """Instruct citation by block/table identifier, not a full evidence object.
+
+    Regression test: a real live run against Claude discovered that asking
+    the agent to submit a full `EvidenceReference` object (`representation`,
+    `extraction_source`, `bounding_box`, ...) reconstructed from a compact
+    prompt summary is unreliable — a genuinely correct citation still failed
+    exact-equality against the task's stored evidence. Citing by identifier
+    and resolving server-side (`_resolve_evidence_ids`) makes that class of
+    failure structurally impossible instead of relying on faithful
+    reconstruction.
+    """
+
+    value = task()
+    prompt = ClaudeSkuMappingAgent._prompt(value)
+    assert "evidence_ids" in prompt
+    assert value.candidate_evidence[0].block_id in prompt
+
+
+def test_resolve_evidence_ids_returns_exact_task_evidence():
+    """Resolve a submitted identifier back to the task's own exact EvidenceReference."""
+
+    value = task()
+    reference = value.candidate_evidence[0]
+    resolved = ClaudeSkuMappingAgent._resolve_evidence_ids(value, [reference.block_id])
+    assert resolved == [reference.model_dump(mode="json")]
+
+
+@pytest.mark.parametrize("evidence_ids", [["native:p0001:b999999"], [], "not-a-list", None])
+def test_resolve_evidence_ids_rejects_anything_unresolvable(evidence_ids):
+    """Return None (never a partial list) for an unknown, empty, or malformed identifier list."""
+
+    assert ClaudeSkuMappingAgent._resolve_evidence_ids(task(), evidence_ids) is None
+
+
 def test_finalizer_schema_excludes_all_trusted_fields():
     """Keep identity/catalog-version fields application-bound while retaining definitions."""
 
@@ -219,6 +259,9 @@ def test_finalizer_schema_excludes_all_trusted_fields():
     assert "$defs" in schema
     for field_name in TRUSTED_IDENTITY_FIELDS:
         assert field_name not in decision["properties"]
+    assert "evidence" not in decision["properties"]
+    assert decision["properties"]["evidence_ids"]["type"] == "array"
+    assert "evidence_ids" in decision["required"]
 
 
 @pytest.mark.parametrize(("message", "expected"), [
