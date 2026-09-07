@@ -132,131 +132,93 @@ Your internal structure should still allow MCP later:
 
 ## scalable end to end arch for now:
 
-Client/API
-    ↓
-Input validation and authentication
-    ↓
-Object storage for PDFs
-    ↓
-Job queue
-    ↓
-Document preprocessing worker
-    ├── Embedded text
-    ├── Layout blocks
-    ├── Page images
-    └── OCR fallback
-    ↓
-DocumentAnalysisAgent
-│
-├── Skill: order-form-analysis
-│     └── Workflow instructions and domain procedures
-│
-├── Narrow tools
-│     ├── extract_pdf_text
-│     ├── extract_pdf_layout
-│     ├── extract_pdf_tables
-│     ├── render_pdf_page
-│     ├── run_page_ocr
-│     ├── search_document
-│     └── save_document_analysis
-│
-└── Output
-      ├── contract structure
-      ├── pricing sections
-      ├── global terms
-      ├── product candidates
-      ├── commercial statuses
-      ├── raw contract-item attributes
-      └── evidence references
-    ↓
-SKU-MAPPING SUB SYSTEM AGENT
-│
-├── Input
-│     └── Eligible ProductCandidates from DocumentAnalysisAgent
-│
-├── Input checks
-│     └── Verify candidate, evidence, organization and catalog
-│
-├── Mapping records
-│     └── Track one mapping decision per ProductCandidate
-│
-├── SKU-mapping skill
-│     └── Teaches Claude the mapping procedure and restrictions
-│
-├── SkuRepository
-│     ├── JsonSkuRepository for the take-home
-│     └── PostgresSkuRepository for production
-│
-├── HybridSkuRetriever
-│     ├── Exact search
-│     ├── Lexical/trigram search
-│     ├── pgvector semantic search
-│     └── Merged ranked results
-│
-├── SkuMappingAgent
-│     ├── Calls narrow tools
-│     ├── Examines retrieved SKUs and evidence
-│     └── Returns MATCH / NO_MATCH / AMBIGUOUS
-│
-├── Mapping validation
-│     └── Confirms schema, catalog membership and evidence
-│
-├── Targeted mapping retries
-│     ├── Add document evidence
-│     ├── Broaden retrieval text
-│     └── Correct invalid mapping output
-│
-├── Mapping persistence
-│     └── Store retrievals, attempts, validations and decisions
-│
-└── Output
-      └── Validated SKU mapping for each ProductCandidate
-    ↓
-Normalization
-│
-├── Deterministic normalization
-│     ├── Money and currency
-│     ├── Dates
-│     ├── Quantities
-│     ├── Payment terms
-│     └── Billing enums
-│
-└── LLM assistance only for semantic ambiguity
-    ↓
-Final validation
-│
-├── Deterministic checks
-│     ├── Output schema
-│     ├── Decimal arithmetic
-│     ├── Date consistency
-│     ├── SKU integrity
-│     └── Total reconciliation
-│
-└── LLM semantic review
-      ├── Evidence supports the value
-      ├── Shared terms were applied correctly
-      └── Conflicting clauses were interpreted correctly
-    ↓
-Targeted correction
-│
-├── Document or attribute problem
-│     └── Return only that problem to DocumentAnalysisAgent
-│
-└── SKU-mapping problem
-      └── Return only that problem to SkuMappingAgent
-    ↓
-Run normalization and validation again
-    ↓
-Final schema construction
-    ↓
-finalize_extraction
-│
-├── Save COMPLETED when every required check passes
-└── Otherwise save REVIEW_REQUIRED or FAILED_VALIDATION
-    ↓
-Result database/API response
+This shows the current implemented endpoint first, then the planned normalization and finalization path.
 
-The repository and retriever are not themselves inside Claude. They are tools/services available to the SkuMappingAgent.
+```text
+Client
+  │ POST PDF upload
+  ▼
+FastAPI
+  ├── validates the request and tenant
+  ├── stores the source PDF under a relative object-storage key
+  └── creates a document_preprocessing processing_job in PostgreSQL
+  ▼
+PostgreSQL processing_jobs queue
+  │  (durable queue; a generic WorkerRunner claims jobs with SKIP LOCKED)
+  ▼
+Generic worker process
+  WorkerRunner → JobDispatcher → job-specific handler
+  │
+  ├── DocumentPreprocessingHandler                         [IMPLEMENTED]
+  │     ├── inspect PDF, extract native text/layout/tables
+  │     ├── render pages; OCR only when needed
+  │     ├── persist/reload-validate PreprocessedDocument
+  │     └── schedule document_analysis
+  │
+  ├── DocumentAnalysisHandler                              [IMPLEMENTED]
+  │     ├── Claude DocumentAnalysisAgent
+  │     │     └── narrow persisted-document tools:
+  │     │         overview, search, targeted page text/blocks/tables/renders,
+  │     │         and evidence regions — never direct PDF or SQL access
+  │     ├── persist/reload-validate canonical analysis
+  │     └── fan out independently after success:
+  │           │
+  │           ├─────────────────────────────────────────────────────────┐
+  │           ▼                                                         ▼
+  │     sku_mapping jobs                                      term_applicability job
+  │     (one per eligible candidate)                          (one per analysis run)
+  │           │                                                         │
+  │           ▼                                                         ▼
+  │     SkuMappingHandler                                  TermApplicabilityHandler
+  │     ├── load active tenant catalog                     ├── Claude TermTriageAgent
+  │     ├── HybridSkuRetriever                             │     classifies raw terms as metadata,
+  │     │     exact/alias → lexical → semantic seam        │     potential line-item, or uncertain
+  │     ├── Claude SkuMappingAgent                         └── Claude TermApplicabilityAgent
+  │     │     MATCH / NO_MATCH / AMBIGUOUS                       for selected terms only:
+  │     └── persist/reload-validate decision                    scope + raw commercial facts
+  │           │                                                   + evidence-backed coverage
+  │           ▼                                                         │
+  │     validated SKU mappings                                          ▼
+  │                                                           validated commercial enrichment
+  │
+  └── Both completed branches become trusted inputs to normalization.
+
+                         ┌───────────────────────────────────────────┐
+                         │ NEXT: deterministic normalization          │
+                         │ ├── money/currency and price schedules     │
+                         │ ├── dates and service periods              │
+                         │ ├── quantities                             │
+                         │ ├── payment terms and billing enums        │
+                         │ └── explicit, evidence-backed derivations  │
+                         └───────────────────────────────────────────┘
+                                             │
+                                             ▼
+                         ┌───────────────────────────────────────────┐
+                         │ NEXT: final validation                     │
+                         │ ├── schema, SKU, date, and decimal checks  │
+                         │ ├── total/schedule reconciliation          │
+                         │ ├── targeted semantic review only when     │
+                         │ │   deterministic rules cannot decide      │
+                         │ └── targeted correction to the owning      │
+                         │     document, SKU, or term stage           │
+                         └───────────────────────────────────────────┘
+                                             │
+                                             ▼
+                         FinalOrderFormExtraction
+                         ├── COMPLETED: every required check passes
+                         └── REVIEW_REQUIRED / FAILED_VALIDATION:
+                             safe diagnostics and no fabricated result
+                                             │
+                                             ▼
+                              persisted result and tenant-scoped API
+```
+
+Important boundaries:
+
+- PostgreSQL holds job state, tenant-scoped relational projections, and lineage. Object storage holds PDFs, page renders, and compressed canonical artifacts. Neither is passed wholesale through an agent prompt.
+- `organization_id` scopes every record and tool call. `document_id` identifies the uploaded source; preprocessing, analysis, mapping, and enrichment runs are separate versioned records linked to it.
+- The catalog repository and hybrid retriever are application services exposed to `SkuMappingAgent` through narrow tools. They are not inside Claude.
+- `SKU_MAPPING` and `TERM_APPLICABILITY` are parallel after document analysis. Term enrichment does not wait for SKU mapping; normalization is the first future stage that consumes both results.
 
 
 ## Product Scale Decisions to consider:
