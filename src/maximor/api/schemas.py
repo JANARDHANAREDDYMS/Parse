@@ -63,3 +63,24 @@ class DocumentAnalysisResponse(BaseModel):
     error_code: str | None
     error_message: str | None
     result: dict[str, Any] | None
+
+
+class TermApplicabilityResponse(BaseModel):
+    """Tenant-scoped status and optional validated enrichment result."""
+    run_id: uuid.UUID
+    document_id: uuid.UUID
+    analysis_run_id: uuid.UUID
+    status: str
+    attempt_number: int
+    model: str
+    schema_version: str
+    prompt_version: str
+    skill_version: str
+    agent_version: str
+    started_at: datetime
+    completed_at: datetime | None
+    error_code: str | None
+    error_message: str | None
+    failure_stage: str | None
+    diagnostics: dict[str, Any] | None
+    result: dict[str, Any] | None

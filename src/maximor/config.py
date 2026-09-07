@@ -55,6 +55,56 @@ class DatabaseSettings(BaseSettings):
         validation_alias=AliasChoices("DOCUMENT_ANALYSIS_MAX_CORRECTIONS", "MAXIMOR_DOCUMENT_ANALYSIS_MAX_CORRECTIONS"),
     )
     document_analysis_project_root: Path = Path(".")
+    term_triage_model: str = Field(
+        default="claude-sonnet-5",
+        validation_alias=AliasChoices("TERM_TRIAGE_MODEL", "MAXIMOR_TERM_TRIAGE_MODEL"),
+    )
+    term_triage_max_turns: int = Field(
+        default=4, ge=1, le=100,
+        validation_alias=AliasChoices("TERM_TRIAGE_MAX_TURNS", "MAXIMOR_TERM_TRIAGE_MAX_TURNS"),
+    )
+    term_triage_max_thinking_tokens: int = Field(
+        default=1024, ge=256, le=32_000,
+        validation_alias=AliasChoices("TERM_TRIAGE_MAX_THINKING_TOKENS", "MAXIMOR_TERM_TRIAGE_MAX_THINKING_TOKENS"),
+    )
+    term_triage_timeout_seconds: float = Field(
+        default=60, gt=0, le=900,
+        validation_alias=AliasChoices("TERM_TRIAGE_TIMEOUT_SECONDS", "MAXIMOR_TERM_TRIAGE_TIMEOUT_SECONDS"),
+    )
+    term_triage_max_budget_usd: float | None = Field(
+        default=None, gt=0, le=100,
+        validation_alias=AliasChoices("TERM_TRIAGE_MAX_BUDGET_USD", "MAXIMOR_TERM_TRIAGE_MAX_BUDGET_USD"),
+    )
+    term_triage_max_corrections: int = Field(
+        default=1, ge=0, le=1,
+        validation_alias=AliasChoices("TERM_TRIAGE_MAX_CORRECTIONS", "MAXIMOR_TERM_TRIAGE_MAX_CORRECTIONS"),
+    )
+    term_triage_project_root: Path = Path(".")
+    term_applicability_model: str = Field(
+        default="claude-sonnet-5",
+        validation_alias=AliasChoices("TERM_APPLICABILITY_MODEL", "MAXIMOR_TERM_APPLICABILITY_MODEL"),
+    )
+    term_applicability_max_turns: int = Field(
+        default=8, ge=1, le=100,
+        validation_alias=AliasChoices("TERM_APPLICABILITY_MAX_TURNS", "MAXIMOR_TERM_APPLICABILITY_MAX_TURNS"),
+    )
+    term_applicability_max_thinking_tokens: int = Field(
+        default=2048, ge=256, le=32_000,
+        validation_alias=AliasChoices("TERM_APPLICABILITY_MAX_THINKING_TOKENS", "MAXIMOR_TERM_APPLICABILITY_MAX_THINKING_TOKENS"),
+    )
+    term_applicability_timeout_seconds: float = Field(
+        default=150, gt=0, le=900,
+        validation_alias=AliasChoices("TERM_APPLICABILITY_TIMEOUT_SECONDS", "MAXIMOR_TERM_APPLICABILITY_TIMEOUT_SECONDS"),
+    )
+    term_applicability_max_budget_usd: float | None = Field(
+        default=None, gt=0, le=100,
+        validation_alias=AliasChoices("TERM_APPLICABILITY_MAX_BUDGET_USD", "MAXIMOR_TERM_APPLICABILITY_MAX_BUDGET_USD"),
+    )
+    term_applicability_max_corrections: int = Field(
+        default=1, ge=0, le=1,
+        validation_alias=AliasChoices("TERM_APPLICABILITY_MAX_CORRECTIONS", "MAXIMOR_TERM_APPLICABILITY_MAX_CORRECTIONS"),
+    )
+    term_applicability_project_root: Path = Path(".")
     sku_mapping_model: str = Field(
         default="claude-sonnet-5",
         validation_alias=AliasChoices("SKU_MAPPING_MODEL", "MAXIMOR_SKU_MAPPING_MODEL"),

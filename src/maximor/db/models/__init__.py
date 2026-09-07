@@ -17,5 +17,10 @@ from maximor.db.models.sku_mapping import (
     SkuMappingDecisionProjection,
     SkuMappingRun,
 )
+from maximor.db.models.term_applicability import (
+    TermApplicabilityRun, TermTriageDecisionProjection, TermApplicabilityDecisionProjection,
+    CandidateCommercialFactCoverageProjection, CandidateCommercialFactProjection,
+    TermApplicabilityEvidenceProjection,
+)
 
-__all__ = ["CatalogVersion", "Document", "Organization", "ProcessingJob", "Sku", "DocumentProcessingRun", "DocumentPage", "DocumentBlock", "DocumentTable", "DocumentAnalysisRun", "DocumentProductCandidate", "DocumentCommercialStatusAssessment", "DocumentGlobalTerm", "DocumentGlobalTermCandidate", "DocumentAnalysisEvidenceReference", "SkuMappingRun", "SkuMappingDecisionProjection", "SkuMappingEvidenceReference"]
+__all__ = ["CatalogVersion", "Document", "Organization", "ProcessingJob", "Sku", "DocumentProcessingRun", "DocumentPage", "DocumentBlock", "DocumentTable", "DocumentAnalysisRun", "DocumentProductCandidate", "DocumentCommercialStatusAssessment", "DocumentGlobalTerm", "DocumentGlobalTermCandidate", "DocumentAnalysisEvidenceReference", "SkuMappingRun", "SkuMappingDecisionProjection", "SkuMappingEvidenceReference", "TermApplicabilityRun", "TermTriageDecisionProjection", "TermApplicabilityDecisionProjection", "CandidateCommercialFactCoverageProjection", "CandidateCommercialFactProjection", "TermApplicabilityEvidenceProjection"]

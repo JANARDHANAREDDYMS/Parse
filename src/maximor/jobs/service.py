@@ -187,6 +187,24 @@ async def schedule_sku_mapping_job(
                     return existing
             raise
 
+async def schedule_term_applicability_job(session_factory, *, organization_id: uuid.UUID, document_id: uuid.UUID, analysis_run_id: uuid.UUID, retry_terminal: bool = False) -> ProcessingJob:
+    """Create or return one active term-applicability job per analysis run."""
+    async with session_factory() as session:
+        try:
+            async with session.begin():
+                existing = await session.scalar(select(ProcessingJob).where(ProcessingJob.analysis_run_id == analysis_run_id, ProcessingJob.job_type == JobType.TERM_APPLICABILITY.value).order_by(ProcessingJob.attempt_number.desc()))
+                if existing is not None and (existing.status in {"queued", "running"} or not retry_terminal):
+                    return existing
+                prior = list((await session.scalars(select(ProcessingJob.attempt_number).where(ProcessingJob.analysis_run_id == analysis_run_id, ProcessingJob.job_type == JobType.TERM_APPLICABILITY.value))).all())
+                job = ProcessingJob(id=uuid.uuid4(), organization_id=organization_id, document_id=document_id, analysis_run_id=analysis_run_id, job_type=JobType.TERM_APPLICABILITY.value, status="queued", attempt_number=max(prior, default=0)+1)
+                session.add(job); await session.flush(); return job
+        except IntegrityError:
+            async with session.begin():
+                existing = await session.scalar(select(ProcessingJob).where(ProcessingJob.analysis_run_id == analysis_run_id, ProcessingJob.job_type == JobType.TERM_APPLICABILITY.value, ProcessingJob.status.in_(["queued", "running"])))
+                if existing is not None:
+                    return existing
+            raise
+
 
 async def claim_next_job(
     session_factory: async_sessionmaker[AsyncSession],

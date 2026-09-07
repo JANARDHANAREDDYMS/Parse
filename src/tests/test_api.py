@@ -134,3 +134,12 @@ async def test_api_creates_preprocessing_jobs_not_smoke_jobs(
     status = await client.get(created.json()["job_status_url"])
     assert status.json()["job_type"] == JobType.DOCUMENT_PREPROCESSING.value
     assert all("preprocessing" not in route.path for route in app.routes)
+
+
+@pytest.mark.asyncio
+async def test_term_applicability_endpoint_not_found_is_safe(app_client):
+    """Missing enrichment runs return a tenant-scoped safe 404."""
+    _, client = app_client
+    response = await client.get(f"/v1/organizations/{uuid.uuid4()}/documents/{uuid.uuid4()}/term-applicability")
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "term_applicability_not_found"

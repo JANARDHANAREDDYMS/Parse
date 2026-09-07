@@ -8,9 +8,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse
+from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse, TermApplicabilityResponse
 from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
 from maximor.document_analysis.errors import DocumentAnalysisError
+from maximor.term_applicability.persistence import TermApplicabilityPersistenceService
+from maximor.db.models import TermApplicabilityRun
+from sqlalchemy import select
 from maximor.config import DatabaseSettings, get_database_settings
 from maximor.db.health import check_database_health
 from maximor.db.session import get_session_factory
@@ -44,6 +47,9 @@ def create_app(
     app.state.storage = storage or LocalObjectStorage(configured.local_storage_root)
     app.state.session_factory = session_factory or get_session_factory()
     app.state.analysis_persistence = DocumentAnalysisPersistenceService(
+        app.state.session_factory, app.state.storage
+    )
+    app.state.term_applicability_persistence = TermApplicabilityPersistenceService(
         app.state.session_factory, app.state.storage
     )
 
@@ -206,6 +212,51 @@ def create_app(
             terminal_reason=run.terminal_reason,
             error_code=run.error_code if run.status == "failed" else None,
             error_message=run.error_message if run.status == "failed" else None,
+            result=result,
+        )
+
+    @app.get(
+        "/v1/organizations/{organization_id}/documents/{document_id}/term-applicability",
+        response_model=TermApplicabilityResponse,
+    )
+    async def term_applicability_status(
+        request: Request, organization_id: uuid.UUID, document_id: uuid.UUID
+    ):
+        try:
+            async with request.app.state.session_factory() as session:
+                run = await session.scalar(
+                    select(TermApplicabilityRun)
+                    .where(
+                        TermApplicabilityRun.organization_id == organization_id,
+                        TermApplicabilityRun.document_id == document_id,
+                    )
+                    .order_by(TermApplicabilityRun.attempt_number.desc())
+                )
+            if run is None:
+                return error_response(404, "term_applicability_not_found", "Term applicability is unavailable.")
+            result = None
+            failure_stage = None
+            diagnostics = None
+            if run.status == "completed":
+                result = (await request.app.state.term_applicability_persistence.load_completed_result(
+                    organization_id=organization_id, run_id=run.id
+                )).model_dump(mode="json")
+            elif run.status == "failed":
+                diagnostics = run.runtime_diagnostics
+                if isinstance(diagnostics, dict):
+                    failure_stage = diagnostics.get("failure_stage")
+        except Exception:
+            return error_response(503, "term_applicability_unavailable", "Term applicability is unavailable.")
+        return TermApplicabilityResponse(
+            run_id=run.id, document_id=run.document_id, analysis_run_id=run.analysis_run_id,
+            status=run.status, attempt_number=run.attempt_number, model=run.model,
+            schema_version=run.schema_version, prompt_version=run.prompt_version,
+            skill_version=run.skill_version, agent_version=run.agent_version,
+            started_at=run.started_at, completed_at=run.completed_at,
+            error_code=run.error_code if run.status == "failed" else None,
+            error_message=run.error_message if run.status == "failed" else None,
+            failure_stage=failure_stage,
+            diagnostics=diagnostics,
             result=result,
         )
 

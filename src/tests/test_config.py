@@ -12,6 +12,8 @@ tests construct `DatabaseSettings` directly (never the `lru_cache`d
 import pytest
 
 from maximor.config import DatabaseSettings
+from maximor.term_applicability.agent import ClaudeTermApplicabilityAgent
+from maximor.term_triage.agent import ClaudeTermTriageAgent
 
 
 def _settings(**overrides) -> DatabaseSettings:
@@ -58,4 +60,41 @@ def test_agent_settings_consistency_pass_still_reads_prefixed_env_vars(monkeypat
     """The pre-existing MAXIMOR_-prefixed form keeps working after adding the alias."""
 
     monkeypatch.setenv(env_name, value)
+    assert getattr(_settings(), field_name) == expected
+
+
+def test_term_agent_settings_have_safe_defaults_and_agents_construct():
+    """Both term agents can resolve every centralized setting from defaults."""
+
+    configured = _settings()
+    assert configured.term_triage_model == "claude-sonnet-5"
+    assert configured.term_triage_max_turns == 4
+    assert configured.term_triage_max_thinking_tokens == 1024
+    assert configured.term_triage_timeout_seconds == 60
+    assert configured.term_triage_max_corrections == 1
+    assert configured.term_applicability_model == "claude-sonnet-5"
+    assert configured.term_applicability_max_turns == 8
+    assert configured.term_applicability_max_thinking_tokens == 2048
+    assert configured.term_applicability_timeout_seconds == 150
+    assert configured.term_applicability_max_corrections == 1
+    ClaudeTermTriageAgent(configured)
+    ClaudeTermApplicabilityAgent(configured)
+
+
+@pytest.mark.parametrize(
+    ("field_name", "bare_name", "prefixed_name", "value", "expected"),
+    [
+        ("term_triage_timeout_seconds", "TERM_TRIAGE_TIMEOUT_SECONDS", "MAXIMOR_TERM_TRIAGE_TIMEOUT_SECONDS", "75", 75),
+        ("term_applicability_timeout_seconds", "TERM_APPLICABILITY_TIMEOUT_SECONDS", "MAXIMOR_TERM_APPLICABILITY_TIMEOUT_SECONDS", "150", 150),
+        ("term_triage_max_turns", "TERM_TRIAGE_MAX_TURNS", "MAXIMOR_TERM_TRIAGE_MAX_TURNS", "6", 6),
+        ("term_applicability_max_thinking_tokens", "TERM_APPLICABILITY_MAX_THINKING_TOKENS", "MAXIMOR_TERM_APPLICABILITY_MAX_THINKING_TOKENS", "4096", 4096),
+    ],
+)
+def test_term_agent_settings_accept_bare_and_prefixed_aliases(monkeypatch, field_name, bare_name, prefixed_name, value, expected):
+    """Both documented environment-variable spellings configure each field."""
+
+    monkeypatch.setenv(bare_name, value)
+    assert getattr(_settings(), field_name) == expected
+    monkeypatch.delenv(bare_name)
+    monkeypatch.setenv(prefixed_name, value)
     assert getattr(_settings(), field_name) == expected

@@ -23,7 +23,7 @@ from maximor.document_analysis.tools import PersistedDocumentTools
 from maximor.document_analysis.validation import validate_document_analysis_result
 from maximor.document_analysis.versions import DOCUMENT_ANALYSIS_AGENT_VERSION, DOCUMENT_ANALYSIS_PROMPT_VERSION, DOCUMENT_ANALYSIS_SCHEMA_VERSION, ORDER_FORM_ANALYSIS_SKILL_VERSION
 from maximor.jobs.errors import JobExecutionError
-from maximor.jobs.service import schedule_sku_mapping_job
+from maximor.jobs.service import schedule_sku_mapping_job, schedule_term_applicability_job
 from maximor.jobs.types import JobContext, JobType
 from maximor.sku_mapping.eligibility import EligibilityDisposition, SkuMappingEligibilityPolicy
 from maximor.storage import ObjectStorage
@@ -85,6 +85,7 @@ class DocumentAnalysisHandler:
             if loaded != execution.result:
                 raise JobExecutionError("analysis_reload_failed", "Document analysis persistence validation failed.")
             await self._schedule_eligible_sku_mapping_jobs(context, analysis_run_id)
+            await schedule_term_applicability_job(self._sessions, organization_id=context.organization_id, document_id=context.document_id, analysis_run_id=analysis_run_id)
         except JobExecutionError as exc:
             await self._fail(analysis_run_id, exc.code, exc.safe_message, runtime)
             raise

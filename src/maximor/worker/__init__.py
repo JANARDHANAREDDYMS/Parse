@@ -5,7 +5,7 @@ from maximor.db.session import get_session_factory
 from maximor.jobs.dispatcher import JobDispatcher
 from maximor.jobs.types import JobType
 from maximor.storage import LocalObjectStorage
-from maximor.worker.handlers import PipelineSmokeTestHandler, DocumentPreprocessingHandler, DocumentAnalysisHandler, SkuMappingHandler
+from maximor.worker.handlers import PipelineSmokeTestHandler, DocumentPreprocessingHandler, DocumentAnalysisHandler, SkuMappingHandler, TermApplicabilityHandler
 from maximor.preprocessing.pdf_inspector import PypdfPdfInspector
 from maximor.preprocessing.text_extractor import PymupdfNativeTextExtractor
 from maximor.preprocessing.layout_extractor import PdfplumberLayoutExtractor
@@ -17,6 +17,7 @@ from maximor.preprocessing.service import DeterministicDocumentPreprocessor
 from maximor.preprocessing.persistence import PreprocessingResultRepository
 from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
 from maximor.sku_mapping.persistence import SkuMappingPersistenceService
+from maximor.term_applicability.persistence import TermApplicabilityPersistenceService
 from maximor.worker.runner import WorkerRunner
 
 
@@ -30,6 +31,7 @@ def build_worker() -> WorkerRunner:
     results = PreprocessingResultRepository(session_factory, storage)
     analysis_results = DocumentAnalysisPersistenceService(session_factory, storage)
     mapping_results = SkuMappingPersistenceService(session_factory, storage)
+    enrichment_results = TermApplicabilityPersistenceService(session_factory, storage)
     dispatcher = JobDispatcher(
         {
             JobType.PIPELINE_SMOKE_TEST: PipelineSmokeTestHandler(
@@ -38,6 +40,7 @@ def build_worker() -> WorkerRunner:
             JobType.DOCUMENT_PREPROCESSING: DocumentPreprocessingHandler(session_factory, preprocessor, results),
             JobType.DOCUMENT_ANALYSIS: DocumentAnalysisHandler(settings, session_factory, storage, analysis_results),
             JobType.SKU_MAPPING: SkuMappingHandler(settings, session_factory, storage, analysis_results, mapping_results),
+            JobType.TERM_APPLICABILITY: TermApplicabilityHandler(settings, session_factory, storage, analysis_results, enrichment_results),
         }
     )
     return WorkerRunner(

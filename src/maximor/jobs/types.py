@@ -12,6 +12,7 @@ class JobType(StrEnum):
     DOCUMENT_PREPROCESSING = "document_preprocessing"
     DOCUMENT_ANALYSIS = "document_analysis"
     SKU_MAPPING = "sku_mapping"
+    TERM_APPLICABILITY = "term_applicability"
 
 
 @dataclass(frozen=True)
