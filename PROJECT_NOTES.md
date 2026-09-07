@@ -149,13 +149,13 @@ PostgreSQL processing_jobs queue
 Generic worker process
   WorkerRunner → JobDispatcher → job-specific handler
   │
-  ├── DocumentPreprocessingHandler                         [IMPLEMENTED]
+  ├── DocumentPreprocessingHandler                         
   │     ├── inspect PDF, extract native text/layout/tables
   │     ├── render pages; OCR only when needed
   │     ├── persist/reload-validate PreprocessedDocument
   │     └── schedule document_analysis
   │
-  ├── DocumentAnalysisHandler                              [IMPLEMENTED]
+  ├── DocumentAnalysisHandler                            
   │     ├── Claude DocumentAnalysisAgent
   │     │     └── narrow persisted-document tools:
   │     │         overview, search, targeted page text/blocks/tables/renders,
