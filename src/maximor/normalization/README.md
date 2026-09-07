@@ -46,7 +46,14 @@ later normalizer would need.
 | Exact-match document-term inheritance / full-order validation | **Implemented (Stage 4)** | trusted input + provisional draft | inherited draft + deterministic `ValidationReport` |
 | Finalization readiness / final-schema-shaped candidate | **Implemented (Stage 5A)** | provisional extraction + trusted input | candidate + `FinalizationReadiness` (`READY_FOR_SEMANTIC_REVIEW`, `REVIEW_REQUIRED`, or `FAILED_VALIDATION`) |
 | Bounded semantic review contracts / guarded agent | **Implemented (Stage 5B)** | eligible Stage 5A review items | ordered evidence-backed semantic findings |
-| Semantic review, correction loop, `COMPLETED` semantics, persistence/job/API wiring | **Not built (Stage 5B+)** | — | — |
+| Semantic review, correction loop, `COMPLETED` semantics, persistence/job/API wiring | **Implemented (Stage 5C)** | persisted Stage 5A input and bounded semantic findings | tenant-scoped normalization result and projections |
+
+Stage 5C adds the `normalization` queue job, dependency fan-in, canonical
+gzip artifact persistence, relational projections, and a tenant-scoped read
+endpoint.  The generic runner still owns processing-job transitions.  Domain
+results may be `completed`, `review_required`, or `failed_validation`; only
+infrastructure/agent/persistence failures fail the processing job.  Automatic
+upstream correction execution remains deferred.
 
 ## Scope (settled, not to be silently widened)
 

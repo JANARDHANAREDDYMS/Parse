@@ -8,11 +8,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse, TermApplicabilityResponse
+from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse, TermApplicabilityResponse, NormalizationResponse
 from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
 from maximor.document_analysis.errors import DocumentAnalysisError
 from maximor.term_applicability.persistence import TermApplicabilityPersistenceService
+from maximor.normalization.persistence import NormalizationPersistenceService
 from maximor.db.models import TermApplicabilityRun
+from maximor.db.models import NormalizationRun
 from sqlalchemy import select
 from maximor.config import DatabaseSettings, get_database_settings
 from maximor.db.health import check_database_health
@@ -52,6 +54,7 @@ def create_app(
     app.state.term_applicability_persistence = TermApplicabilityPersistenceService(
         app.state.session_factory, app.state.storage
     )
+    app.state.normalization_persistence = NormalizationPersistenceService(app.state.session_factory, app.state.storage)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(
@@ -259,6 +262,20 @@ def create_app(
             diagnostics=diagnostics,
             result=result,
         )
+
+    @app.get("/v1/organizations/{organization_id}/documents/{document_id}/normalization", response_model=NormalizationResponse)
+    async def normalization_status(request: Request, organization_id: uuid.UUID, document_id: uuid.UUID):
+        try:
+            async with request.app.state.session_factory() as session:
+                run = await session.scalar(select(NormalizationRun).where(NormalizationRun.organization_id == organization_id, NormalizationRun.document_id == document_id).order_by(NormalizationRun.attempt_number.desc()))
+            if run is None:
+                return error_response(404, "normalization_not_found", "Normalization is unavailable.")
+            result = None
+            if run.status in {"completed", "review_required", "failed_validation"}:
+                result = (await request.app.state.normalization_persistence.load_completed_result(organization_id=organization_id, run_id=run.id)).model_dump(mode="json")
+        except Exception:
+            return error_response(503, "normalization_unavailable", "Normalization is unavailable.")
+        return NormalizationResponse(run_id=run.id, document_id=run.document_id, analysis_run_id=run.analysis_run_id, term_applicability_run_id=run.term_applicability_run_id, status=run.status, attempt_number=run.attempt_number, schema_version=run.schema_version, finalization_policy_version=run.finalization_policy_version, started_at=run.started_at, completed_at=run.completed_at, error_code=run.error_code, error_stage=run.error_stage, error_message=run.error_message, result=result)
 
     return app
 

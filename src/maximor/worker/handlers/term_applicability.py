@@ -24,6 +24,7 @@ from maximor.document_analysis.errors import DocumentAnalysisError
 from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
 from maximor.jobs.errors import JobExecutionError
 from maximor.jobs.types import JobContext, JobType
+from maximor.jobs.normalization import schedule_normalization_if_ready
 from maximor.term_applicability.agent import ClaudeTermApplicabilityAgent
 from maximor.term_applicability.contracts import build_term_applicability_task, build_selected_term_applicability_task
 from maximor.term_applicability.errors import TermApplicabilityError
@@ -129,6 +130,7 @@ class TermApplicabilityHandler:
                 raise JobExecutionError("term_applicability_reload_unavailable", "Enrichment persistence validation failed.") from None
             if loaded.applicability != app_exec.result:
                 raise JobExecutionError("term_applicability_reload_mismatch", "Enrichment persistence validation failed.")
+            await schedule_normalization_if_ready(self._sessions, organization_id=context.organization_id, document_id=context.document_id, analysis_run_id=job.analysis_run_id, completed_job_id=context.processing_job_id)
         except JobExecutionError as exc:
             await self._fail(run_id, exc.code, exc.safe_message, stage, triage_runtime, applicability_runtime)
             raise

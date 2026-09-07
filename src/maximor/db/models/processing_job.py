@@ -49,12 +49,12 @@ class ProcessingJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         ),
         CheckConstraint(
             "(job_type = 'sku_mapping' AND analysis_run_id IS NOT NULL AND document_product_candidate_id IS NOT NULL) "
-            "OR (job_type = 'term_applicability' AND analysis_run_id IS NOT NULL AND document_product_candidate_id IS NULL) "
-            "OR (job_type NOT IN ('sku_mapping', 'term_applicability') AND analysis_run_id IS NULL AND document_product_candidate_id IS NULL)",
-            name="sku_mapping_link_required",
+            "OR (job_type IN ('term_applicability','normalization') AND analysis_run_id IS NOT NULL AND document_product_candidate_id IS NULL) "
+            "OR (job_type NOT IN ('sku_mapping', 'term_applicability','normalization') AND analysis_run_id IS NULL AND document_product_candidate_id IS NULL)",
+            name="processing_job_link_required",
         ),
         CheckConstraint(
-            "(job_type = 'term_applicability' AND analysis_run_id IS NOT NULL AND document_product_candidate_id IS NULL) OR (job_type <> 'term_applicability')",
+            "(job_type IN ('term_applicability','normalization') AND analysis_run_id IS NOT NULL AND document_product_candidate_id IS NULL) OR (job_type NOT IN ('term_applicability','normalization'))",
             name="term_applicability_link_required",
         ),
         Index(
@@ -70,6 +70,7 @@ class ProcessingJob(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             unique=True,
             postgresql_where=text("job_type = 'sku_mapping' AND status IN ('queued', 'running')"),
         ),
+        Index("uq_processing_jobs_normalization_analysis", "analysis_run_id", unique=True, postgresql_where=text("job_type = 'normalization' AND status IN ('queued','running')")),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(

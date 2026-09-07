@@ -320,3 +320,47 @@ class FinalOrderFormExtraction(NormalizationModel):
         if candidate_ids != sorted(candidate_ids) or len(candidate_ids) != len(set(candidate_ids)):
             raise ValueError("line_items must be unique and ordered by source_candidate_id")
         return self
+
+
+class NormalizationRunStatus(StrEnum):
+    """Domain terminal states owned by the normalization persistence service."""
+
+    COMPLETED = "completed"
+    REVIEW_REQUIRED = "review_required"
+    FAILED_VALIDATION = "failed_validation"
+    FAILED = "failed"
+
+
+class NormalizationSemanticFinding(NormalizationModel):
+    """Persistable bounded semantic-review finding snapshot."""
+
+    review_item_id: Identifier
+    outcome: str = Field(min_length=1, max_length=64)
+    owner: str | None = Field(default=None, max_length=64)
+    candidate_id: Identifier | None = None
+    field_name: str | None = Field(default=None, max_length=100)
+    evidence_ids: tuple[Identifier, ...] = Field(default=(), max_length=20)
+    rationale: str | None = Field(default=None, max_length=1_000)
+
+
+class NormalizationResult(NormalizationModel):
+    """Canonical finalization result plus optional semantic-review findings."""
+
+    schema_version: str = Field(min_length=1, max_length=50)
+    organization_id: uuid.UUID
+    document_id: uuid.UUID
+    preprocessing_run_id: uuid.UUID
+    analysis_run_id: uuid.UUID
+    term_applicability_run_id: uuid.UUID
+    finalization_policy_version: str = Field(min_length=1, max_length=50)
+    status: NormalizationRunStatus
+    extraction: FinalOrderFormExtraction
+    finalization_issues: tuple[FinalizationIssue, ...] = Field(default=(), max_length=MAX_REVIEW_ISSUES)
+    semantic_findings: tuple[NormalizationSemanticFinding, ...] = Field(default=(), max_length=100)
+
+    @model_validator(mode="after")
+    def lineage_matches_extraction(self) -> "NormalizationResult":
+        """Keep the canonical wrapper and nested extraction on one lineage."""
+        if (self.extraction.organization_id, self.extraction.document_id, self.extraction.preprocessing_run_id, self.extraction.analysis_run_id, self.extraction.term_applicability_run_id) != (self.organization_id, self.document_id, self.preprocessing_run_id, self.analysis_run_id, self.term_applicability_run_id):
+            raise ValueError("normalization result lineage does not match extraction")
+        return self

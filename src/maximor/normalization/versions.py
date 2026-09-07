@@ -26,3 +26,4 @@ NORMALIZATION_VALIDATION_POLICY_VERSION = "0.1.0"
 # separate from the normalized output schema because readiness is an
 # operational outcome, not a semantic field in the final extraction.
 FINALIZATION_POLICY_VERSION = "0.1.0"
+NORMALIZATION_RESULT_SCHEMA_VERSION = "0.1.0"

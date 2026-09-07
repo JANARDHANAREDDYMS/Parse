@@ -21,6 +21,7 @@ from maximor.document_analysis.repository import DocumentAnalysisRepository
 from maximor.document_analysis.tools import PersistedDocumentTools
 from maximor.jobs.errors import JobExecutionError
 from maximor.jobs.types import JobContext, JobType
+from maximor.jobs.normalization import schedule_normalization_if_ready
 from maximor.sku_mapping.agent import ClaudeSkuMappingAgent
 from maximor.sku_mapping.contracts import SkuMappingRunArtifact, build_sku_mapping_task
 from maximor.sku_mapping.errors import SkuMappingError, SkuMappingTaskConstructionError
@@ -135,6 +136,7 @@ class SkuMappingHandler:
             loaded = await self._mapping_results.load_completed_result(organization_id=context.organization_id, run_id=run_id)
             if loaded != artifact:
                 raise JobExecutionError("sku_mapping_reload_failed", "SKU-mapping persistence validation failed.")
+            await schedule_normalization_if_ready(self._sessions, organization_id=context.organization_id, document_id=context.document_id, analysis_run_id=analysis_run_id, completed_job_id=context.processing_job_id)
         except JobExecutionError as exc:
             await self._fail(run_id, exc.code, exc.safe_message, runtime)
             raise

@@ -589,3 +589,17 @@ the correction-loop shape, and the `normalization` job type/worker/API wiring.
 - Persistence, correction execution, final `COMPLETED` semantics, pipeline
   wiring, and paid smoke testing remain deferred until these local contracts
   are proven.
+
+### 2026-09-07 — Normalization Stage 5C: persistence and dependency fan-in
+
+- Normalization now has a tenant-scoped domain run and canonical compressed
+  artifact. Relational projections expose normalized line items, bounded
+  finalization issues, and semantic-review findings without replacing the
+  canonical snapshot.
+- A single idempotent fan-in service schedules normalization only after the
+  SKU-mapping and term-applicability branches are terminal. The generic
+  worker runner remains the sole owner of processing-job status transitions;
+  normalization owns only its domain status.
+- `completed`, `review_required`, and `failed_validation` are business
+  terminal outcomes. Automatic correction execution, final reconciliation,
+  and broader evaluation remain deferred.

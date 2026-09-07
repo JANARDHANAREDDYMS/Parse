@@ -84,3 +84,21 @@ class TermApplicabilityResponse(BaseModel):
     failure_stage: str | None
     diagnostics: dict[str, Any] | None
     result: dict[str, Any] | None
+
+
+class NormalizationResponse(BaseModel):
+    """Tenant-scoped normalization status and safe canonical result."""
+    run_id: uuid.UUID
+    document_id: uuid.UUID
+    analysis_run_id: uuid.UUID
+    term_applicability_run_id: uuid.UUID
+    status: str
+    attempt_number: int
+    schema_version: str
+    finalization_policy_version: str
+    started_at: datetime
+    completed_at: datetime | None
+    error_code: str | None
+    error_stage: str | None
+    error_message: str | None
+    result: dict[str, Any] | None
