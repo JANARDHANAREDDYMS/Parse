@@ -74,6 +74,7 @@ class SkuMappingHandler:
             raise JobExecutionError("invalid_job_type", "The SKU-mapping job type is invalid.")
         run_id = uuid.uuid5(context.processing_job_id, str(context.attempt_number))
         runtime = None
+        analysis_run_id = None
         try:
             async with self._sessions() as session:
                 job = await session.scalar(select(ProcessingJob).where(
@@ -138,18 +139,33 @@ class SkuMappingHandler:
                 raise JobExecutionError("sku_mapping_reload_failed", "SKU-mapping persistence validation failed.")
             await schedule_normalization_if_ready(self._sessions, organization_id=context.organization_id, document_id=context.document_id, analysis_run_id=analysis_run_id, completed_job_id=context.processing_job_id)
         except JobExecutionError as exc:
-            await self._fail(run_id, exc.code, exc.safe_message, runtime)
+            await self._fail(run_id, exc.code, exc.safe_message, runtime, context, analysis_run_id)
             raise
         except SkuMappingError as exc:
-            await self._fail(run_id, exc.code, exc.safe_message, runtime or getattr(exc, "runtime", None))
+            await self._fail(run_id, exc.code, exc.safe_message, runtime or getattr(exc, "runtime", None), context, analysis_run_id)
             raise JobExecutionError(exc.code, exc.safe_message) from None
         except Exception as exc:
-            await self._fail(run_id, "sku_mapping_failed", "SKU mapping failed.", runtime)
+            await self._fail(run_id, "sku_mapping_failed", "SKU mapping failed.", runtime, context, analysis_run_id)
             raise JobExecutionError("sku_mapping_failed", "SKU mapping failed.") from exc
 
-    async def _fail(self, run_id: uuid.UUID, code: str, message: str, runtime=None) -> None:
-        """Best-effort record a safe mapping-run failure without changing other statuses."""
+    async def _fail(self, run_id: uuid.UUID, code: str, message: str, runtime=None, context: JobContext | None = None, analysis_run_id: uuid.UUID | None = None) -> None:
+        """Best-effort record a safe mapping-run failure without changing other statuses.
+
+        A durable failure is itself a terminal outcome for this required
+        fan-in branch: if the source analysis run was already resolved, this
+        also re-checks whether normalization can now be scheduled, so the
+        document is never left stuck waiting on a fan-in check that will
+        otherwise never fire again.
+        """
         try:
             await self._mapping_results.mark_run_failed(run_id, error_code=code, error_message=message, runtime=runtime)
         except SkuMappingError:
             pass
+        if context is not None and analysis_run_id is not None:
+            try:
+                await schedule_normalization_if_ready(
+                    self._sessions, organization_id=context.organization_id, document_id=context.document_id,
+                    analysis_run_id=analysis_run_id, completed_job_id=context.processing_job_id,
+                )
+            except Exception:
+                pass

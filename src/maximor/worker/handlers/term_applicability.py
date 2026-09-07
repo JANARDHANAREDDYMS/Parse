@@ -62,12 +62,14 @@ class TermApplicabilityHandler:
         stage = "unexpected"
         triage_runtime = None
         applicability_runtime = None
+        analysis_run_id = None
         try:
             stage = "persistence"
             async with self._sessions() as session:
                 job = await session.scalar(select(ProcessingJob).where(ProcessingJob.id == context.processing_job_id, ProcessingJob.organization_id == context.organization_id, ProcessingJob.document_id == context.document_id))
             if job is None or job.analysis_run_id is None:
                 raise JobExecutionError("term_applicability_source_unavailable", "The enrichment source is unavailable.")
+            analysis_run_id = job.analysis_run_id
             try:
                 analysis = await self._analysis.load_completed_result(organization_id=context.organization_id, analysis_run_id=job.analysis_run_id)
             except DocumentAnalysisError as exc:
@@ -132,7 +134,7 @@ class TermApplicabilityHandler:
                 raise JobExecutionError("term_applicability_reload_mismatch", "Enrichment persistence validation failed.")
             await schedule_normalization_if_ready(self._sessions, organization_id=context.organization_id, document_id=context.document_id, analysis_run_id=job.analysis_run_id, completed_job_id=context.processing_job_id)
         except JobExecutionError as exc:
-            await self._fail(run_id, exc.code, exc.safe_message, stage, triage_runtime, applicability_runtime)
+            await self._fail(run_id, exc.code, exc.safe_message, stage, triage_runtime, applicability_runtime, context, analysis_run_id)
             raise
         except (TermTriageError, TermApplicabilityError) as exc:
             recovered = getattr(exc, "runtime", None)
@@ -140,14 +142,22 @@ class TermApplicabilityHandler:
                 triage_runtime = recovered
             elif stage == "applicability" and applicability_runtime is None:
                 applicability_runtime = recovered
-            await self._fail(run_id, exc.code, exc.safe_message, stage, triage_runtime, applicability_runtime)
+            await self._fail(run_id, exc.code, exc.safe_message, stage, triage_runtime, applicability_runtime, context, analysis_run_id)
             raise JobExecutionError(exc.code, exc.safe_message) from None
         except Exception as exc:
-            await self._fail(run_id, "term_applicability_failed", "Term applicability failed.", stage, triage_runtime, applicability_runtime)
+            await self._fail(run_id, "term_applicability_failed", "Term applicability failed.", stage, triage_runtime, applicability_runtime, context, analysis_run_id)
             raise JobExecutionError("term_applicability_failed", "Term applicability failed.") from exc
 
-    async def _fail(self, run_id: uuid.UUID, code: str, message: str, stage: str, triage_runtime=None, applicability_runtime=None) -> None:
-        """Best-effort record a safe enrichment-run failure without changing other statuses."""
+    async def _fail(self, run_id: uuid.UUID, code: str, message: str, stage: str, triage_runtime=None, applicability_runtime=None, context: JobContext | None = None, analysis_run_id: uuid.UUID | None = None) -> None:
+        """Best-effort record a safe enrichment-run failure without changing other statuses.
+
+        A durable failure is itself a terminal outcome for this required
+        fan-in branch: if the source analysis run was already resolved, this
+        also re-checks whether normalization can now be scheduled (e.g. every
+        sku_mapping job already completed before this run failed) so the
+        document is never left stuck waiting on a fan-in check that will
+        otherwise never fire again.
+        """
         try:
             await self._enrichment.mark_run_failed(
                 run_id, error_code=code, error_message=message, failure_stage=stage,
@@ -155,6 +165,14 @@ class TermApplicabilityHandler:
             )
         except TermApplicabilityError:
             pass
+        if context is not None and analysis_run_id is not None:
+            try:
+                await schedule_normalization_if_ready(
+                    self._sessions, organization_id=context.organization_id, document_id=context.document_id,
+                    analysis_run_id=analysis_run_id, completed_job_id=context.processing_job_id,
+                )
+            except Exception:
+                pass
         logger.error(
             "term_applicability_run_failed",
             failure_stage=stage,
