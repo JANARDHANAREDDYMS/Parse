@@ -102,3 +102,32 @@ class NormalizationResponse(BaseModel):
     error_stage: str | None
     error_message: str | None
     result: dict[str, Any] | None
+
+
+class DocumentSummaryResponse(BaseModel):
+    """Safe summary row for one tenant-scoped uploaded document."""
+    document_id: uuid.UUID
+    original_filename: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    business_status: str | None
+    current_stage: str
+    item_count: int | None
+    review_issue_count: int | None
+
+
+class DocumentListResponse(BaseModel):
+    """Deterministically ordered document summaries."""
+    documents: list[DocumentSummaryResponse]
+
+
+class PipelineResponse(BaseModel):
+    """Display-ready pipeline state with safe terminal output only."""
+    document_id: uuid.UUID
+    preprocessing: dict[str, Any] | None
+    document_analysis: dict[str, Any] | None
+    sku_mapping: dict[str, Any]
+    term_applicability: dict[str, Any] | None
+    normalization: dict[str, Any] | None
+    document_status: str

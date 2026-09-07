@@ -6,6 +6,8 @@ from sqlalchemy import select
 
 from maximor.config import DatabaseSettings
 from maximor.db.models import DocumentAnalysisRun, ProcessingJob, TermApplicabilityRun
+from maximor.document_analysis.repository import DocumentAnalysisRepository
+from maximor.document_analysis.tools import PersistedDocumentTools
 from maximor.jobs.errors import JobExecutionError
 from maximor.jobs.types import JobContext, JobType
 from maximor.normalization.errors import NormalizationError
@@ -22,7 +24,8 @@ from maximor.normalization.schemas import (
 )
 from maximor.normalization.semantic_review.agent import ClaudeNormalizationSemanticReviewAgent
 from maximor.normalization.semantic_review.contracts import build_semantic_review_task
-from maximor.normalization.semantic_review.errors import SemanticReviewTaskError
+from maximor.normalization.semantic_review.errors import NormalizationSemanticReviewError, SemanticReviewTaskError
+from maximor.normalization.semantic_review.resolver import NormalizationEvidenceResolver
 from maximor.normalization.semantic_review.tools import NormalizationSemanticReviewTools
 from maximor.normalization.versions import FINALIZATION_POLICY_VERSION, NORMALIZATION_RESULT_SCHEMA_VERSION
 
@@ -45,9 +48,10 @@ def _dependency_issue(code: str, message: str) -> FinalizationIssue:
 class NormalizationHandler:
     """Own domain normalization status while leaving processing-job status to the runner."""
 
-    def __init__(self, settings: DatabaseSettings, sessions, analysis_results, term_results, mapping_results, normalization_results: NormalizationPersistenceService, semantic_agent=None):
+    def __init__(self, settings: DatabaseSettings, sessions, storage, analysis_results, term_results, mapping_results, normalization_results: NormalizationPersistenceService, semantic_agent=None):
         self._settings = settings
         self._sessions = sessions
+        self._storage = storage
         self._normalization = normalization_results
         self._repository = NormalizationRepository(sessions, analysis_results, term_results, mapping_results)
         self._semantic = semantic_agent or ClaudeNormalizationSemanticReviewAgent(settings)
@@ -138,7 +142,27 @@ class NormalizationHandler:
                     else:
                         raise
                 if task is not None:
-                    review = await self._semantic.review(task, NormalizationSemanticReviewTools(task))
+                    document_tools = PersistedDocumentTools(DocumentAnalysisRepository(self._sessions), self._storage)
+                    evidence_resolver = NormalizationEvidenceResolver(normalization_input, candidate, document_tools)
+                    try:
+                        review = await self._semantic.review(task, NormalizationSemanticReviewTools(task, evidence_resolver))
+                    except NormalizationSemanticReviewError as exc:
+                        # Preserve the semantic-review subsystem's own safe
+                        # code/stage/bounded runtime diagnostics -- an agent
+                        # or SDK-transport failure here is a genuine
+                        # infrastructure/agent failure (per the guarded
+                        # finalization taxonomy), but collapsing it to a
+                        # generic "normalization_failed"/"execution" pair
+                        # (as this used to do) destroys exactly the
+                        # information needed to diagnose it afterward.
+                        try:
+                            await self._normalization.mark_run_failed(
+                                run_id, error_code=exc.code, error_stage="semantic_review",
+                                error_message=exc.safe_message, runtime=getattr(exc, "runtime", None),
+                            )
+                        except Exception:
+                            pass
+                        raise JobExecutionError(exc.code, exc.safe_message) from exc
                     semantic_findings = tuple(
                         {"review_item_id": f.review_item_id, "outcome": f.outcome.value, "owner": f.owner.value if f.owner else None, "candidate_id": f.candidate_id, "field_name": f.field_name, "evidence_ids": f.evidence_ids, "rationale": f.rationale}
                         for f in review.findings

@@ -21,6 +21,10 @@ class DatabaseSettings(BaseSettings):
     database_echo: bool = False
     api_host: str = "127.0.0.1"
     api_port: int = 8000
+    cors_allowed_origins: str = Field(
+        default="http://localhost:5173,http://127.0.0.1:5173",
+        validation_alias=AliasChoices("CORS_ALLOWED_ORIGINS", "MAXIMOR_CORS_ALLOWED_ORIGINS"),
+    )
     max_pdf_upload_bytes: int = 10 * 1024 * 1024
     # Resolve this relative value against PROJECT_ROOT so root/src launches agree.
     local_storage_root: Path = Path("src/.runtime/documents")

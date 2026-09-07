@@ -65,9 +65,18 @@ def _classification(code: str) -> ReviewQueueClassification:
         return ReviewQueueClassification.HARD_INVARIANT
     if code in {"unsupported_format", "invalid_provenance", "missing_provenance"}:
         return ReviewQueueClassification.UNSUPPORTED_FORMAT
-    if code == "conflicting_values":
-        return ReviewQueueClassification.CONFLICTING_VALUES
-    if code in {"line_total_conflict", "schedule_total_conflict", "incompatible_currencies", "multiple_order_currencies"}:
+    # `conflicting_values` (raised by `service.py` when a supplied
+    # total_listed_value fact disagrees with the quantity*unit_price
+    # calculation) and `non_exact_decimal_division` are both purely
+    # arithmetic/reconciliation differences between two already-normalized
+    # numbers -- never a genuinely semantic disagreement between evidence
+    # sources. They must never reach semantic review: routing a Claude call
+    # at a pure arithmetic mismatch was the exact bug that sent every
+    # arithmetic conflict on a real document to the paid semantic-review
+    # agent. `ReviewQueueClassification.CONFLICTING_VALUES` stays reserved
+    # for a future detector of genuinely semantic value conflicts (e.g. two
+    # contradictory clauses) -- nothing in this module currently produces it.
+    if code in {"line_total_conflict", "schedule_total_conflict", "incompatible_currencies", "multiple_order_currencies", "conflicting_values", "non_exact_decimal_division"}:
         return ReviewQueueClassification.RECONCILIATION_DIFFERENCE
     if code in {"ambiguous_value", "semantic_scope_required"}:
         return ReviewQueueClassification.AMBIGUOUS_VALUE

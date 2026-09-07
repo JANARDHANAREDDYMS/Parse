@@ -43,7 +43,7 @@ def build_worker() -> WorkerRunner:
             JobType.DOCUMENT_ANALYSIS: DocumentAnalysisHandler(settings, session_factory, storage, analysis_results),
             JobType.SKU_MAPPING: SkuMappingHandler(settings, session_factory, storage, analysis_results, mapping_results),
             JobType.TERM_APPLICABILITY: TermApplicabilityHandler(settings, session_factory, storage, analysis_results, enrichment_results),
-            JobType.NORMALIZATION: NormalizationHandler(settings, session_factory, analysis_results, enrichment_results, mapping_results, normalization_results),
+            JobType.NORMALIZATION: NormalizationHandler(settings, session_factory, storage, analysis_results, enrichment_results, mapping_results, normalization_results),
         }
     )
     return WorkerRunner(

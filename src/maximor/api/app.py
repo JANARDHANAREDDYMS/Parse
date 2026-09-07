@@ -4,18 +4,18 @@ from pathlib import Path
 
 import structlog
 from fastapi import FastAPI, File, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
-from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse, TermApplicabilityResponse, NormalizationResponse
+from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse, TermApplicabilityResponse, NormalizationResponse, DocumentListResponse, DocumentSummaryResponse, PipelineResponse
 from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
 from maximor.document_analysis.errors import DocumentAnalysisError
 from maximor.term_applicability.persistence import TermApplicabilityPersistenceService
 from maximor.normalization.persistence import NormalizationPersistenceService
-from maximor.db.models import TermApplicabilityRun
-from maximor.db.models import NormalizationRun
-from sqlalchemy import select
+from maximor.db.models import TermApplicabilityRun, NormalizationRun, Document, ProcessingJob, DocumentProcessingRun, DocumentAnalysisRun, SkuMappingRun, DocumentProductCandidate, NormalizedLineItemProjection, NormalizationIssueProjection
+from sqlalchemy import select, func
 from maximor.config import DatabaseSettings, get_database_settings
 from maximor.db.health import check_database_health
 from maximor.db.session import get_session_factory
@@ -45,6 +45,7 @@ def create_app(
 ) -> FastAPI:
     configured = settings or get_database_settings()
     app = FastAPI(title="Maximor AI", version="0.1.0")
+    app.add_middleware(CORSMiddleware, allow_origins=[x.strip() for x in configured.cors_allowed_origins.split(",") if x.strip()], allow_credentials=False, allow_methods=["GET", "POST", "OPTIONS"], allow_headers=["*"])
     app.state.settings = configured
     app.state.storage = storage or LocalObjectStorage(configured.local_storage_root)
     app.state.session_factory = session_factory or get_session_factory()
@@ -276,6 +277,57 @@ def create_app(
         except Exception:
             return error_response(503, "normalization_unavailable", "Normalization is unavailable.")
         return NormalizationResponse(run_id=run.id, document_id=run.document_id, analysis_run_id=run.analysis_run_id, term_applicability_run_id=run.term_applicability_run_id, status=run.status, attempt_number=run.attempt_number, schema_version=run.schema_version, finalization_policy_version=run.finalization_policy_version, started_at=run.started_at, completed_at=run.completed_at, error_code=run.error_code, error_stage=run.error_stage, error_message=run.error_message, result=result)
+
+    @app.get("/v1/organizations/{organization_id}/documents", response_model=DocumentListResponse)
+    async def document_list(request: Request, organization_id: uuid.UUID):
+        """Return safe newest-first summaries for one organization."""
+        try:
+            async with request.app.state.session_factory() as session:
+                docs = (await session.scalars(select(Document).where(Document.organization_id == organization_id).order_by(Document.created_at.desc(), Document.id.desc()))).all()
+                runs = (await session.scalars(select(NormalizationRun).where(NormalizationRun.organization_id == organization_id))).all()
+                jobs = (await session.scalars(select(ProcessingJob).where(ProcessingJob.organization_id == organization_id))).all()
+                line_counts = dict((row[0], row[1]) for row in (await session.execute(select(NormalizedLineItemProjection.normalization_run_id, func.count()).group_by(NormalizedLineItemProjection.normalization_run_id))).all())
+                issue_counts = dict((row[0], row[1]) for row in (await session.execute(select(NormalizationIssueProjection.normalization_run_id, func.count()).group_by(NormalizationIssueProjection.normalization_run_id))).all())
+            latest = {}
+            for run in runs:
+                if run.document_id not in latest or run.attempt_number > latest[run.document_id].attempt_number: latest[run.document_id] = run
+            items=[]
+            for doc in docs:
+                related=[j for j in jobs if j.document_id == doc.id]
+                run=latest.get(doc.id)
+                stage = "Queued"
+                if related:
+                    current=max(related, key=lambda j: (j.created_at, j.attempt_number))
+                    stage={"document_preprocessing":"PDF preprocessing","document_analysis":"Document analysis","sku_mapping":"SKU mapping","term_applicability":"Term enrichment","normalization":"Normalization / finalization"}.get(current.job_type, current.job_type)
+                terminal = run is not None and run.status in {"completed", "review_required", "failed_validation"}
+                items.append(DocumentSummaryResponse(document_id=doc.id, original_filename=doc.original_filename, status=doc.status, created_at=doc.created_at, updated_at=doc.updated_at, business_status=run.status if run else None, current_stage=stage, item_count=int(line_counts.get(run.id, 0)) if terminal else None, review_issue_count=int(issue_counts.get(run.id, 0)) if terminal else None))
+            return DocumentListResponse(documents=items)
+        except SQLAlchemyError:
+            return error_response(503, "documents_unavailable", "Documents are unavailable.")
+
+    @app.get("/v1/organizations/{organization_id}/documents/{document_id}/pipeline", response_model=PipelineResponse)
+    async def document_pipeline(request: Request, organization_id: uuid.UUID, document_id: uuid.UUID):
+        """Return a tenant-scoped display projection of pipeline state."""
+        try:
+            async with request.app.state.session_factory() as session:
+                doc=await session.scalar(select(Document).where(Document.organization_id==organization_id, Document.id==document_id))
+                jobs=(await session.scalars(select(ProcessingJob).where(ProcessingJob.organization_id==organization_id, ProcessingJob.document_id==document_id).order_by(ProcessingJob.created_at))).all()
+                pre=await session.scalar(select(DocumentProcessingRun).where(DocumentProcessingRun.organization_id==organization_id,DocumentProcessingRun.document_id==document_id).order_by(DocumentProcessingRun.attempt_number.desc()))
+                ana=await session.scalar(select(DocumentAnalysisRun).where(DocumentAnalysisRun.organization_id==organization_id,DocumentAnalysisRun.document_id==document_id).order_by(DocumentAnalysisRun.attempt_number.desc()))
+                term=await session.scalar(select(TermApplicabilityRun).where(TermApplicabilityRun.organization_id==organization_id,TermApplicabilityRun.document_id==document_id).order_by(TermApplicabilityRun.attempt_number.desc()))
+                norm=await session.scalar(select(NormalizationRun).where(NormalizationRun.organization_id==organization_id,NormalizationRun.document_id==document_id).order_by(NormalizationRun.attempt_number.desc()))
+            if doc is None: return error_response(404,"document_not_found","The document was not found.")
+            by_type={}
+            for job in jobs: by_type.setdefault(job.job_type,[]).append(job)
+            sku=[{"job_id":j.id,"status":j.status,"candidate_id":j.document_product_candidate_id,"error_code":j.error_code} for j in by_type.get("sku_mapping",[])]
+            pipeline=lambda run: ({"status":run.status,"started_at":run.started_at,"completed_at":run.completed_at,"error_code":run.error_code} if run else None)
+            norm_data=pipeline(norm)
+            if norm and norm.status in {"completed","review_required","failed_validation"}:
+                try: norm_data["result"]=(await request.app.state.normalization_persistence.load_completed_result(organization_id=organization_id,run_id=norm.id)).model_dump(mode="json")
+                except Exception: pass
+            return PipelineResponse(document_id=document_id, preprocessing=pipeline(pre), document_analysis=pipeline(ana), sku_mapping={"total":len(sku),"completed":sum(x["status"]=="completed" for x in sku),"failed":sum(x["status"]=="failed" for x in sku),"review":0,"candidates":sku}, term_applicability=pipeline(term), normalization=norm_data, document_status=doc.status)
+        except SQLAlchemyError:
+            return error_response(503,"pipeline_unavailable","Pipeline status is unavailable.")
 
     return app
 
