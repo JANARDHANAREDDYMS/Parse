@@ -221,67 +221,83 @@ Important boundaries:
 - `SKU_MAPPING` and `TERM_APPLICABILITY` are parallel after document analysis. Term enrichment does not wait for SKU mapping; normalization is the first future stage that consumes both results.
 
 
-## Product Scale Decisions to consider:
+## Product Scale Decisions: current baseline and next hardening
 
-Multi-tenancy
-Every catalog lookup must be filtered by organization_id. One organization’s SKU must never appear in another organization’s results.
+### Multi-tenancy — baseline implemented
 
+Every document, run, job, catalog lookup, artifact, API read, and agent tool call is scoped by
+`organization_id`. Composite relationships and tenant-scoped reads prevent a candidate or SKU from one
+organization being used by another. In a production deployment, the API must derive this identifier from
+authenticated identity rather than trust a client-supplied path value.
 
-Asynchronous processing
-Large PDFs should run as jobs:
+### Asynchronous processing — implemented
 
-Idempotency
-Re-uploading the same request should not create duplicate extractions or duplicate API charges. Use document hashes and request idempotency keys.
+PostgreSQL `processing_jobs` is the durable queue. Generic workers atomically claim queued work using
+`FOR UPDATE SKIP LOCKED`; `WorkerRunner` owns generic job states, and handlers own their domain run rows.
+This supports multiple worker processes, retries after terminal failures, and parallel fan-out without
+requiring Redis or Celery at the current scale. A dedicated broker or workflow engine becomes worthwhile
+when throughput, cross-region delivery, or long-running orchestration needs exceed PostgreSQL's limits.
 
-Caching
-Cache:
-- PDF extraction results
-- Page images
-- OCR results
-- SKU embeddings
-- Unchanged catalog retrieval results
-Do not blindly cache final answers across catalog versions.
+### Idempotency and lineage — partly implemented, needs API hardening
 
+Completed artifacts and domain runs are immutable and versioned. Active downstream jobs are protected by
+partial unique indexes, so the same active analysis/candidate/enrichment work is not run concurrently.
+Every accepted result can be traced through document, preprocessing, analysis, mapping, and enrichment
+run IDs. The upload API should next add a client idempotency key plus content-hash policy, so repeated
+requests cannot create duplicate uploads or paid calls.
 
-Security
-Order forms contain commercially sensitive information. The product should include:
-- Encryption in transit and at rest
-- Tenant-isolated storage
-- Short-lived document access
-- Audit logs
-- Configurable retention and deletion
-- Secrets stored outside source control
-- No contract text in ordinary application logs
+### Caching — deliberate future work
 
+The system already persists authoritative preprocessing artifacts, renders, and canonical accepted
+agent results. Future cache candidates are:
 
-Observability
-Record per job:
-- Processing duration
-- LLM calls
-- Tokens and estimated cost
-- Validation failures
-- Correction attempts
-- Retrieval candidates and scores
-- Final confidence
-- Model and prompt versions
-- Catalog and schema versions
-This is essential for improving the system safely.
+- deterministic preprocessing by source checksum and preprocessing version;
+- rendered pages and OCR by page/render configuration;
+- catalog embeddings and unchanged catalog retrieval results by catalog version;
+- safe, bounded retrieval fragments keyed by the source run and tool version.
 
+Never reuse a final document analysis, SKU mapping, enrichment, or normalized extraction across a changed
+document, prompt/schema version, or catalog version without explicit compatibility rules.
 
+### Security and privacy — baseline plus production requirements
 
-| Component | Appropriate LLM use |
-|---|---|
-| Input validation | Detecting whether an uploaded document is actually an order form |
-| PDF processing | Repairing corrupted OCR or interpreting visually complex tables |
-| Document understanding | Primary LLM responsibility |
-| Candidate detection | Primary LLM responsibility |
-| Purchased-status classification | Primary LLM responsibility |
-| SKU mapping | Primary LLM responsibility |
-| Normalization | Ambiguous semantic values only |
-| Validation | Semantic evidence and contradiction checks |
-| Correction | Reinterpreting targeted fields |
-| Ground-truth error analysis | Explaining prediction failures and proposing improvements |
-| Human-review preparation | Producing concise explanations and highlighting relevant clauses |
+Current safeguards include relative storage keys only, tenant-scoped reads, narrow tools, no arbitrary
+filesystem/SQL tools for agents, secrets outside source control, and bounded diagnostics that exclude
+document bodies, prompts, tool payloads, paths, and credentials. Production additionally requires:
+
+- encryption in transit and at rest;
+- authenticated tenant resolution and authorization at every API boundary;
+- short-lived storage access, retention/deletion controls, and audit access logs;
+- key rotation, secret management, and least-privilege database/storage roles;
+- a documented data-processing policy for external LLM calls.
+
+### Observability — implemented for agent stages; continue standardizing
+
+Each job/run should retain safe, bounded metadata for:
+
+- status transitions and processing duration;
+- agent session initialization, tool-call timing, terminal reason, and correction count;
+- validation failures, retrieval candidate scores, model/prompt/skill/schema/catalog versions;
+- SDK token/cache-token/cost values when the provider returns them; unavailable values remain `null`, not
+  fabricated;
+- the lineage IDs required to reproduce or audit a result.
+
+This information must remain content-free unless a separately authorized audit view is used.
+
+### Where LLMs belong
+
+| Component | Primary responsibility | Appropriate LLM role |
+|---|---|---|
+| Upload and file admission | Deterministic validation, size/type limits, tenant authorization | Optional future classification of an unclear document type; never an authorization decision |
+| PDF preprocessing | Deterministic inspection, text/layout/table extraction, rendering, OCR fallback | None in the current pipeline; do not use an LLM to silently repair OCR or PDF structure |
+| Document analysis | Narrow persisted-document retrieval and evidence validation | Primary interpretation: contract structure, candidates, commercial status, raw terms, and evidence-backed findings |
+| Term triage and commercial enrichment | Deterministic scope/coverage gates and evidence retrieval | Classify terms; resolve supported scope; extract raw candidate commercial facts from retrieved evidence |
+| SKU retrieval | Application-owned tenant/catalog-scoped retrieval | None: exact/alias and lexical retrieval are deterministic; semantic retrieval remains a controlled future service seam |
+| SKU mapping decision | Catalog membership and evidence validation | Compare retrieved candidates with document evidence; return MATCH, NO_MATCH, or AMBIGUOUS |
+| Normalization | Decimal parsing, date/quantity parsing, enum mapping, explicit derivations | Only resolve a narrowly defined semantic ambiguity; it must not override deterministic arithmetic or invent values |
+| Final validation | Schema, evidence, SKU integrity, date consistency, and total reconciliation | Optional targeted semantic review of contradictions after deterministic checks identify an ambiguity; never waive a deterministic failure |
+| Targeted correction | Route and apply a bounded correction to the owning stage | Reinterpret only the cited problematic field/evidence; do not rerun the whole pipeline by default |
+| Evaluation and human review | Deterministic comparisons, audit artifacts, and review queue | Explain discrepancies or summarize cited clauses, clearly separated from the authoritative extraction |
 
 
 ## Fixed Architecture Principle: Narrow Typed Tools
@@ -470,3 +486,106 @@ projections are unchanged. A new compact `DraftGlobalTerm`/`DraftDocumentAnalysi
 pair (`maximor/document_analysis/draft.py`) is the only shape the finalizer now accepts;
 `promote_draft_result` is the sole, deterministic conversion to the canonical
 `DocumentAnalysisResult`.
+
+### 2026-09-06 — Normalization Stage 1: final-output contracts and trusted-input assembly only
+
+`maximor/normalization/` now exists as **Stage 1 of 5**: versioned final-output
+contracts (`FinalOrderFormExtraction`, `NormalizedOrderMetadata`, `NormalizedLineItem`,
+`MoneyValue`, `PriceScheduleEntry`, `FieldProvenance`) and deterministic trusted-input
+assembly (`NormalizationRequest`, `NormalizationInput`, `LineItemSourceBundle`,
+`assemble_normalization_input`, `assemble_line_item_source_bundles`,
+`NormalizationRepository`). No money/date/quantity normalization, arithmetic,
+correction loop, job type, worker handler, API endpoint, or Claude call exists yet —
+nothing here is reachable from a live upload.
+
+- **Contracts only for the final shape.** `NormalizedOrderMetadata`/`NormalizedLineItem`
+  fields are optional everywhere a document may honestly omit a value (no invented
+  `quantity=1` default). Each carries one `field_provenance: dict[str, FieldProvenance]`
+  keyed by its own field names, rather than a parallel `*_provenance` field per value.
+- **`FieldProvenance`** records `ProvenanceSourceType` (`candidate_fact`, `document_term`,
+  `sku_mapping`, `derived`) and `ValueOrigin` (`extracted`, `inherited`, `derived`), with a
+  validator requiring exactly the identity field(s) each source type implies.
+- **`NormalizationInput` bundles one already-completed `DocumentAnalysisResult`, one
+  completed combined term-applicability artifact (triage + applicability + facts +
+  coverage), and one completed, current (non-superseded) `SkuMappingRunArtifact` per
+  `purchased`/`included` candidate** (`sku_mappings`/`sku_mapping_run_ids`, keyed by
+  external candidate id). Its own `model_validator` — not just `assemble_normalization_input`
+  — independently re-enforces that every eligible candidate has an entry, so a directly
+  constructed bad instance is rejected the same way.
+- **Every eligible candidate must resolve to a completed SKU mapping (any outcome) and,
+  if it has expected raw-fact hints, a completed `CandidateCommercialFactCoverage`** —
+  either missing surfaces a typed `NormalizationSkuMappingMissingError`/
+  `NormalizationCommercialFactCoverageMissingError` from `assemble_normalization_input`;
+  an eligible candidate can never silently disappear.
+- **Only a `MATCH` SKU-mapping outcome produces a `LineItemSourceBundle`.** A `NO_MATCH`/
+  `AMBIGUOUS` mapping is not an assembly error — it is a complete, honest answer already
+  captured in `NormalizationInput.sku_mappings` — it simply yields no bundle.
+  `excluded`/`optional`/`mentioned`/`ambiguous` candidates are never eligible at all.
+- **Document-wide terms are not inherited onto line items in this stage.**
+  `LineItemSourceBundle.available_document_terms`/`available_candidate_terms` surface
+  every relevant applicability decision without merging it into the bundle's own facts —
+  inheriting a document-wide term onto a specific line item is explicitly a later
+  normalization stage's decision.
+- **`NormalizationRepository`** resolves each eligible candidate's *current* (non-superseded)
+  completed `sku_mapping_runs` row with one narrow, tenant-scoped query (mirroring the
+  derived-supersession rule already settled for SKU-mapping runs), then reuses the existing
+  `DocumentAnalysisPersistenceService`/`TermApplicabilityPersistenceService`/
+  `SkuMappingPersistenceService.load_completed_result` for all canonical content — no new
+  raw-SQL artifact reads.
+
+Not yet decided (Stage 2+): how a deterministic normalizer actually parses
+money/dates/quantities, how document-wide term inheritance onto line items is decided,
+the correction-loop shape, and the `normalization` job type/worker/API wiring.
+
+### 2026-09-07 — Normalization Stages 2–3
+
+- Primitive normalization and provisional line-item assembly are implemented
+  together so parsing decisions can immediately retain field-level provenance
+  and expose unresolved values without mutating trusted Stage 1 inputs.
+- No invented defaults are permitted: quantities, currencies, dates, and totals
+  remain absent when raw evidence is missing, ambiguous, or unsupported.
+- Explicit Decimal derivations are limited to unambiguous quantity × unit-price,
+  total ÷ quantity, and complete compatible schedules; contradictions are surfaced
+  as review issues rather than resolved silently.
+- Document-term inheritance, full-order reconciliation, LLM ambiguity assistance,
+  final validation/correction, and pipeline wiring remain deferred to Stages 4–5.
+
+### 2026-09-07 — Normalization Stage 4
+
+- Document-term inheritance is conservative and field-specific: direct candidate
+  facts win, candidate-scoped supported terms come next, and exact supported
+  document-scoped aliases are last. Unknown and metadata terms are never inherited.
+- The alias registry is intentionally small and exact after case/whitespace
+  normalization; no fuzzy wording or semantic inference is permitted.
+- Deterministic validation/reconciliation records date, currency, schedule,
+  quantity, and total conflicts as bounded review issues rather than resolving
+  them. Semantic review, correction, completion semantics, and pipeline wiring
+  remain deferred to Stage 5.
+
+### 2026-09-07 — Normalization Stage 5A: deterministic finalization readiness
+
+- Stage 5A adds a pure finalization boundary with three explicit outcomes:
+  `READY_FOR_SEMANTIC_REVIEW`, `REVIEW_REQUIRED`, and `FAILED_VALIDATION`.
+  A clean deterministic result is intentionally not `COMPLETED`; semantic
+  review and any bounded correction must happen before completion is possible.
+- The gate defensively re-runs Stage 4 checks, verifies trusted lineage,
+  MATCH SKU identity, candidate eligibility, and field-level evidence
+  provenance, and classifies missing/ambiguous/conflicting observations for a
+  future review queue without repairing or inventing values.
+- Stage 5A remains pure and local. Semantic review, targeted correction,
+  persistence/job/API wiring, final completion semantics, and end-to-end
+  evaluation remain deferred.
+
+### 2026-09-07 — Normalization Stage 5B: bounded semantic review
+
+- Deterministic validation owns arithmetic, lineage, provenance, SKU identity,
+  and integrity. Only explicitly queued `AMBIGUOUS_VALUE`,
+  `SEMANTIC_SCOPE_REQUIRED`, and selected evidence-supported
+  `CONFLICTING_VALUES` items may reach semantic review.
+- The semantic reviewer is request-bound and read-only. It may return an
+  evidence-backed interpretation, insufficient evidence, an unresolved
+  conflict, or a precise correction recommendation, but it cannot mutate
+  normalized values or apply a correction.
+- Persistence, correction execution, final `COMPLETED` semantics, pipeline
+  wiring, and paid smoke testing remain deferred until these local contracts
+  are proven.

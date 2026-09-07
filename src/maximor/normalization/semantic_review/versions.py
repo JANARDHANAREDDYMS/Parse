@@ -1,0 +1,6 @@
+"""Stable application-owned semantic-review contract versions."""
+
+SEMANTIC_REVIEW_SCHEMA_VERSION = "0.1.0"
+SEMANTIC_REVIEW_AGENT_VERSION = "0.1.0"
+SEMANTIC_REVIEW_PROMPT_VERSION = "0.1.0"
+SEMANTIC_REVIEW_SKILL_VERSION = "0.1.0"
