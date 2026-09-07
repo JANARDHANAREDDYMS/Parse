@@ -89,11 +89,19 @@ candidate may otherwise report at most one fact per field unless distinct
 period context (a period label or start/end pair) genuinely separates them,
 or the field is `special_note` and the notes are genuinely distinct.
 
-For every eligible candidate with expected raw-fact hints, submit one coverage
-declaration in `candidate_commercial_fact_coverage`, listing only the expected
-fields you could not extract, in `unresolved_fields`. Retrieve candidate
-evidence before declaring a field unresolved; unresolved is an honest outcome
-and requires that retrieved evidence. Do not restate which fields you did
+For every eligible candidate, `service_start_date`, `service_end_date`,
+`invoicing_schedule_type`, `invoicing_frequency`, and `payment_terms` are
+always expected, in addition to `quantity`, `unit_price`, and
+`total_listed_value` whenever document analysis already hinted at them.
+Actively retrieve that candidate's evidence and look for each expected
+field -- do not extract only the fields document analysis happened to hint
+at and skip the rest just because nothing pointed at them first.
+
+Submit one coverage declaration per eligible candidate in
+`candidate_commercial_fact_coverage`, listing only the expected fields you
+could not extract, in `unresolved_fields`. Retrieve candidate evidence
+before declaring a field unresolved; unresolved is an honest outcome and
+requires that retrieved evidence. Do not restate which fields you did
 extract, and do not submit `extracted_fields` yourself -- the application
 derives that set directly from your own submitted `candidate_commercial_facts`
 for that candidate, so summarizing it again is unnecessary and will be

@@ -2,7 +2,7 @@
 import uuid
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from maximor.db.models import DocumentCommercialStatusAssessment, ProcessingJob, TermApplicabilityRun
+from maximor.db.models import DocumentCommercialStatusAssessment, ProcessingJob
 from maximor.jobs.types import JobType
 
 # Mirrors `SkuMappingEligibilityPolicy`'s SCHEDULE disposition (purchased,
@@ -20,10 +20,17 @@ async def schedule_normalization_if_ready(session_factory, *, organization_id: u
     try:
         async with session_factory() as session:
             async with session.begin():
-                term_run = await session.scalar(select(TermApplicabilityRun).where(TermApplicabilityRun.organization_id == organization_id, TermApplicabilityRun.document_id == document_id, TermApplicabilityRun.analysis_run_id == analysis_run_id).order_by(TermApplicabilityRun.attempt_number.desc()))
                 term_job = await session.scalar(select(ProcessingJob).where(ProcessingJob.analysis_run_id == analysis_run_id, ProcessingJob.job_type == JobType.TERM_APPLICABILITY.value).order_by(ProcessingJob.attempt_number.desc()))
-                if term_run is None or term_job is None or (term_job.status in {"queued", "running"} and term_job.id != completed_job_id):
+                if term_job is None or (term_job.status in {"queued", "running"} and term_job.id != completed_job_id):
                     return None
+                # A term_applicability job can fail before it ever creates its
+                # own `TermApplicabilityRun` row (e.g. the document-analysis
+                # artifact it depends on was itself unavailable at read time)
+                # -- the job is still genuinely terminal even though no run
+                # row exists to check. Gating on run-row presence here, not
+                # just job status, previously left a document stuck forever:
+                # nothing else ever re-evaluates readiness once the job
+                # itself has already reached a terminal status.
 
                 # Expected eligible candidates come from the persisted
                 # document-analysis projections themselves, never from

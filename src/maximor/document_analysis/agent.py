@@ -974,8 +974,16 @@ class ClaudeDocumentAnalysisAgent:
             )
             runtime.finalization_submission_count += 1
             schema_validated = False
+            runtime.pydantic_errors = ()
             try:
-                if set(args) != {"result"} or not isinstance(args.get("result"), dict):
+                if not isinstance(args, dict) or set(args) != {"result"}:
+                    runtime.pydantic_errors = ({
+                        "location": "result",
+                        "type": f"unexpected_top_level_keys:{sorted(args) if isinstance(args, dict) else type(args).__name__}"[:64],
+                    },)
+                    raise ValueError("invalid finalization input")
+                if not isinstance(args.get("result"), dict):
+                    runtime.pydantic_errors = ({"location": "result", "type": f"not_an_object:{type(args.get('result')).__name__}"[:64]},)
                     raise ValueError("invalid finalization input")
                 submitted = args["result"]
                 schema_validated = True
@@ -1039,7 +1047,8 @@ class ClaudeDocumentAnalysisAgent:
                 }
             except (ValidationError, ValueError, TypeError):
                 runtime.failure_stage = "pydantic_schema_validation"
-                runtime.pydantic_errors = ({"location": "result", "type": "invalid_input"},)
+                if not runtime.pydantic_errors:
+                    runtime.pydantic_errors = ({"location": "result", "type": "invalid_input"},)
                 runtime.failed_tool_call_count += 1
                 runtime.failed_tool_calls_by_name[FINALIZER_TOOL_NAME] = runtime.failed_tool_calls_by_name.get(FINALIZER_TOOL_NAME, 0) + 1
                 runtime.finish_tool_invocation(
@@ -1051,8 +1060,20 @@ class ClaudeDocumentAnalysisAgent:
                     succeeded=False,
                     failure_category="schema_rejected",
                 )
-                capture.rejection_event.set()
-                return {"content": [{"type": "text", "text": json.dumps({"issues": self._safe_finalizer_issues(runtime), "correction_allowed": False}, sort_keys=True)}], "is_error": True}
+                # A malformed top-level submission is still a correctable
+                # mistake -- e.g. a missing/extra key, or `result` not being
+                # an object -- not necessarily evidence the model can never
+                # produce a valid one. Give it the same one-shot correction
+                # budget as every other rejection, now that the diagnostic
+                # above actually names what was wrong instead of a bare
+                # "invalid_input".
+                correction_allowed = not capture.correctable_rejection_seen and self._settings.document_analysis_max_corrections > 0
+                if correction_allowed:
+                    capture.correctable_rejection_seen = True
+                    runtime.correction_attempt_count = 1
+                else:
+                    capture.rejection_event.set()
+                return {"content": [{"type": "text", "text": json.dumps({"issues": self._safe_finalizer_issues(runtime), "correction_allowed": correction_allowed}, sort_keys=True)}], "is_error": True}
             except BaseException:
                 runtime.finish_tool_invocation(
                     sequence_number, FINALIZER_TOOL_NAME, succeeded=False,

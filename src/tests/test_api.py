@@ -143,3 +143,16 @@ async def test_term_applicability_endpoint_not_found_is_safe(app_client):
     response = await client.get(f"/v1/organizations/{uuid.uuid4()}/documents/{uuid.uuid4()}/term-applicability")
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "term_applicability_not_found"
+
+
+@pytest.mark.asyncio
+async def test_evidence_endpoint_is_tenant_scoped_and_safe_when_unavailable(app_client):
+    """Evidence presentation never leaks data for a foreign or missing document."""
+    _, client = app_client
+    response = await client.get(
+        f"/v1/organizations/{uuid.uuid4()}/documents/{uuid.uuid4()}/evidence"
+    )
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {"code": "evidence_not_found", "message": "Persisted evidence is unavailable."}
+    }

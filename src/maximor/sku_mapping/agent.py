@@ -726,24 +726,39 @@ class ClaudeSkuMappingAgent:
         return schema
 
     @staticmethod
-    def _resolve_evidence_ids(task: SkuMappingTask, evidence_ids: Any) -> list[dict[str, Any]] | None:
+    def _resolve_evidence_ids(
+        task: SkuMappingTask, evidence_ids: Any, runtime: "SkuMappingRuntimeSummary | None" = None,
+    ) -> list[dict[str, Any]] | None:
         """Resolve submitted block_id/table_id identifiers to the task's own exact evidence.
 
         Returns `None` on any unresolvable or malformed identifier so the
         caller can reject the submission as a correctable content mistake,
-        never a partial or best-effort evidence list.
+        never a partial or best-effort evidence list. When `runtime` is
+        supplied and the identifiers are well-typed but one or more don't
+        match this candidate's own evidence, records exactly which
+        identifiers failed and which ones were actually available -- a bare
+        `evidence_identifier_unresolved` code left the model's one
+        correction with no way to tell a genuine typo from citing a block
+        that belongs to a different candidate.
         """
 
+        if runtime is not None:
+            runtime.validation_issues = ()
         if not isinstance(evidence_ids, list) or not evidence_ids or not all(isinstance(item, str) for item in evidence_ids):
             return None
         by_identifier = {(reference.block_id or reference.table_id): reference for reference in task.all_evidence}
-        resolved: list[dict[str, Any]] = []
-        for identifier in evidence_ids:
-            reference = by_identifier.get(identifier)
-            if reference is None:
-                return None
-            resolved.append(reference.model_dump(mode="json"))
-        return resolved
+        unresolved = [identifier for identifier in evidence_ids if identifier not in by_identifier]
+        if unresolved:
+            if runtime is not None:
+                runtime.validation_issues = (
+                    {
+                        "code": "evidence_identifier_unresolved", "location": "decision:evidence_ids",
+                        "unresolved_ids": ",".join(sorted(set(unresolved))[:20]),
+                        "allowed_ids": ",".join(sorted(by_identifier)[:50]),
+                    },
+                )
+            return None
+        return [by_identifier[identifier].model_dump(mode="json") for identifier in evidence_ids]
 
     @staticmethod
     def _trusted_result_fields(task: SkuMappingTask, runtime: SkuMappingRuntimeSummary) -> dict[str, Any]:
@@ -774,10 +789,7 @@ class ClaudeSkuMappingAgent:
             for item in runtime.pydantic_errors[:50]
         ]
         if not issues:
-            issues = [
-                {"code": item["code"], "location": item["location"]}
-                for item in runtime.validation_issues[:50]
-            ]
+            issues = [dict(item) for item in runtime.validation_issues[:50]]
         return issues or [{"code": "invalid_finalization_input", "location": "decision"}]
 
     @staticmethod
@@ -1041,13 +1053,14 @@ class ClaudeSkuMappingAgent:
                     )
                     result, correctable = None, False
                 else:
-                    resolved_evidence = self._resolve_evidence_ids(task, submitted.get("evidence_ids"))
+                    resolved_evidence = self._resolve_evidence_ids(task, submitted.get("evidence_ids"), runtime)
                     if resolved_evidence is None:
                         runtime.failure_stage = "evidence_identifier_unresolved"
                         runtime.validation_issue_codes = ("evidence_identifier_unresolved",)
-                        runtime.validation_issues = (
-                            {"code": "evidence_identifier_unresolved", "location": "decision:evidence_ids"},
-                        )
+                        if not runtime.validation_issues:
+                            runtime.validation_issues = (
+                                {"code": "evidence_identifier_unresolved", "location": "decision:evidence_ids"},
+                            )
                         result, correctable = None, True
                     else:
                         proposed = {

@@ -149,6 +149,7 @@ class TermApplicabilityRuntimeSummary:
     pydantic_errors: tuple[dict[str, str], ...] = ()
     validation_issue_codes: tuple[str, ...] = ()
     validation_issues: tuple[dict[str, str], ...] = ()
+    coverage_partition_issues: tuple[dict[str, Any], ...] = ()
     structured_output_present: bool = False
     output_field_names: tuple[str, ...] = ()
     output_collection_counts: dict[str, int] = field(default_factory=dict)
@@ -302,6 +303,7 @@ class TermApplicabilityRuntimeSummary:
             "pydantic_errors": list(self.pydantic_errors[:50]),
             "validation_issue_codes": list(self.validation_issue_codes[:50]),
             "validation_issues": list(self.validation_issues[:50]),
+            "coverage_partition_issues": list(self.coverage_partition_issues[:50]),
             "successful_tool_call_order": list(self.successful_tool_call_order[:100]),
             "terms_referenced": list(self.referenced_term_ids[:100]),
             "candidates_referenced": list(self.referenced_candidate_ids[:100]),
@@ -467,9 +469,20 @@ class ClaudeTermApplicabilityAgent:
             runtime.record_terminal("validation_failure", self._utc_clock(), self._monotonic_clock())
             raise
         except asyncio.CancelledError:
+            # Unlike the sibling document_analysis/sku_mapping/term_triage
+            # agents (which bare-`raise` here), this one wraps cancellation in
+            # a typed error carrying `runtime`. A bare `raise` here is an
+            # `asyncio.CancelledError` -- a `BaseException`, not an
+            # `Exception` -- so it would skip straight past
+            # `TermApplicabilityHandler`'s `except Exception` clause with no
+            # `mark_run_failed` call at all: the run stays stuck at `running`
+            # forever with the partial runtime silently discarded. Wrapping
+            # it as a `TermApplicabilityError` subclass lets the handler's
+            # existing `except (TermTriageError, TermApplicabilityError)`
+            # branch catch and persist it exactly like a timeout.
             runtime.terminal_reason = "cancelled"
             runtime.record_terminal("cancelled", self._utc_clock(), self._monotonic_clock())
-            raise
+            raise TermApplicabilityRuntimeError("term_applicability_cancelled", runtime=runtime) from None
         except Exception:
             code = "term_applicability_sdk_initialization_failed" if stage == "initialization" else "term_applicability_sdk_transport_failed"
             runtime.record_terminal("failure", self._utc_clock(), self._monotonic_clock())
@@ -690,6 +703,10 @@ class ClaudeTermApplicabilityAgent:
             ("fact_candidate_id_mismatch", ("every fact must belong to this bundle's own candidate_id",)),
             ("duplicate_fact_id_in_bundle", ("facts must not repeat the same fact_id",)),
             ("duplicate_or_unordered_candidate_facts", ("candidate_commercial_facts must be unique and ordered",)),
+            ("coverage_fields_not_partitioned", ("coverage fields must partition expected_fields",)),
+            ("coverage_fields_overlap", ("field cannot be both extracted and unresolved",)),
+            ("coverage_fields_not_ordered", ("coverage fields must be unique and ordered",)),
+            ("coverage_unresolved_missing_evidence", ("unresolved coverage requires evidence",)),
         )
         for code, needles in mappings:
             if any(needle in text for needle in needles):
@@ -909,6 +926,7 @@ class ClaudeTermApplicabilityAgent:
     @staticmethod
     def _resolve_coverage_evidence_ids(
         task: TermApplicabilityTask, coverage_items: Any, resolved_facts: list[dict[str, Any]],
+        runtime: "TermApplicabilityRuntimeSummary | None" = None,
     ) -> list[dict[str, Any]] | None:
         """Resolve coverage evidence IDs and derive expected/extracted fields server-side.
 
@@ -917,12 +935,33 @@ class ClaudeTermApplicabilityAgent:
         (derived from the task's own raw-attribute hints); `extracted_fields`
         is now derived the same way, as the sorted set of `field` values
         already present in this *same submission's* own evidence-resolved
-        `resolved_facts` for that candidate -- never restated by Claude, and
+        `resolved_facts` for that candidate, intersected with that
+        candidate's `expected_fields` -- never restated by Claude, and
         therefore structurally unable to drift from the facts actually
         submitted (the exact failure mode `candidate_fact_coverage_extracted_mismatch`
         used to catch after the fact).
+
+        Coverage is an audit of `expected_fields` only (the hinted core
+        fields: quantity, unit_price, total_listed_value) -- it is not a
+        census of every fact the model chose to extract. Claude is free,
+        and expected, to also submit facts outside that hinted set (currency,
+        dates, payment terms, invoicing frequency, ...); intersecting with
+        `expected_fields` keeps those legitimate extra facts out of the
+        partition check entirely, so they can never make `extracted_fields`
+        a superset of `expected_fields` and force a spurious rejection.
+
+        Since `expected_fields`/`extracted_fields` are both server-computed
+        and `unresolved_fields` is Claude's only remaining lever, a bare
+        pydantic partition-mismatch error gives Claude nothing to act on: it
+        names the failing item but never which field is missing from, or
+        double-counted across, its own `unresolved_fields`. When `runtime`
+        is supplied, this method separately records that per-item diagnosis
+        (bounded to field-name enum values, never raw document content) so
+        the one allowed correction attempt can actually target the gap.
         """
 
+        if runtime is not None:
+            runtime.coverage_partition_issues = ()
         if not isinstance(coverage_items, list):
             return None
         by_id = {candidate.candidate_id: candidate for candidate in task.candidates}
@@ -935,7 +974,8 @@ class ClaudeTermApplicabilityAgent:
                 if isinstance(fact, dict) and isinstance(fact.get("field"), str):
                     facts_by_candidate.setdefault(bundle_candidate_id, set()).add(fact["field"])
         resolved: list[dict[str, Any]] = []
-        for item in coverage_items:
+        partition_issues: list[dict[str, Any]] = []
+        for index, item in enumerate(coverage_items):
             if not isinstance(item, dict) or "expected_fields" in item or "extracted_fields" in item or "evidence" in item:
                 return None
             candidate_id = item.get("candidate_id")
@@ -954,13 +994,30 @@ class ClaudeTermApplicabilityAgent:
             unresolved = item.get("unresolved_fields", [])
             if not isinstance(unresolved, list):
                 return None
+            expected_fields = [field.value for field in candidate.expected_fact_fields]
+            extracted_fields = sorted(facts_by_candidate.get(candidate_id, set()) & set(expected_fields))
+            if all(isinstance(value, str) for value in unresolved):
+                expected_set, extracted_set, unresolved_set = set(expected_fields), set(extracted_fields), set(unresolved)
+                missing = sorted(expected_set - extracted_set - unresolved_set)
+                overlapping = sorted(extracted_set & unresolved_set)
+                unexpected = sorted(unresolved_set - expected_set)
+                if missing or overlapping or unexpected:
+                    partition_issues.append({
+                        "index": index,
+                        "candidate_id": candidate_id,
+                        "missing_from_both_extracted_and_unresolved": missing,
+                        "present_in_both_extracted_and_unresolved": overlapping,
+                        "unresolved_fields_not_expected_for_candidate": unexpected,
+                    })
             resolved.append({
                 "candidate_id": candidate_id,
-                "expected_fields": [field.value for field in candidate.expected_fact_fields],
-                "extracted_fields": sorted(facts_by_candidate.get(candidate_id, ())),
+                "expected_fields": expected_fields,
+                "extracted_fields": extracted_fields,
                 "unresolved_fields": unresolved,
                 "evidence": references,
             })
+        if runtime is not None:
+            runtime.coverage_partition_issues = tuple(partition_issues)
         return resolved
 
     @staticmethod
@@ -986,9 +1043,31 @@ class ClaudeTermApplicabilityAgent:
         }
 
     @staticmethod
-    def _safe_finalizer_issues(runtime: TermApplicabilityRuntimeSummary) -> list[dict[str, str]]:
-        """Return only bounded issue codes and locations to the correction call."""
+    def _safe_finalizer_issues(runtime: TermApplicabilityRuntimeSummary) -> list[dict[str, Any]]:
+        """Return only bounded issue codes and locations to the correction call.
 
+        When the coverage partition invariant fails, `expected_fields` and
+        `extracted_fields` are both server-computed -- Claude cannot see a
+        bare `coverage_fields_not_partitioned`/`coverage_fields_overlap`
+        pydantic error and know which field, on which candidate, it left out
+        of or double-counted in `unresolved_fields`. Prefer the per-item
+        diagnosis recorded by `_resolve_coverage_evidence_ids` (field enum
+        names only, never raw document content) so the one allowed
+        correction attempt has something concrete to act on.
+        """
+
+        if runtime.coverage_partition_issues:
+            return [
+                {
+                    "code": "coverage_fields_do_not_partition_expected_fields",
+                    "location": f"candidate_commercial_fact_coverage.{item['index']}",
+                    "candidate_id": item["candidate_id"],
+                    "missing_from_both_extracted_and_unresolved": item["missing_from_both_extracted_and_unresolved"],
+                    "present_in_both_extracted_and_unresolved": item["present_in_both_extracted_and_unresolved"],
+                    "unresolved_fields_not_expected_for_candidate": item["unresolved_fields_not_expected_for_candidate"],
+                }
+                for item in runtime.coverage_partition_issues[:20]
+            ]
         issues = [
             {"code": item["type"], "location": item["location"]}
             for item in runtime.pydantic_errors[:50]
@@ -1294,7 +1373,7 @@ class ClaudeTermApplicabilityAgent:
                     )
                     resolved_coverage = self._resolve_coverage_evidence_ids(
                         task, submitted.get("candidate_commercial_fact_coverage", []),
-                        resolved_facts or [],
+                        resolved_facts or [], runtime,
                     )
                     if resolved_decisions is None or resolved_facts is None or resolved_coverage is None:
                         runtime.failure_stage = "evidence_identifier_unresolved"

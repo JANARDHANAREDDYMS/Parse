@@ -57,6 +57,24 @@ RAW_ATTRIBUTE_FACT_HINTS = {
     "total_contract_value": RawCommercialFactField.TOTAL_LISTED_VALUE,
 }
 
+# Required contract-item attributes (per the take-home assignment's own
+# attribute table) folded into a hint-triggered candidate's expected fields
+# alongside quantity/unit_price/total_listed_value -- see
+# `CandidateContext.expected_fact_fields`. Unlike those three, these have
+# no reliable upstream raw-attribute key to hint off of (document
+# analysis's `raw_attributes` is a free-form bag with no fixed key
+# vocabulary), so there is no separate hint entry for them here; they ride
+# along whenever any hint already fires. Without this, nothing holds the
+# model accountable for looking for them, and they go unextracted on
+# effectively every document.
+REQUIRED_CONTRACT_ITEM_FACT_FIELDS = frozenset({
+    RawCommercialFactField.SERVICE_START_DATE,
+    RawCommercialFactField.SERVICE_END_DATE,
+    RawCommercialFactField.INVOICING_SCHEDULE_TYPE,
+    RawCommercialFactField.INVOICING_FREQUENCY,
+    RawCommercialFactField.PAYMENT_TERMS,
+})
+
 
 def _evidence_ids(evidence) -> tuple[str, ...]:
     """Return deterministic, deduplicated block/table identifiers for compact evidence."""
@@ -100,11 +118,24 @@ class CandidateContext(TermApplicabilityModel):
 
     @property
     def expected_fact_fields(self) -> tuple[RawCommercialFactField, ...]:
-        """Return raw commercial fields whose source hints require investigation."""
+        """Return raw commercial fields this eligible candidate must be investigated for.
+
+        Coverage stays opt-in the same way it always has: a candidate with
+        no raw-attribute hint at all (document analysis found no pricing
+        signal for it) still expects nothing, exactly as before. Once a
+        candidate *is* hint-triggered, though, the required contract-item
+        attributes -- see `REQUIRED_CONTRACT_ITEM_FACT_FIELDS` -- are folded in
+        alongside the hinted fields, since a candidate concrete enough to
+        have priced attributes is concrete enough to also have a service
+        period, invoicing schedule, and payment terms worth investigating.
+        """
 
         if self.commercial_status not in FACT_ELIGIBLE_COMMERCIAL_STATUSES:
             return ()
-        return tuple(sorted({field for key, field in RAW_ATTRIBUTE_FACT_HINTS.items() if self.raw_attributes.get(key)}, key=lambda item: item.value))
+        hinted = {field for key, field in RAW_ATTRIBUTE_FACT_HINTS.items() if self.raw_attributes.get(key)}
+        if not hinted:
+            return ()
+        return tuple(sorted(hinted | REQUIRED_CONTRACT_ITEM_FACT_FIELDS, key=lambda item: item.value))
 
 
 class TermContext(TermApplicabilityModel):

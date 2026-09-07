@@ -226,6 +226,49 @@ async def test_applicability_timeout_preserves_code_stage_and_both_runtimes(tmp_
 
 
 @pytest.mark.asyncio
+async def test_applicability_cancellation_preserves_code_stage_and_partial_runtime(tmp_path, organization):
+    """A typed cancellation (from the agent.py fix) is preserved exactly, like a timeout.
+
+    Before the fix, `ClaudeTermApplicabilityAgent.execute()` bare-`raise`d
+    `asyncio.CancelledError` on cancellation -- a `BaseException`, not an
+    `Exception` -- which would skip past this handler's own
+    `except (TermTriageError, TermApplicabilityError)`/`except Exception`
+    clauses entirely, so `mark_run_failed` was never even called and the
+    persisted run stayed at `status="running"` forever. This test proves the
+    now-typed `term_applicability_cancelled` error is caught, persisted, and
+    carries its partial runtime exactly like `term_applicability_timeout`.
+    """
+
+    ids = await _seed(organization, LocalObjectStorage(tmp_path))
+    storage = LocalObjectStorage(tmp_path)
+    enrichment_results = TermApplicabilityPersistenceService(get_session_factory(), storage)
+    partial_runtime = TermApplicabilityRuntimeSummary(
+        request_id=uuid.uuid4(), started_at=datetime.now(UTC),
+        terminal_reason="cancelled", terminal_kind="cancelled", correction_attempt_count=0,
+        total_elapsed_ms=42_000, session_initialization_elapsed_ms=500,
+    )
+    handler = _handler(
+        storage, enrichment_results,
+        triage_agent=_FakeTermTriageAgent(),
+        applicability_agent=_FakeTermApplicabilityAgent(error=TermApplicabilityRuntimeError("term_applicability_cancelled", runtime=partial_runtime)),
+    )
+    context, job = await _context_for(organization, ids)
+
+    with pytest.raises(JobExecutionError) as excinfo:
+        await handler.execute(context)
+    assert excinfo.value.code == "term_applicability_cancelled"
+
+    row = await _load_run(await _run_id_for(job))
+    assert row.status == "failed" and row.error_code == "term_applicability_cancelled" and row.completed_at is not None
+    diagnostics = row.runtime_diagnostics
+    assert diagnostics["failure_stage"] == "applicability"
+    assert diagnostics["triage"] is not None  # triage succeeded before applicability was cancelled
+    app_block = diagnostics["applicability"]
+    assert app_block["diagnostics"]["terminal_kind"] == "cancelled"
+    assert app_block["diagnostics"]["total_elapsed_ms"] == 42_000
+
+
+@pytest.mark.asyncio
 async def test_applicability_validation_failure_reports_validation_stage(tmp_path, organization):
     """A structurally valid but rule-violating result is a `validation`-stage failure, not `applicability`."""
 

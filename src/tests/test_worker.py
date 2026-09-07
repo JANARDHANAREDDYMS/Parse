@@ -2,15 +2,18 @@
 
 import asyncio
 import uuid
+from datetime import UTC, datetime
 
 import pytest
+from sqlalchemy import select
 
 from maximor.config import get_database_settings
-from maximor.db.models import ProcessingJob
+from maximor.db.models import Document, DocumentProcessingRun, ProcessingJob
 from maximor.db.session import get_session_factory
 from maximor.jobs.dispatcher import JobDispatcher
 from maximor.jobs.errors import JobExecutionError, UnsupportedJobTypeError
-from maximor.jobs.service import claim_next_job, create_document_job, get_tenant_job
+from maximor.jobs.repository import ClaimedJob
+from maximor.jobs.service import claim_next_job, create_document_job, get_tenant_job, mark_job_failed
 from maximor.jobs.types import JobContext, JobType
 from maximor.storage import LocalObjectStorage
 from maximor.worker.handlers import PipelineSmokeTestHandler
@@ -49,6 +52,30 @@ class RecordingHandler:
         self.calls.append(context)
         if self.failure is not None:
             raise self.failure
+
+
+async def seed_document_analysis_job(organization_id: uuid.UUID, *, attempt_number: int = 1) -> ClaimedJob:
+    """Create a document + completed preprocessing run + one `running` `document_analysis` job.
+
+    Status is `running` (not `queued`) because these tests drive the retry
+    logic directly via a hand-built `ClaimedJob` rather than through
+    `claim_next_job` -- that claims the oldest queued job of a type across
+    the *entire* shared database, which would risk stealing or colliding
+    with a real, separately-running pipeline's own document_analysis jobs.
+    Returns a `ClaimedJob` ready to pass straight to the runner/service calls
+    these tests exercise.
+    """
+    document_id, preprocessing_job_id, preprocessing_run_id, analysis_job_id = (uuid.uuid4() for _ in range(4))
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        async with session.begin():
+            session.add(Document(id=document_id, organization_id=organization_id, original_filename="order.pdf", storage_key=f"generated/{document_id}.pdf", sha256_checksum="a" * 64, media_type="application/pdf", status="completed"))
+            session.add(ProcessingJob(id=preprocessing_job_id, organization_id=organization_id, document_id=document_id, job_type="document_preprocessing", status="completed", attempt_number=1))
+            await session.flush()
+            session.add(DocumentProcessingRun(id=preprocessing_run_id, organization_id=organization_id, document_id=document_id, processing_job_id=preprocessing_job_id, attempt_number=1, status="completed", schema_version="prep-v1", processor_version="test", original_document_checksum="a" * 64, started_at=now, completed_at=now))
+            await session.flush()
+            session.add(ProcessingJob(id=analysis_job_id, organization_id=organization_id, document_id=document_id, preprocessing_run_id=preprocessing_run_id, job_type=JobType.DOCUMENT_ANALYSIS.value, status="running", attempt_number=attempt_number))
+    return ClaimedJob(job_id=analysis_job_id, organization_id=organization_id, document_id=document_id, job_type=JobType.DOCUMENT_ANALYSIS.value, attempt_number=attempt_number)
 
 
 def make_runner(dispatcher: JobDispatcher) -> WorkerRunner:
@@ -190,6 +217,60 @@ async def test_once_processes_at_most_one_job(tmp_path, organization, pdf_bytes)
 async def test_once_exits_when_no_job():
     runner = make_runner(JobDispatcher({JobType.PIPELINE_SMOKE_TEST: RecordingHandler()}))
     assert await runner.run(once=True) == 0
+
+
+@pytest.mark.asyncio
+async def test_document_analysis_timeout_gets_exactly_one_automatic_retry(organization):
+    """A `document_analysis_timeout` must queue a new attempt without a re-upload.
+
+    Reproduces a real gap: under concurrent load, `document_analysis` calls
+    can exceed the fixed wall-clock timeout even though the document itself
+    is fine -- a transient failure, not a data or logic defect. Retrying once
+    against the same preprocessing run (no re-upload, no redone preprocessing)
+    recovers it automatically instead of leaving the document permanently
+    failed.
+
+    Drives the runner's retry path directly with a hand-built `ClaimedJob`
+    (see `seed_document_analysis_job`) rather than through `process_one`, so
+    this never touches `claim_next_job`'s global queue.
+    """
+    claimed = await seed_document_analysis_job(organization, attempt_number=1)
+    runner = make_runner(JobDispatcher({JobType.DOCUMENT_ANALYSIS: RecordingHandler()}))
+    await mark_job_failed(get_session_factory(), claimed, error_code="document_analysis_timeout", error_message="Document analysis timed out.")
+    assert runner._is_retryable_timeout(claimed, "document_analysis_timeout") is True
+    await runner._retry_document_analysis(claimed)
+
+    async with get_session_factory()() as session:
+        jobs = (await session.scalars(select(ProcessingJob).where(
+            ProcessingJob.organization_id == organization, ProcessingJob.document_id == claimed.document_id,
+            ProcessingJob.job_type == JobType.DOCUMENT_ANALYSIS.value,
+        ).order_by(ProcessingJob.attempt_number))).all()
+    assert [(job.attempt_number, job.status, job.preprocessing_run_id) for job in jobs] == [
+        (1, "failed", jobs[0].preprocessing_run_id), (2, "queued", jobs[0].preprocessing_run_id),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_document_analysis_timeout_retry_is_capped_at_one(organization):
+    """A second consecutive timeout must NOT queue a third attempt.
+
+    `document_analysis_timeout_max_attempts` defaults to 2 (the original
+    attempt plus exactly one retry) -- an automatic retry that never stops
+    would keep spending money on a document that may simply be too complex
+    to finish within any reasonable timeout. Pure decision logic, no DB
+    write beyond the fixture seed -- `_is_retryable_timeout` never mutates.
+    """
+    claimed = await seed_document_analysis_job(organization, attempt_number=2)
+    runner = make_runner(JobDispatcher({JobType.DOCUMENT_ANALYSIS: RecordingHandler()}))
+    assert runner._is_retryable_timeout(claimed, "document_analysis_timeout") is False
+
+
+@pytest.mark.asyncio
+async def test_non_timeout_document_analysis_failure_is_not_retried(organization):
+    """A validation/logic failure must stay single-attempt -- it would just fail identically again."""
+    claimed = await seed_document_analysis_job(organization, attempt_number=1)
+    runner = make_runner(JobDispatcher({JobType.DOCUMENT_ANALYSIS: RecordingHandler()}))
+    assert runner._is_retryable_timeout(claimed, "analysis_validation_failed") is False
 
 
 @pytest.mark.asyncio

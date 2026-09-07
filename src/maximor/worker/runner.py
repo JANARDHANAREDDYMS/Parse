@@ -4,14 +4,17 @@ import asyncio
 import signal
 
 import structlog
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from maximor.config import DatabaseSettings
+from maximor.db.models import ProcessingJob
 from maximor.jobs.dispatcher import JobDispatcher
 from maximor.jobs.errors import InvalidJobContextError, JobExecutionError
 from maximor.jobs.repository import ClaimedJob
-from maximor.jobs.service import claim_next_job, mark_job_completed, mark_job_failed
+from maximor.jobs.service import claim_next_job, mark_job_completed, mark_job_failed, schedule_document_analysis_job
+from maximor.jobs.types import JobType
 
 logger = structlog.get_logger()
 
@@ -60,6 +63,8 @@ class WorkerRunner:
                 exception_class=exc.__class__.__name__,
                 **identifiers,
             )
+            if self._is_retryable_timeout(claimed, exc.code):
+                await self._retry_document_analysis(claimed)
         except Exception as exc:
             await mark_job_failed(
                 self._session_factory,
@@ -125,6 +130,46 @@ class WorkerRunner:
             "worker_stopped", worker_identity=self._settings.worker_identity
         )
         return 0
+
+    def _is_retryable_timeout(self, claimed: ClaimedJob, error_code: str) -> bool:
+        """Only a `document_analysis` timeout gets an automatic retry.
+
+        A timeout is transient -- API latency under concurrent load, not a
+        data or logic defect -- so one retry with the same input often
+        succeeds. Every other error code (validation failures, malformed
+        output, etc.) would just fail identically again, so retrying those
+        would only waste money; they stay single-attempt.
+        """
+        return (
+            claimed.job_type == JobType.DOCUMENT_ANALYSIS.value
+            and error_code == "document_analysis_timeout"
+            and claimed.attempt_number < self._settings.document_analysis_timeout_max_attempts
+        )
+
+    async def _retry_document_analysis(self, claimed: ClaimedJob) -> None:
+        """Queue exactly one more `document_analysis` attempt after a timeout.
+
+        Reuses the same `preprocessing_run_id` -- preprocessing already
+        succeeded and is not redone, and no new document is uploaded.
+        `schedule_document_analysis_job` is safe to call here because the
+        just-failed job row already freed the one-in-flight-per-preprocessing-run
+        slot that a `queued`/`running` attempt would otherwise hold.
+        """
+        async with self._session_factory() as session:
+            job = await session.scalar(select(ProcessingJob).where(
+                ProcessingJob.id == claimed.job_id, ProcessingJob.organization_id == claimed.organization_id,
+            ))
+        if job is None or job.preprocessing_run_id is None:
+            return
+        retry_job = await schedule_document_analysis_job(
+            self._session_factory, organization_id=claimed.organization_id, document_id=claimed.document_id,
+            preprocessing_run_id=job.preprocessing_run_id, retry_terminal=True,
+        )
+        logger.info(
+            "document_analysis_timeout_retry_queued",
+            organization_id=str(claimed.organization_id), document_id=str(claimed.document_id),
+            retry_job_id=str(retry_job.id), retry_attempt_number=retry_job.attempt_number,
+        )
 
     def _safe_identifiers(self, claimed: ClaimedJob) -> dict[str, str | int]:
         return {

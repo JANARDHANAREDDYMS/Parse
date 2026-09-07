@@ -57,6 +57,24 @@ _FACT_TO_OUTPUT = {
     RawCommercialFactField.YEARLY_PRICE: "yearly_price_schedule",
 }
 
+# These two fields are empirically not recoverable from this dataset's
+# source documents in the vast majority of cases: the only invoicing-related
+# text most order forms carry is dataset-wide template boilerplate ("Invoices
+# are sent in advance in accordance with each line item's billing
+# frequency.") that appears identically across documents with different
+# actual `invoicing_schedule_type`/`invoicing_frequency` ground truth values
+# -- verified directly against persisted document text across all three
+# schedule-type buckets, not assumed. Treating an honest "unresolved" here as
+# a review-worthy gap would flag the overwhelming majority of documents for
+# human review over information that was never in the document to find.
+# `payment_terms`/dates are excluded from this list because they usually are
+# recoverable (via inheritance or per-candidate facts) and their absence is a
+# more meaningful signal.
+_UNRESOLVED_FIELDS_NEVER_GATE_COMPLETION = frozenset({
+    RawCommercialFactField.INVOICING_SCHEDULE_TYPE,
+    RawCommercialFactField.INVOICING_FREQUENCY,
+})
+
 
 def _classification(code: str) -> ReviewQueueClassification:
     """Map a deterministic validation code to a bounded review category."""
@@ -176,6 +194,8 @@ def _coverage_issues(normalization_input: NormalizationInput, extraction: FinalO
         if item is None:
             continue
         for field in coverage.unresolved_fields:
+            if field in _UNRESOLVED_FIELDS_NEVER_GATE_COMPLETION:
+                continue
             output = _FACT_TO_OUTPUT.get(field, field.value)
             issues.append(_safe_issue(code="unresolved_commercial_field", message="A required commercial field remains unresolved.", location=f"line_items[{coverage.candidate_id}].{output}", candidate_id=coverage.candidate_id, field_name=output))
         extracted = set(coverage.extracted_fields)

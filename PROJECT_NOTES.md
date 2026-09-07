@@ -132,7 +132,8 @@ Your internal structure should still allow MCP later:
 
 ## scalable end to end arch for now:
 
-This shows the current implemented endpoint first, then the planned normalization and finalization path.
+This reflects the current implemented pipeline, including normalization persistence and the final API
+boundary. Automatic upstream correction remains future work.
 
 ```text
 Client
@@ -149,68 +150,60 @@ PostgreSQL processing_jobs queue
 Generic worker process
   WorkerRunner → JobDispatcher → job-specific handler
   │
-  ├── DocumentPreprocessingHandler                         
-  │     ├── inspect PDF, extract native text/layout/tables
-  │     ├── render pages; OCR only when needed
-  │     ├── persist/reload-validate PreprocessedDocument
-  │     └── schedule document_analysis
+  ├── DocumentPreprocessingHandler
+  │     input: trusted organization/document/job identity + stored source PDF
+  │     work:  native text, layout-block, and table extraction; page rendering;
+  │            OCR only when needed
+  │     output: persisted/reload-validated PreprocessedDocument with page inventory,
+  │             representations, renders, and evidence locators
+  │     └── schedules document_analysis
   │
-  ├── DocumentAnalysisHandler                            
-  │     ├── Claude DocumentAnalysisAgent
-  │     │     └── narrow persisted-document tools:
-  │     │         overview, search, targeted page text/blocks/tables/renders,
-  │     │         and evidence regions — never direct PDF or SQL access
-  │     ├── persist/reload-validate canonical analysis
-  │     └── fan out independently after success:
+  ├── DocumentAnalysisHandler
+  │     input: trusted identity + completed PreprocessedDocument
+  │     work:  Claude DocumentAnalysisAgent uses narrow persisted-document tools:
+  │            overview, search, targeted page text/blocks/tables/renders, and
+  │            evidence regions — never direct PDF, filesystem, or SQL access
+  │     output: persisted/reload-validated DocumentAnalysisResult containing
+  │             contract/pricing structure, ProductCandidates with raw attributes,
+  │             CommercialStatus assessments, raw GlobalTerms, and evidence references
+  │     └── schedules two independent downstream branches after persistence
   │           │
   │           ├─────────────────────────────────────────────────────────┐
   │           ▼                                                         ▼
-  │     sku_mapping jobs                                      term_applicability job
-  │     (one per eligible candidate)                          (one per analysis run)
+  │     SKU mapping jobs                                       term_applicability job
+  │     (one per eligible candidate)                           (one per analysis run)
   │           │                                                         │
   │           ▼                                                         ▼
-  │     SkuMappingHandler                                  TermApplicabilityHandler
-  │     ├── load active tenant catalog                     ├── Claude TermTriageAgent
-  │     ├── HybridSkuRetriever                             │     classifies raw terms as metadata,
-  │     │     exact/alias → lexical → semantic seam        │     potential line-item, or uncertain
-  │     ├── Claude SkuMappingAgent                         └── Claude TermApplicabilityAgent
-  │     │     MATCH / NO_MATCH / AMBIGUOUS                       for selected terms only:
-  │     └── persist/reload-validate decision                    scope + raw commercial facts
-  │           │                                                   + evidence-backed coverage
-  │           ▼                                                         │
-  │     validated SKU mappings                                          ▼
-  │                                                           validated commercial enrichment
-  │
-  └── Both completed branches become trusted inputs to normalization.
-
-                         ┌───────────────────────────────────────────-┐
-                         │ Deterministic normalization                │
-                         │ ├── money/currency and price schedules     │
-                         │ ├── dates and service periods              │
-                         │ ├── quantities                             │
-                         │ ├── payment terms and billing enums        │
-                         │ └── explicit, evidence-backed derivations  │
-                         └───────────────────────────────────────────┘
-                                             │
-                                             ▼
-                         ┌───────────────────────────────────────────-┐
-                         │ Final validation                           │
-                         │ ├── schema, SKU, date, and decimal checks  │
-                         │ ├── total/schedule reconciliation          │
-                         │ ├── targeted semantic review only when     │
-                         │ │   deterministic rules cannot decide      │
-                         │ └── targeted correction to the owning      │
-                         │     document, SKU, or term stage           │
-                         └───────────────────────────────────────────┘
-                                             │
-                                             ▼
-                         FinalOrderFormExtraction
-                         ├── COMPLETED: every required check passes
-                         └── REVIEW_REQUIRED / FAILED_VALIDATION:
-                             safe diagnostics and no fabricated result
-                                             │
-                                             ▼
-                              persisted result and tenant-scoped API
+  │     SkuMappingHandler                                    TermApplicabilityHandler
+  │     input: candidate + commercial-status evidence +      input: analysis candidates, raw GlobalTerms, and evidence
+  │            active tenant catalog                          │
+  │     work: deterministic shortlist retrieval, then         ├── Stage 1: TermTriageAgent
+  │           Claude judgment over retrieved candidates        │     input: all raw GlobalTerms
+  │     output: MATCH / NO_MATCH / AMBIGUOUS decision,         │     output: one decision per term:
+  │             cited evidence, catalog version, persisted run │             document_metadata / potential_line_item / uncertain
+  │                                                          │     handoff: selects only potential_line_item + uncertain terms
+  │                                                          │
+  │                                                          └── Stage 2: TermApplicabilityAgent + commercial enrichment
+  │                                                                input: selected terms + candidate context + evidence
+  │                                                                work: retrieves supporting term/candidate evidence;
+  │                                                                      resolves document / candidate / unknown scope;
+  │                                                                      extracts raw candidate commercial facts
+  │                                                                output: applicability decisions, candidate fact bundles,
+  │                                                                        coverage declarations, evidence references
+  │           │                                                         │
+  │           └────────────────────────┬────────────────────────────────┘
+  │                                    ▼
+  └── NormalizationHandler (idempotent fan-in after both branches are terminal)
+        input: completed analysis + current mapping runs + term-enrichment run
+        work:  deterministic money/date/quantity/enum normalization, conservative
+               term inheritance, Decimal reconciliation, and bounded semantic review
+               only where deterministic rules cannot resolve semantic ambiguity
+        output: persisted FinalOrderFormExtraction with normalized line items, field
+                provenance, review issues, semantic findings, and business status:
+                COMPLETED / REVIEW_REQUIRED / FAILED_VALIDATION
+                                    │
+                                    ▼
+                     tenant-scoped API and dashboard result
 ```
 
 Important boundaries:
@@ -218,7 +211,7 @@ Important boundaries:
 - PostgreSQL holds job state, tenant-scoped relational projections, and lineage. Object storage holds PDFs, page renders, and compressed canonical artifacts. Neither is passed wholesale through an agent prompt.
 - `organization_id` scopes every record and tool call. `document_id` identifies the uploaded source; preprocessing, analysis, mapping, and enrichment runs are separate versioned records linked to it.
 - The catalog repository and hybrid retriever are application services exposed to `SkuMappingAgent` through narrow tools. They are not inside Claude.
-- `SKU_MAPPING` and `TERM_APPLICABILITY` are parallel after document analysis. Term enrichment does not wait for SKU mapping; normalization is the first future stage that consumes both results.
+- `SKU_MAPPING` and `TERM_APPLICABILITY` are parallel after document analysis. Term enrichment does not wait for SKU mapping; normalization is the first implemented stage that consumes both results.
 
 
 ## Product Scale Decisions: current baseline and next hardening
@@ -283,6 +276,28 @@ Each job/run should retain safe, bounded metadata for:
 - the lineage IDs required to reproduce or audit a result.
 
 This information must remain content-free unless a separately authorized audit view is used.
+
+
+
+Claude SDK session setup and teardown
+An in-process MCP tool server with only narrow document-reading tools exposed
+
+
+A guarded finalize_document_analysis tool as the only valid completion path: Clude cannot merely send ordinary chat text and have it treated as the result. It must call finalize_document_analysis(...) with structured output. Your server then checks it before accepting it.
+
+Server-side identity and evidence validation: 
+ Model does not get to choose or invent trusted identifiers:
+- The server already knows the organization, document, preprocessing run, and analysis run.
+- It injects those trusted IDs into the final result.
+- The model can cite only evidence IDs that belong to that document/run.
+- The server checks that cited candidate IDs and evidence references really exist and belong together
+
+Bounded correction handling:
+If the finalizer rejects a structurally close result—for example, an invalid evidence ID—the agent receives a compact correction message and gets a limited chance, such as one correction, to resubmit. It is not allowed to loop indefinitely, spend unlimited money, or silently accept an invalid result.
+
+Timeout and cancellation handling
+
+
 
 ### Where LLMs belong
 

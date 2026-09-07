@@ -12,14 +12,16 @@ const numberOrNull = (value: unknown): number | null => {
 
 /** Maps a normalization result; unresolved or unsupported fields remain null. */
 export function toAssignmentExtraction(result: any | null | undefined): AssignmentExtraction {
-  const source = Array.isArray(result?.line_items) ? result.line_items : [];
+  const source = Array.isArray(result?.extraction?.line_items)
+    ? result.extraction.line_items
+    : Array.isArray(result?.line_items) ? result.line_items : [];
   const contract_items = source.map((item: any) => {
     const money = item.unit_price && typeof item.unit_price === 'object' ? item.unit_price : {};
     const total = item.total_listed_value && typeof item.total_listed_value === 'object' ? item.total_listed_value : {};
     return {
       name: item.sku_name ?? item.name ?? null,
       sku_reference: item.sku_code ?? null,
-      currency: money.currency ?? total.currency ?? item.currency ?? null,
+      currency: money.currency_code ?? money.currency ?? total.currency_code ?? total.currency ?? item.currency ?? null,
       total_listed_value: numberOrNull(total.amount ?? item.total_listed_value),
       quantity: numberOrNull(item.quantity?.amount ?? item.quantity),
       unit_price: numberOrNull(money.amount ?? item.unit_price),

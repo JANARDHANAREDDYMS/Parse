@@ -131,3 +131,10 @@ class PipelineResponse(BaseModel):
     term_applicability: dict[str, Any] | None
     normalization: dict[str, Any] | None
     document_status: str
+
+
+class EvidencePresentationResponse(BaseModel):
+    """Bounded, tenant-scoped evidence presentation for the operations UI."""
+    document_id: uuid.UUID
+    preprocessing_run_id: uuid.UUID
+    evidence: list[dict[str, Any]]

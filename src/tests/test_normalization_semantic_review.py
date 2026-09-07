@@ -97,6 +97,77 @@ def test_insufficient_evidence_does_not_claim_support_and_foreign_evidence_rejec
         ClaudeNormalizationSemanticReviewAgent.validate_submission(task, foreign, runtime)
 
 
+def test_schema_invalid_submission_records_specific_pydantic_error_detail():
+    """A bare `semantic_review_schema_invalid` code left the model's one correction with nothing to act on.
+
+    Reproduces the real `OF-0008` failure: a schema-invalid submission (here,
+    an `outcome` value outside the fixed enum) must record a bounded,
+    specific location/type on `runtime.pydantic_errors` -- not just the
+    generic code -- so the correction feedback can actually name the field.
+    """
+
+    normalization_input, draft, readiness = review_ready_input()
+    task = build_semantic_review_task(normalization_input, draft, readiness)
+    item = task.items[0]
+    runtime = SemanticReviewRuntimeSummary()
+    bad_outcome = {"findings": [{"review_item_id": item.review_item_id, "outcome": "not_a_real_outcome", "candidate_id": item.candidate_id, "field_name": item.field_name}]}
+    with pytest.raises(SemanticReviewValidationError):
+        ClaudeNormalizationSemanticReviewAgent.validate_submission(task, bad_outcome, runtime)
+    assert runtime.failure_stage == "pydantic_schema_validation"
+    assert len(runtime.pydantic_errors) == 1
+    assert runtime.pydantic_errors[0]["location"] == "findings.0.outcome"
+    assert runtime.pydantic_errors[0]["type"]
+
+    good = {"findings": [{"review_item_id": item.review_item_id, "outcome": "insufficient_evidence", "candidate_id": item.candidate_id, "field_name": item.field_name}]}
+    ClaudeNormalizationSemanticReviewAgent.validate_submission(task, good, runtime)
+    assert runtime.pydantic_errors == ()
+
+
+def test_findings_ordering_violation_maps_to_a_specific_safe_code():
+    """The model-level ordering/uniqueness validator must not collapse to a bare code.
+
+    Reproduces the real `OF-0008`/`OF-0016` failure: after the schema fix
+    stopped the model from guessing field names, it started failing a
+    *different*, model-level check instead -- `findings` not submitted in
+    ascending order by `review_item_id`, or containing a duplicate. That
+    validator raises a bare `ValueError` at the model root (pydantic gives
+    it no field-specific `loc`), so without this mapping the correction
+    feedback said nothing more than a generic pydantic error type.
+    """
+
+    error = {"type": "value_error", "msg": "Value error, findings must be unique and ordered by review_item_id"}
+    assert ClaudeNormalizationSemanticReviewAgent._map_pydantic_error(error) == "findings_not_unique_or_ordered_by_review_item_id"
+
+
+def test_finalizer_schema_declares_real_field_names_and_enum_values():
+    """The finalizer's own JSON schema must give Claude the real shape, not a bare object.
+
+    Reproduces the real `OF-0008` failure: with a bare `{"type": "object"}"`
+    for `result`, the model had zero structural guidance and reliably
+    guessed at the payload shape (observed: submitting `verdict` where the
+    schema requires `outcome`). Deriving the schema from
+    `NormalizationSemanticReviewResult` itself must surface the actual
+    field name and the real `SemanticReviewOutcome`/`SemanticReviewOwner`
+    enum values, and must never re-offer the trusted identity fields
+    `validate_submission` always injects itself.
+    """
+
+    schema = ClaudeNormalizationSemanticReviewAgent._finalizer_input_schema()
+    result_schema = schema["properties"]["result"]
+    assert result_schema["required"] == ["findings"]
+    for trusted_field in ("schema_version", "organization_id", "document_id", "agent_version"):
+        assert trusted_field not in result_schema["properties"]
+
+    finding_definition = schema["$defs"]["SemanticReviewFinding"]
+    assert "outcome" in finding_definition["properties"]
+    assert "verdict" not in finding_definition["properties"]
+    assert finding_definition["required"] == ["review_item_id", "outcome"]
+    outcome_enum = schema["$defs"]["SemanticReviewOutcome"]["enum"]
+    assert set(outcome_enum) == {
+        "supported_interpretation", "insufficient_evidence", "conflict_unresolved", "route_for_targeted_correction",
+    }
+
+
 def test_missing_duplicate_or_out_of_order_findings_rejected():
     normalization_input, draft, readiness = review_ready_input()
     task = build_semantic_review_task(normalization_input, draft, readiness)
@@ -131,6 +202,55 @@ def test_exact_namespaced_allowlist_and_prompt_are_isolated():
     )
     assert "get_review_item_context" in agent._prompt(task)
     assert "finalize_normalization_semantic_review" in agent._prompt(task)
+
+
+@pytest.mark.asyncio
+async def test_execute_stops_once_the_one_allowed_correction_is_also_rejected():
+    """The session must not keep burning turns on a hopeless finalizer.
+
+    Reproduces the real `OF-0008` failure: the model kept calling `finalize`
+    (10 times) long after its one allowed correction had already been
+    rejected, because the receive-response loop only ever checked for an
+    *accepted* result, never for an exhausted-and-rejected one. It must now
+    break as soon as `capture["rejected"]` is set, and `execute()` must
+    raise the accurate validation failure rather than claim the finalizer
+    was never called.
+    """
+
+    normalization_input, draft, readiness = review_ready_input()
+    task = build_semantic_review_task(normalization_input, draft, readiness)
+    settings = DatabaseSettings(database_url=SecretStr("postgresql+asyncpg://test:test@localhost/test"), anthropic_api_key=SecretStr("test-key"))
+    agent = ClaudeNormalizationSemanticReviewAgent(settings)
+    processed: list[int] = []
+
+    class _DummyMessage:
+        pass
+
+    class FakeClient:
+        def __init__(self, options):
+            self.options = options
+
+        async def connect(self):
+            pass
+
+        async def query(self, prompt):
+            finalize = self.options._maximor_adapters[-1].handler
+            await finalize({"result": {}})  # consumes the one allowed correction
+            await finalize({"result": {}})  # exhausts it -- capture["rejected"] = True
+
+        async def receive_response(self):
+            for _ in range(5):
+                processed.append(1)
+                yield _DummyMessage()
+
+        async def disconnect(self):
+            pass
+
+    agent._client_factory = lambda options: FakeClient(options)
+    tools = NormalizationSemanticReviewTools(task)
+    with pytest.raises(SemanticReviewValidationError):
+        await agent.execute(task, tools)
+    assert len(processed) == 1
 
 
 def test_runtime_diagnostics_are_bounded_and_do_not_mutate_source():

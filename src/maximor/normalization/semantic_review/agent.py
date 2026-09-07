@@ -24,6 +24,14 @@ TOOL_NAMES = ("get_review_item_context", "get_review_item_evidence", "get_candid
 MCP_TOOL_NAMES = tuple(f"mcp__{MCP_SERVER_NAME}__{name}" for name in TOOL_NAMES)
 FINALIZER_TOOL_NAME = TOOL_NAMES[-1]
 
+# Application-owned identity/version fields `validate_submission` always
+# injects itself -- never accepted from Claude, and stripped from the
+# finalizer's own input schema so Claude is never invited to submit them.
+TRUSTED_IDENTITY_FIELDS = frozenset({
+    "schema_version", "organization_id", "document_id", "preprocessing_run_id", "analysis_run_id",
+    "normalization_schema_version", "finalization_policy_version", "prompt_version", "skill_version", "agent_version",
+})
+
 
 class NormalizationSemanticReviewAgent(Protocol):
     """Review only assigned deterministic normalization issues."""
@@ -55,6 +63,7 @@ class SemanticReviewRuntimeSummary:
     terminal_reason: str | None = None
     failure_stage: str | None = None
     validation_issue_codes: tuple[str, ...] = ()
+    pydantic_errors: tuple[dict[str, str], ...] = ()
     sdk_event_types: tuple[str, ...] = ()
     input_tokens: int | None = None
     output_tokens: int | None = None
@@ -93,6 +102,7 @@ class SemanticReviewRuntimeSummary:
             "terminal_reason": self.terminal_reason,
             "failure_stage": self.failure_stage,
             "validation_issue_codes": list(self.validation_issue_codes[:50]),
+            "pydantic_errors": list(self.pydantic_errors[:50]),
             "sdk_event_types": list(self.sdk_event_types[:50]),
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
@@ -170,8 +180,10 @@ class ClaudeNormalizationSemanticReviewAgent:
                         runtime.input_tokens = usage.get("input_tokens")
                         runtime.output_tokens = usage.get("output_tokens")
                         runtime.cost_usd = getattr(message, "total_cost_usd", None)
-                    if capture["result"] is not None:
+                    if capture["result"] is not None or capture["rejected"]:
                         break
+            if capture["rejected"]:
+                raise SemanticReviewValidationError("normalization_semantic_review_invalid_output", runtime=runtime)
             if capture["result"] is None:
                 runtime.failure_stage = "finalizer_not_called"
                 raise SemanticReviewRuntimeError("normalization_semantic_review_finalizer_not_called", runtime=runtime)
@@ -194,6 +206,37 @@ class ClaudeNormalizationSemanticReviewAgent:
                 except Exception:
                     pass
 
+    @staticmethod
+    def _finalizer_input_schema() -> dict[str, Any]:
+        """Derive a semantic-only submission schema with trusted fields removed.
+
+        Before this, the finalizer's declared input schema was a bare
+        `{"type": "object"}` for `result` -- no nested schema at all
+        constraining field names or enum values. With no structural
+        guidance, the model reliably guessed at the payload shape (observed:
+        submitting a `verdict` field where the schema requires `outcome`),
+        and repeated the exact same guess on its one allowed correction even
+        after being told the specific field name was wrong. Deriving the
+        schema directly from `NormalizationSemanticReviewResult` itself --
+        the same approach `term_applicability`'s finalizer already uses --
+        gives Claude the real field names and `SemanticReviewOutcome`/
+        `SemanticReviewOwner` enum values up front, and stays in sync with
+        the model automatically.
+        """
+
+        result_schema = copy.deepcopy(NormalizationSemanticReviewResult.model_json_schema())
+        definitions = result_schema.pop("$defs", None) or {}
+        properties = result_schema.get("properties", {})
+        required = result_schema.get("required", [])
+        for field_name in TRUSTED_IDENTITY_FIELDS:
+            properties.pop(field_name, None)
+            if field_name in required:
+                required.remove(field_name)
+        schema = {"type": "object", "properties": {"result": result_schema}, "required": ["result"], "additionalProperties": False}
+        if definitions:
+            schema["$defs"] = definitions
+        return schema
+
     def _build_adapters(self, task, tools, capture):
         """Build SDK adapters whose scope is fixed by the trusted task."""
         async def context(args):
@@ -215,23 +258,65 @@ class ClaudeNormalizationSemanticReviewAgent:
                 runtime.finalizer_accepted = True
                 return {"content": [{"type": "text", "text": "Accepted. Stop now."}]}
             except SemanticReviewValidationError:
+                issues = [dict(item) for item in runtime.pydantic_errors] or list(runtime.validation_issue_codes)
                 if runtime.correction_attempt_count < 1:
                     runtime.correction_attempt_count += 1
-                    return {"content": [{"type": "text", "text": json.dumps({"correction_allowed": True, "issue_codes": list(runtime.validation_issue_codes)}, sort_keys=True)}], "is_error": True}
+                    return {"content": [{"type": "text", "text": json.dumps({"correction_allowed": True, "issue_codes": issues}, sort_keys=True, default=str)}], "is_error": True}
                 capture["rejected"] = True
-                return {"content": [{"type": "text", "text": json.dumps({"correction_allowed": False, "issue_codes": list(runtime.validation_issue_codes)}, sort_keys=True)}], "is_error": True}
+                return {"content": [{"type": "text", "text": json.dumps({"correction_allowed": False, "issue_codes": issues}, sort_keys=True, default=str)}], "is_error": True}
         return [
             sdk.tool("get_review_item_context", "Read one assigned review item.", {"type": "object", "properties": {"review_item_id": {"type": "string"}}, "required": ["review_item_id"]})(context),
             sdk.tool("get_review_item_evidence", "Resolve assigned evidence by ID.", {"type": "object", "properties": {"review_item_id": {"type": "string"}, "evidence_id": {"type": "string"}}, "required": ["review_item_id", "evidence_id"]})(evidence),
             sdk.tool("get_candidate_context", "Read an assigned candidate context.", {"type": "object", "properties": {"candidate_id": {"type": "string"}}, "required": ["candidate_id"]})(candidate),
             sdk.tool("get_term_context", "Read an assigned term context.", {"type": "object", "properties": {"term_id": {"type": "string"}}, "required": ["term_id"]})(term),
-            sdk.tool(FINALIZER_TOOL_NAME, "Submit the complete semantic review.", {"type": "object", "properties": {"result": {"type": "object"}}, "required": ["result"]})(finalize),
+            sdk.tool(FINALIZER_TOOL_NAME, "Submit the complete semantic review.", self._finalizer_input_schema())(finalize),
         ]
+
+    @staticmethod
+    def _map_pydantic_error(error: dict[str, Any]) -> str:
+        """Map the known model-level ordering validator to a specific, safe code.
+
+        `findings_are_unique_and_ordered` raises a bare `ValueError` at the
+        model root (no field-specific `loc`), so without this mapping the
+        model only ever sees `location: "result"` with the generic pydantic
+        error type -- no signal that the actual problem is duplicate or
+        out-of-order `review_item_id`s, not a missing/wrong field.
+        """
+
+        text = str(error.get("msg", "")).lower()
+        if "unique and ordered" in text:
+            return "findings_not_unique_or_ordered_by_review_item_id"
+        return str(error.get("type", "value_error"))[:64]
+
+    @staticmethod
+    def _safe_pydantic_errors(exc: ValidationError) -> tuple[dict[str, str], ...]:
+        """Retain only sanitized locations and stable Pydantic error types.
+
+        Without this, a schema-invalid submission gets nothing more specific
+        than the bare code `semantic_review_schema_invalid`, leaving the
+        model's one allowed correction with no way to know which finding, or
+        which field on it, was actually rejected.
+        """
+
+        details: list[dict[str, str]] = []
+        for error in exc.errors(include_input=False, include_url=False)[:50]:
+            location_parts = []
+            for part in error.get("loc", ())[:8]:
+                value = str(part)
+                location_parts.append(value if value.replace("_", "").replace("-", "").isalnum() and len(value) <= 64 else "field")
+            details.append({"location": ".".join(location_parts) or "result", "type": ClaudeNormalizationSemanticReviewAgent._map_pydantic_error(error)})
+        return tuple(details)
 
     @staticmethod
     def validate_submission(task: NormalizationSemanticReviewTask, submitted: Any, runtime: SemanticReviewRuntimeSummary) -> NormalizationSemanticReviewResult:
         """Validate trusted identity, exact coverage, and same-session evidence IDs."""
         runtime.finalizer_submission_count += 1
+        runtime.pydantic_errors = ()
+        if not isinstance(submitted, dict):
+            runtime.failure_stage = "pydantic_schema_validation"
+            runtime.validation_issue_codes = ("semantic_review_schema_invalid",)
+            runtime.pydantic_errors = ({"location": "result", "type": f"not_an_object:{type(submitted).__name__}"[:64]},)
+            raise SemanticReviewValidationError("normalization_semantic_review_invalid_output", runtime=runtime)
         try:
             payload = dict(submitted)
             payload.update({
@@ -247,9 +332,15 @@ class ClaudeNormalizationSemanticReviewAgent:
                 "agent_version": task.request.agent_version,
             })
             result = NormalizationSemanticReviewResult.model_validate(payload)
-        except (ValidationError, TypeError, ValueError):
+        except ValidationError as exc:
             runtime.failure_stage = "pydantic_schema_validation"
             runtime.validation_issue_codes = ("semantic_review_schema_invalid",)
+            runtime.pydantic_errors = ClaudeNormalizationSemanticReviewAgent._safe_pydantic_errors(exc)
+            raise SemanticReviewValidationError("normalization_semantic_review_invalid_output", runtime=runtime) from None
+        except (TypeError, ValueError) as exc:
+            runtime.failure_stage = "pydantic_schema_validation"
+            runtime.validation_issue_codes = ("semantic_review_schema_invalid",)
+            runtime.pydantic_errors = ({"location": "result", "type": type(exc).__name__[:64]},)
             raise SemanticReviewValidationError("normalization_semantic_review_invalid_output", runtime=runtime) from None
         expected = set(task.request.review_item_ids)
         actual = {finding.review_item_id for finding in result.findings}

@@ -35,6 +35,35 @@ def test_unresolved_expected_field_is_review_required_without_a_default():
     assert draft.line_items[0].quantity is None or draft.line_items[1].quantity is None
 
 
+def test_unresolved_invoicing_schedule_and_frequency_never_gate_completion():
+    """These two fields must not force review_required when genuinely unresolved.
+
+    Verified empirically against this dataset: the only invoicing-related
+    text most order forms carry is template boilerplate identical across
+    documents with different actual `invoicing_schedule_type`/
+    `invoicing_frequency` ground truth -- an honest "unresolved" here is the
+    expected, correct outcome for most documents, not a defect worth
+    routing to a human. Unlike `test_unresolved_expected_field_is_review_required_without_a_default`,
+    the *same* unresolved-and-un-defaulted shape must NOT produce a review
+    issue or move the document off `READY_FOR_SEMANTIC_REVIEW` for these
+    two specific fields.
+    """
+    scenario = base_scenario()
+    coverage = CandidateCommercialFactCoverage(
+        candidate_id="candidate-hinted",
+        expected_fields=(RawCommercialFactField.INVOICING_FREQUENCY, RawCommercialFactField.INVOICING_SCHEDULE_TYPE),
+        extracted_fields=(),
+        unresolved_fields=(RawCommercialFactField.INVOICING_FREQUENCY, RawCommercialFactField.INVOICING_SCHEDULE_TYPE),
+        evidence=(scenario["coverage"].evidence[0],),
+    )
+    scenario["term_applicability"] = scenario["term_applicability"].model_copy(update={"candidate_commercial_fact_coverage": (coverage,)})
+    normalization_input = _assemble(**scenario)
+    draft = assemble_normalized_draft(normalization_input)
+    _, readiness = build_finalization_candidate(normalization_input, draft)
+    assert not any(issue.code == "unresolved_commercial_field" for issue in readiness.issues)
+    assert readiness.status is FinalizationStatus.READY_FOR_SEMANTIC_REVIEW
+
+
 def test_sku_identity_break_is_failed_validation():
     normalization_input = _assemble()
     draft = assemble_normalized_draft(normalization_input)

@@ -3,6 +3,7 @@ from decimal import Decimal
 from dataclasses import dataclass
 from maximor.document_analysis.schemas import CommercialStatus
 from maximor.normalization.contracts import NormalizationInput
+from maximor.normalization.normalizers import reconcile_multi_period_total
 from maximor.normalization.schemas import FinalOrderFormExtraction, ReviewIssue, ReviewIssueSeverity
 from maximor.term_applicability.contracts import FACT_ELIGIBLE_COMMERCIAL_STATUSES
 
@@ -32,8 +33,14 @@ def validate_normalized_extraction(normalization_input: NormalizationInput, extr
         if len(currencies) > 1:
             issues.append(ReviewIssue(code="incompatible_currencies", message="Line-item monetary values use incompatible currencies.", severity=ReviewIssueSeverity.ERROR, candidate_id=item.source_candidate_id))
         if item.quantity is not None and item.unit_price and item.total_listed_value and item.unit_price.currency_code == item.total_listed_value.currency_code:
-            expected = (item.quantity * item.unit_price.amount).quantize(tolerance)
-            if abs(expected - item.total_listed_value.amount) > tolerance:
+            duration_months = None
+            if item.service_start_date and item.service_end_date:
+                duration_months = (item.service_end_date.year - item.service_start_date.year) * 12 + (item.service_end_date.month - item.service_start_date.month)
+            reconciles, _ = reconcile_multi_period_total(
+                quantity=item.quantity, unit_price_amount=item.unit_price.amount, total_amount=item.total_listed_value.amount,
+                duration_months=duration_months, tolerance=tolerance,
+            )
+            if not reconciles:
                 issues.append(ReviewIssue(code="line_total_conflict", message="Line total does not reconcile with quantity and unit price.", severity=ReviewIssueSeverity.ERROR, candidate_id=item.source_candidate_id, field_name="total_listed_value"))
         if item.yearly_price_schedule and item.total_listed_value and all(e.normalized_amount for e in item.yearly_price_schedule):
             total = sum((e.normalized_amount.amount for e in item.yearly_price_schedule), Decimal("0"))

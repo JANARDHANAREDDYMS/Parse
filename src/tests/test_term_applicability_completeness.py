@@ -76,9 +76,19 @@ def test_extracted_fact_and_unresolved_coverage_partition_expected_fields():
     bundle = CandidateCommercialFacts(candidate_id="candidate-0001", facts=(fact,))
     coverage = CandidateCommercialFactCoverage(
         candidate_id="candidate-0001",
-        expected_fields=(RawCommercialFactField.QUANTITY, RawCommercialFactField.TOTAL_LISTED_VALUE, RawCommercialFactField.UNIT_PRICE),
+        expected_fields=(
+            RawCommercialFactField.INVOICING_FREQUENCY, RawCommercialFactField.INVOICING_SCHEDULE_TYPE,
+            RawCommercialFactField.PAYMENT_TERMS, RawCommercialFactField.QUANTITY,
+            RawCommercialFactField.SERVICE_END_DATE, RawCommercialFactField.SERVICE_START_DATE,
+            RawCommercialFactField.TOTAL_LISTED_VALUE, RawCommercialFactField.UNIT_PRICE,
+        ),
         extracted_fields=(RawCommercialFactField.QUANTITY,),
-        unresolved_fields=(RawCommercialFactField.TOTAL_LISTED_VALUE, RawCommercialFactField.UNIT_PRICE),
+        unresolved_fields=(
+            RawCommercialFactField.INVOICING_FREQUENCY, RawCommercialFactField.INVOICING_SCHEDULE_TYPE,
+            RawCommercialFactField.PAYMENT_TERMS, RawCommercialFactField.SERVICE_END_DATE,
+            RawCommercialFactField.SERVICE_START_DATE, RawCommercialFactField.TOTAL_LISTED_VALUE,
+            RawCommercialFactField.UNIT_PRICE,
+        ),
         evidence=(evidence,),
     )
     decision = TermApplicabilityDecision(schema_version="1.0.0", term_id="term-0001", disposition=TermDisposition.DOCUMENT_METADATA)
@@ -110,7 +120,10 @@ def test_finalizer_coverage_resolution_injects_expected_fields_and_evidence():
         "candidate_id": "candidate-0001",
         "unresolved_fields": ["quantity"], "evidence_ids": ["native:p0001:b000001"],
     }], [])
-    assert resolved and resolved[0]["expected_fields"] == ["quantity"]
+    assert resolved and resolved[0]["expected_fields"] == [
+        "invoicing_frequency", "invoicing_schedule_type", "payment_terms",
+        "quantity", "service_end_date", "service_start_date",
+    ]
     assert resolved[0]["extracted_fields"] == []
     assert resolved[0]["evidence"][0]["block_id"] == "native:p0001:b000001"
 

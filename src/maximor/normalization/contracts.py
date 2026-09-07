@@ -37,7 +37,7 @@ from maximor.normalization.errors import NormalizationInputConstructionError
 from maximor.normalization.schemas import NormalizationModel
 from maximor.sku_mapping.contracts import SkuMappingRunArtifact
 from maximor.sku_mapping.schemas import SkuMappingDecision, SkuMappingOutcome
-from maximor.term_applicability.contracts import FACT_ELIGIBLE_COMMERCIAL_STATUSES, RAW_ATTRIBUTE_FACT_HINTS
+from maximor.term_applicability.contracts import FACT_ELIGIBLE_COMMERCIAL_STATUSES, RAW_ATTRIBUTE_FACT_HINTS, REQUIRED_CONTRACT_ITEM_FACT_FIELDS
 from maximor.term_applicability.schemas import (
     CandidateCommercialFactCoverage,
     CandidateCommercialFacts,
@@ -57,10 +57,10 @@ def expected_fact_fields(candidate: ProductCandidate, status: CommercialStatus) 
 
     if status not in FACT_ELIGIBLE_COMMERCIAL_STATUSES:
         return ()
-    return tuple(sorted(
-        {field for key, field in RAW_ATTRIBUTE_FACT_HINTS.items() if candidate.raw_attributes.get(key)},
-        key=lambda item: item.value,
-    ))
+    hinted = {field for key, field in RAW_ATTRIBUTE_FACT_HINTS.items() if candidate.raw_attributes.get(key)}
+    if not hinted:
+        return ()
+    return tuple(sorted(hinted | REQUIRED_CONTRACT_ITEM_FACT_FIELDS, key=lambda item: item.value))
 
 
 def status_by_candidate_map(document_analysis: DocumentAnalysisResult) -> dict[str, CommercialStatus]:

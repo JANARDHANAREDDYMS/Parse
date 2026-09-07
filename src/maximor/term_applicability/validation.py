@@ -229,13 +229,17 @@ def validate_term_applicability_result(
             ))
         # `extracted_fields` is never Claude's own summary on the live path
         # (the finalizer derives it server-side from this same submission's
-        # own `candidate_commercial_facts` -- see
-        # `ClaudeTermApplicabilityAgent._resolve_coverage_evidence_ids` --
-        # so it can no longer drift from the facts actually submitted). This
-        # check remains as a structural invariant of the canonical result
-        # itself, covering any other caller that constructs one directly.
+        # own `candidate_commercial_facts`, intersected with `expected_fields`
+        # -- see `ClaudeTermApplicabilityAgent._resolve_coverage_evidence_ids`
+        # -- so it can no longer drift from the facts actually submitted).
+        # This check remains as a structural invariant of the canonical
+        # result itself, covering any other caller that constructs one
+        # directly. Coverage audits `expected_fields` only: a persisted fact
+        # outside that hinted set (currency, dates, payment terms, ...) is a
+        # legitimate extra extraction and must not be required in
+        # `extracted_fields` or treated as drift.
         extracted = {fact.field for bundle in result.candidate_commercial_facts if bundle.candidate_id == candidate_id for fact in bundle.facts}
-        if set(extracted) != set(coverage.extracted_fields):
+        if (set(extracted) & set(expected_fields)) != set(coverage.extracted_fields):
             issues.append(TermApplicabilityValidationIssue(
                 "candidate_fact_coverage_extracted_mismatch", f"candidate_commercial_fact_coverage[{candidate_id}].extracted_fields",
                 "Coverage extracted fields must match persisted facts.", False,
@@ -264,9 +268,14 @@ def validate_term_applicability_result(
         if coverage.candidate_id not in expected_by_candidate:
             candidate = candidates_by_id.get(coverage.candidate_id)
             code = "candidate_fact_coverage_candidate_not_eligible" if candidate is not None else "candidate_fact_coverage_unknown_candidate"
+            # Correctable: dropping one coverage entry for a candidate that
+            # turned out ineligible (or doesn't exist) is a simple, mechanical
+            # fix, not a trust-boundary violation like a trusted-identity
+            # override -- there's no reason to spend a real production
+            # document's only outcome on a one-line submission mistake.
             issues.append(TermApplicabilityValidationIssue(
                 code, f"candidate_commercial_fact_coverage[{coverage.candidate_id}]",
-                "Coverage is not allowed for this candidate.", False,
+                "Coverage is not allowed for this candidate.", True,
             ))
 
     return tuple(issues)

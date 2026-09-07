@@ -1,0 +1,63 @@
+/* Keep the SKU fan-out readable without colliding with the next timeline stage. */
+.timeline-row:nth-child(4) {
+  min-height: 126px;
+}
+
+.parallel {
+  top: 62px;
+}
+
+.review-issues {
+  margin: -6px 0 20px;
+  padding: 14px 16px;
+  border: 1px solid #ead9a5;
+  border-radius: 6px;
+  background: #fffdf6;
+}
+
+.review-issues > strong {
+  display: block;
+  margin-bottom: 9px;
+  color: #8c6419;
+  font-size: 12px;
+}
+
+.review-issue {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(140px, 1fr);
+  gap: 2px 12px;
+  padding: 8px 0;
+  border-top: 1px solid #f0e8ca;
+}
+
+.review-issue span {
+  color: #334b64;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.review-issue b {
+  color: #9a6b16;
+  font-size: 10px;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+.review-issue small {
+  grid-column: 1 / -1;
+  color: #6e7e91;
+  font-size: 11px;
+}
+
+/* Keep long tenant lists inside the Documents card instead of growing the page. */
+.documents-panel {
+  max-height: calc(100vh - 250px);
+  display: flex;
+  flex-direction: column;
+}
+
+.documents-panel .table-wrap {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}

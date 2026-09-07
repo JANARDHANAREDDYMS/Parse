@@ -47,8 +47,12 @@ class DatabaseSettings(BaseSettings):
         validation_alias=AliasChoices("DOCUMENT_ANALYSIS_MAX_THINKING_TOKENS", "MAXIMOR_DOCUMENT_ANALYSIS_MAX_THINKING_TOKENS"),
     )
     document_analysis_timeout_seconds: float = Field(
-        default=120, gt=0, le=900,
+        default=150, gt=0, le=900,
         validation_alias=AliasChoices("DOCUMENT_ANALYSIS_TIMEOUT_SECONDS", "MAXIMOR_DOCUMENT_ANALYSIS_TIMEOUT_SECONDS"),
+    )
+    document_analysis_timeout_max_attempts: int = Field(
+        default=2, ge=1, le=3,
+        validation_alias=AliasChoices("DOCUMENT_ANALYSIS_TIMEOUT_MAX_ATTEMPTS", "MAXIMOR_DOCUMENT_ANALYSIS_TIMEOUT_MAX_ATTEMPTS"),
     )
     document_analysis_max_budget_usd: float | None = Field(
         default=None, gt=0, le=100,

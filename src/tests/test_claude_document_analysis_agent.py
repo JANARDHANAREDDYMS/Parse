@@ -2,6 +2,7 @@
 
 import asyncio
 import inspect
+import json
 import uuid
 from datetime import UTC, datetime
 
@@ -331,6 +332,34 @@ async def test_finalizer_rejects_ungrounded_and_schema_invalid_submissions_safel
         {"result": finalization_submission(value)},
     )
     assert ungrounded["is_error"]
+
+
+@pytest.mark.asyncio
+async def test_finalizer_names_the_specific_malformed_top_level_shape_and_allows_correction():
+    """A malformed top-level submission is a specific, correctable mistake, not a bare dead end.
+
+    Two real production failures (`document_analysis_invalid_output`, no
+    further detail) traced back to this exact path: the submission's
+    top-level shape didn't match `{"result": <object>}` at all. Before this
+    fix, that always produced a bare `invalid_input` code with
+    `correction_allowed: False` -- the model got no specific signal and no
+    chance to fix it. It must now name which shape was wrong and get the
+    same one-shot correction every other rejection gets.
+    """
+
+    value = request()
+    adapters, runtime = ClaudeDocumentAnalysisAgent(settings())._build_adapters(value, Tools())
+    response = await adapters[-1].handler({"unexpected_key": {}})
+    assert response["is_error"]
+    issues = json.loads(response["content"][0]["text"])["issues"]
+    assert issues[0]["code"].startswith("unexpected_top_level_keys:")
+    assert json.loads(response["content"][0]["text"])["correction_allowed"] is True
+    assert runtime.correction_attempt_count == 1
+
+    adapters, runtime = ClaudeDocumentAnalysisAgent(settings())._build_adapters(value, Tools())
+    response = await adapters[-1].handler({"result": "not an object"})
+    issues = json.loads(response["content"][0]["text"])["issues"]
+    assert issues[0]["code"] == "not_an_object:str"
 
 
 def test_finalizer_keeps_persistence_handler_owned():

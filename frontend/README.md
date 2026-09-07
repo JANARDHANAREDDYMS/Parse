@@ -5,7 +5,7 @@ React + TypeScript + Vite dashboard for the order-form pipeline. The dashboard s
 For local API mode, optionally create `frontend/.env.local` (never commit secrets):
 
 ```bash
-VITE_MAXIMOR_API_BASE_URL=http://127.0.0.1:8000
+VITE_MAXIMOR_API_BASE_URL=http://127.0.0.1:8002
 VITE_MAXIMOR_ORGANIZATION_ID=<organization-uuid>
 ```
 

@@ -1,20 +1,25 @@
 import uuid
 from collections.abc import AsyncIterator
 from pathlib import Path
+from urllib.parse import quote
 
 import structlog
-from fastapi import FastAPI, File, Request, UploadFile
+from fastapi import FastAPI, File, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy.exc import SQLAlchemyError
 
-from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse, TermApplicabilityResponse, NormalizationResponse, DocumentListResponse, DocumentSummaryResponse, PipelineResponse
+from maximor.api.schemas import DocumentAnalysisResponse, HealthResponse, JobResponse, UploadResponse, TermApplicabilityResponse, NormalizationResponse, DocumentListResponse, DocumentSummaryResponse, PipelineResponse, EvidencePresentationResponse
 from maximor.document_analysis.persistence import DocumentAnalysisPersistenceService
 from maximor.document_analysis.errors import DocumentAnalysisError
+from maximor.document_analysis.repository import DocumentAnalysisRepository
+from maximor.document_analysis.schemas import EvidenceReference
+from maximor.document_analysis.tool_schemas import EvidenceRegionInput, GetPageRenderInput, TableResult
+from maximor.document_analysis.tools import PersistedDocumentTools
 from maximor.term_applicability.persistence import TermApplicabilityPersistenceService
 from maximor.normalization.persistence import NormalizationPersistenceService
-from maximor.db.models import TermApplicabilityRun, NormalizationRun, Document, ProcessingJob, DocumentProcessingRun, DocumentAnalysisRun, SkuMappingRun, DocumentProductCandidate, NormalizedLineItemProjection, NormalizationIssueProjection
+from maximor.db.models import TermApplicabilityRun, NormalizationRun, Document, ProcessingJob, DocumentProcessingRun, DocumentAnalysisRun, SkuMappingRun, SkuMappingDecisionProjection, DocumentProductCandidate, NormalizedLineItemProjection, NormalizationIssueProjection
 from sqlalchemy import select, func
 from maximor.config import DatabaseSettings, get_database_settings
 from maximor.db.health import check_database_health
@@ -29,6 +34,57 @@ from maximor.jobs.types import JobType
 from maximor.storage import LocalObjectStorage, StorageError
 
 logger = structlog.get_logger()
+
+
+def _friendly_field_name(field_name: str) -> str:
+    labels = {
+        "unit_price": "Unit price",
+        "total_listed_value": "Total listed value",
+        "quantity": "Quantity",
+        "currency": "Currency",
+        "payment_terms": "Payment terms",
+        "service_start_date": "Service start date",
+        "service_end_date": "Service end date",
+        "invoicing_frequency": "Invoicing frequency",
+        "invoicing_schedule_type": "Invoicing schedule",
+    }
+    return labels.get(field_name, field_name.replace("_", " ").title())
+
+
+def _bounded_table_excerpt(rows: tuple[dict, ...]) -> str:
+    """Create a short row summary without returning the persisted table wholesale."""
+    lines: list[str] = []
+    for row in rows[:4]:
+        if not isinstance(row, dict):
+            continue
+        cells = row.get("cells")
+        if isinstance(cells, list):
+            parts = []
+            for cell in cells[:8]:
+                if isinstance(cell, dict) and cell.get("text") is not None:
+                    text = " ".join(str(cell["text"]).split())[:180]
+                    if text:
+                        parts.append(text)
+                elif isinstance(cell, str):
+                    text = " ".join(cell.split())[:180]
+                    if text:
+                        parts.append(text)
+        else:
+            # Some persisted table rows are already simple key/value records.
+            parts = [
+                f"{str(key).strip()[:80]}: {str(value).strip()[:160]}"
+                for key, value in list(row.items())[:8]
+                if key not in {"bounding_box", "row_index", "column_index", "row_span", "column_span"}
+            ]
+        if parts:
+            lines.append(" · ".join(parts))
+    value = "\n".join(lines).strip()
+    return value[:700]
+
+
+def _bounded_text_excerpt(text: str) -> str:
+    """Normalize and bound a persisted text block for a human-readable citation."""
+    return " ".join((text or "").split())[:700]
 
 
 def error_response(status_code: int, code: str, message: str) -> JSONResponse:
@@ -56,6 +112,9 @@ def create_app(
         app.state.session_factory, app.state.storage
     )
     app.state.normalization_persistence = NormalizationPersistenceService(app.state.session_factory, app.state.storage)
+    app.state.persisted_document_tools = PersistedDocumentTools(
+        DocumentAnalysisRepository(app.state.session_factory), app.state.storage
+    )
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(
@@ -278,6 +337,131 @@ def create_app(
             return error_response(503, "normalization_unavailable", "Normalization is unavailable.")
         return NormalizationResponse(run_id=run.id, document_id=run.document_id, analysis_run_id=run.analysis_run_id, term_applicability_run_id=run.term_applicability_run_id, status=run.status, attempt_number=run.attempt_number, schema_version=run.schema_version, finalization_policy_version=run.finalization_policy_version, started_at=run.started_at, completed_at=run.completed_at, error_code=run.error_code, error_stage=run.error_stage, error_message=run.error_message, result=result)
 
+    @app.get(
+        "/v1/organizations/{organization_id}/documents/{document_id}/evidence",
+        response_model=EvidencePresentationResponse,
+    )
+    async def document_evidence(
+        request: Request, organization_id: uuid.UUID, document_id: uuid.UUID
+    ):
+        """Resolve persisted evidence into bounded, human-readable citations."""
+        try:
+            async with request.app.state.session_factory() as session:
+                run = await session.scalar(
+                    select(NormalizationRun)
+                    .where(
+                        NormalizationRun.organization_id == organization_id,
+                        NormalizationRun.document_id == document_id,
+                    )
+                    .order_by(NormalizationRun.attempt_number.desc())
+                )
+            if run is None or run.status not in {"completed", "review_required", "failed_validation"}:
+                return error_response(404, "evidence_not_found", "Persisted evidence is unavailable.")
+            extraction = (await request.app.state.normalization_persistence.load_completed_result(
+                organization_id=organization_id, run_id=run.id
+            )).extraction
+            pairs: list[tuple[str, EvidenceReference]] = []
+            for field_name, provenance in extraction.order_metadata.field_provenance.items():
+                pairs.extend((_friendly_field_name(field_name), ref) for ref in provenance.evidence)
+            for item in extraction.line_items:
+                for field_name, provenance in item.field_provenance.items():
+                    pairs.extend((_friendly_field_name(field_name), ref) for ref in provenance.evidence)
+            seen: set[tuple[str, int, str]] = set()
+            output: list[dict] = []
+            resolver = request.app.state.persisted_document_tools
+            for field_name, reference in pairs:
+                evidence_id = reference.block_id or reference.table_id
+                if not evidence_id:
+                    continue
+                kind = "table" if reference.table_id else "text"
+                identity = (field_name, reference.page_number, evidence_id)
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                excerpt = None
+                source_description = "Document text"
+                try:
+                    resolved = await resolver.get_evidence_region(EvidenceRegionInput(
+                        organization_id=organization_id,
+                        preprocessing_run_id=run.preprocessing_run_id,
+                        evidence=reference,
+                    ))
+                    if isinstance(resolved, TableResult):
+                        source_description = "Subscription fees table"
+                        excerpt = _bounded_table_excerpt(resolved.rows) or None
+                    else:
+                        source_description = "Document text"
+                        excerpt = _bounded_text_excerpt(resolved.text) or None
+                except Exception:
+                    # Keep the citation, but honestly signal that its source is unavailable.
+                    excerpt = None
+                output.append({
+                    "field": field_name,
+                    "page_number": reference.page_number,
+                    "evidence_id": evidence_id,
+                    "evidence_type": kind,
+                    "source_description": source_description,
+                    "excerpt": excerpt,
+                    "render_url": f"/v1/organizations/{organization_id}/documents/{document_id}/evidence/render?page_number={reference.page_number}&evidence_id={quote(evidence_id, safe='')}&kind={kind}",
+                })
+            return EvidencePresentationResponse(
+                document_id=document_id,
+                preprocessing_run_id=run.preprocessing_run_id,
+                evidence=output,
+            )
+        except Exception:
+            return error_response(503, "evidence_unavailable", "Evidence is unavailable.")
+
+    @app.get(
+        "/v1/organizations/{organization_id}/documents/{document_id}/evidence/render",
+    )
+    async def document_evidence_render(
+        request: Request,
+        organization_id: uuid.UUID,
+        document_id: uuid.UUID,
+        page_number: int = Query(ge=1),
+        evidence_id: str = Query(min_length=1, max_length=128),
+        kind: str = Query(pattern="^(text|table)$"),
+    ):
+        """Serve one authorized persisted page render after evidence validation."""
+        try:
+            async with request.app.state.session_factory() as session:
+                run = await session.scalar(
+                    select(NormalizationRun)
+                    .where(
+                        NormalizationRun.organization_id == organization_id,
+                        NormalizationRun.document_id == document_id,
+                    )
+                    .order_by(NormalizationRun.attempt_number.desc())
+                )
+            if run is None or run.status not in {"completed", "review_required", "failed_validation"}:
+                return error_response(404, "evidence_not_found", "Persisted evidence is unavailable.")
+            extraction = (await request.app.state.normalization_persistence.load_completed_result(
+                organization_id=organization_id, run_id=run.id
+            )).extraction
+            references = []
+            for provenance in extraction.order_metadata.field_provenance.values():
+                references.extend(provenance.evidence)
+            for item in extraction.line_items:
+                for provenance in item.field_provenance.values():
+                    references.extend(provenance.evidence)
+            reference = next((ref for ref in references if ref.page_number == page_number and (ref.table_id if kind == "table" else ref.block_id) == evidence_id), None)
+            if reference is None:
+                return error_response(404, "evidence_not_found", "The requested evidence is unavailable.")
+            await request.app.state.persisted_document_tools.get_evidence_region(EvidenceRegionInput(
+                organization_id=organization_id,
+                preprocessing_run_id=run.preprocessing_run_id,
+                evidence=reference,
+            ))
+            render = await request.app.state.persisted_document_tools.get_page_render(GetPageRenderInput(
+                organization_id=organization_id,
+                preprocessing_run_id=run.preprocessing_run_id,
+                page_number=page_number,
+            ))
+            return Response(content=render.content, media_type=render.media_type, headers={"Cache-Control": "private, max-age=60"})
+        except Exception:
+            return error_response(503, "evidence_unavailable", "Evidence is unavailable.")
+
     @app.get("/v1/organizations/{organization_id}/documents", response_model=DocumentListResponse)
     async def document_list(request: Request, organization_id: uuid.UUID):
         """Return safe newest-first summaries for one organization."""
@@ -316,16 +500,27 @@ def create_app(
                 ana=await session.scalar(select(DocumentAnalysisRun).where(DocumentAnalysisRun.organization_id==organization_id,DocumentAnalysisRun.document_id==document_id).order_by(DocumentAnalysisRun.attempt_number.desc()))
                 term=await session.scalar(select(TermApplicabilityRun).where(TermApplicabilityRun.organization_id==organization_id,TermApplicabilityRun.document_id==document_id).order_by(TermApplicabilityRun.attempt_number.desc()))
                 norm=await session.scalar(select(NormalizationRun).where(NormalizationRun.organization_id==organization_id,NormalizationRun.document_id==document_id).order_by(NormalizationRun.attempt_number.desc()))
+                mapping_rows=[]
+                if ana:
+                    candidates=(await session.scalars(select(DocumentProductCandidate).where(DocumentProductCandidate.organization_id==organization_id,DocumentProductCandidate.analysis_run_id==ana.id))).all()
+                    mapping_runs=(await session.scalars(select(SkuMappingRun).where(SkuMappingRun.organization_id==organization_id,SkuMappingRun.document_id==document_id,SkuMappingRun.analysis_run_id==ana.id))).all()
+                    by_candidate={m.document_product_candidate_id:m for m in mapping_runs}
+                    for candidate in candidates:
+                        mapping=by_candidate.get(candidate.id)
+                        decision=await session.scalar(select(SkuMappingDecisionProjection).where(SkuMappingDecisionProjection.sku_mapping_run_id==mapping.id)) if mapping else None
+                        mapping_rows.append({"candidate_id":candidate.external_candidate_id,"status":mapping.status if mapping else "queued","outcome":decision.outcome if decision else None,"sku_code":decision.sku_code if decision else None,"sku_name":decision.sku_name if decision else None,"error_code":mapping.error_code if mapping else None})
             if doc is None: return error_response(404,"document_not_found","The document was not found.")
             by_type={}
             for job in jobs: by_type.setdefault(job.job_type,[]).append(job)
             sku=[{"job_id":j.id,"status":j.status,"candidate_id":j.document_product_candidate_id,"error_code":j.error_code} for j in by_type.get("sku_mapping",[])]
-            pipeline=lambda run: ({"status":run.status,"started_at":run.started_at,"completed_at":run.completed_at,"error_code":run.error_code} if run else None)
+            if mapping_rows:
+                sku=mapping_rows
+            pipeline=lambda run: ({"status":run.status,"started_at":run.started_at,"completed_at":run.completed_at,"error_code":run.error_code,"error_message":run.error_message if run.status == "failed" else None,"failure_stage":run.error_stage if hasattr(run, "error_stage") else None} if run else None)
             norm_data=pipeline(norm)
             if norm and norm.status in {"completed","review_required","failed_validation"}:
                 try: norm_data["result"]=(await request.app.state.normalization_persistence.load_completed_result(organization_id=organization_id,run_id=norm.id)).model_dump(mode="json")
                 except Exception: pass
-            return PipelineResponse(document_id=document_id, preprocessing=pipeline(pre), document_analysis=pipeline(ana), sku_mapping={"total":len(sku),"completed":sum(x["status"]=="completed" for x in sku),"failed":sum(x["status"]=="failed" for x in sku),"review":0,"candidates":sku}, term_applicability=pipeline(term), normalization=norm_data, document_status=doc.status)
+            return PipelineResponse(document_id=document_id, preprocessing=pipeline(pre), document_analysis=pipeline(ana), sku_mapping={"total":len(sku),"completed":sum(x["status"]=="completed" or x.get("outcome")=="match" for x in sku),"failed":sum(x["status"]=="failed" for x in sku),"review":sum(x.get("outcome") in {"ambiguous","no_match"} for x in sku),"candidates":sku}, term_applicability=pipeline(term), normalization=norm_data, document_status=doc.status)
         except SQLAlchemyError:
             return error_response(503,"pipeline_unavailable","Pipeline status is unavailable.")
 

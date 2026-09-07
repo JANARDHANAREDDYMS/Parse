@@ -179,6 +179,36 @@ async def test_schedules_normalization_when_the_term_applicability_branch_failed
 
 
 @pytest.mark.asyncio
+async def test_schedules_normalization_when_the_term_applicability_job_failed_before_creating_a_run(tmp_path, organization):
+    """A job that fails before ever creating its own run row must still unblock the document.
+
+    Reproduces the real stuck-forever bug from a 50-document evaluation run:
+    `TermApplicabilityHandler` can fail at `load_completed_result` -- e.g.
+    the document-analysis artifact was transiently unavailable -- before it
+    ever calls `create_run`, so no `TermApplicabilityRun` row exists at all,
+    even though the `term_applicability` `ProcessingJob` itself is terminal
+    (`failed`). The scheduler previously gated on run-row *presence*, not
+    just job status, so it silently returned `None` forever: nothing else
+    ever re-evaluates fan-in readiness once the job has already reached a
+    terminal state, leaving the document permanently non-terminal.
+    """
+
+    storage = LocalObjectStorage(tmp_path)
+    ids = await _seed(organization, storage)
+    await _term_job(organization, ids, status="failed")
+    # Deliberately do not seed a TermApplicabilityRun row at all.
+    await _sku_job(organization, ids, "candidate-purchased", status="completed")
+
+    job = await schedule_normalization_if_ready(
+        get_session_factory(), organization_id=organization, document_id=ids["document_id"],
+        analysis_run_id=ids["analysis_run_id"],
+    )
+    assert job is not None
+    assert job.job_type == JobType.NORMALIZATION.value
+    assert job.status == "queued"
+
+
+@pytest.mark.asyncio
 async def test_concurrent_calls_never_create_duplicate_active_normalization_jobs(tmp_path, organization):
     """Multiple SKU handlers and the term handler finishing concurrently must
     never race into two active normalization jobs -- the partial unique

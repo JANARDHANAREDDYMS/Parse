@@ -475,6 +475,107 @@ async def test_timeout_raises_safe_runtime_error_with_partial_timing():
 
 
 @pytest.mark.asyncio
+async def test_timeout_after_evidence_tool_calls_preserves_tool_diagnostics():
+    """A timeout reached after some successful evidence retrieval retains that tool history.
+
+    Distinguishes "timed out before any tool call" (the prior test) from a
+    session that made real progress: `last_successful_tool_return_at` and
+    `successful_tool_call_order` must reflect the two retrievals that
+    actually completed before the SDK response never arrived.
+    """
+
+    value = task()
+
+    async def touch_evidence(options):
+        term_adapter, candidate_adapter, _finalize = options._maximor_adapters
+        await term_adapter.handler({"term_id": "term-0001", "evidence_id": "native:p0001:b000000"})
+        await candidate_adapter.handler({"candidate_id": "candidate-0001", "evidence_id": "native:p0001:b000001"})
+
+    client = FakeClient(messages=[], response_delay_seconds=0.05, on_query=touch_evidence)
+    with pytest.raises(TermApplicabilityRuntimeError) as caught:
+        await ClaudeTermApplicabilityAgent(
+            settings(term_applicability_timeout_seconds=0.01), client_factory=factory_for(client),
+        ).execute(value, Tools())
+    runtime = caught.value.runtime
+    assert caught.value.code == "term_applicability_timeout"
+    assert runtime.terminal_kind == "timeout"
+    assert runtime.successful_tool_call_order == ("get_term_evidence_region", "get_candidate_evidence_region")
+    assert runtime.tool_call_count == 2
+    assert runtime.last_successful_tool_return_at is not None
+    assert runtime.last_successful_tool_return_elapsed_ms is not None
+    # The interval after the last successful return is itself observable,
+    # bounded, and never negative -- this is what lets a real failure be
+    # distinguished from "hung immediately after the last tool returned".
+    assert runtime.elapsed_after_last_successful_tool_return_ms is not None
+    assert runtime.elapsed_after_last_successful_tool_return_ms >= 0
+    assert runtime.finalization_submission_count == 0  # the finalizer was never reached
+
+
+@pytest.mark.asyncio
+async def test_timeout_after_one_correctable_finalizer_rejection_preserves_correction_state():
+    """A timeout after one correctable rejection shows the finalizer was reached, corrected, not accepted.
+
+    This single reachable state covers two of the requested checkpoints at
+    once ("finalizer tool-use but before accepted finalization" and "after
+    an in-session correction"): the guarded finalizer only ever grants a
+    correction on a *correctable* rejection, and granting one is exactly
+    what leaves the session able to keep running (and therefore able to
+    time out) rather than ending immediately in `rejection_event` --
+    a second attempt after the one allowed correction, or any
+    non-correctable rejection, sets `rejection_event` and resolves as an
+    immediate `TermApplicabilityValidationError` instead of a timeout (see
+    `test_second_invalid_output_stops_without_third_request` and
+    `test_noncorrectable_identity_mismatch_is_not_retried`). So "reached but
+    not yet accepted" and "already used its one correction" are the same
+    observable state here, not two independently reachable ones.
+    """
+
+    value = task()
+    unresolvable = {"decisions": [{
+        "term_id": "term-0001", "disposition": "line_item", "applicability_scope": "unknown",
+        "evidence_ids": ["does-not-exist"],
+    }]}
+
+    async def reject_once(options):
+        _term, _candidate, finalize = options._maximor_adapters
+        await finalize.handler({"result": unresolvable})
+
+    client = FakeClient(messages=[], response_delay_seconds=0.05, on_query=reject_once)
+    with pytest.raises(TermApplicabilityRuntimeError) as caught:
+        await ClaudeTermApplicabilityAgent(
+            settings(term_applicability_timeout_seconds=0.01), client_factory=factory_for(client),
+        ).execute(value, Tools())
+    runtime = caught.value.runtime
+    assert caught.value.code == "term_applicability_timeout"
+    assert runtime.terminal_kind == "timeout"
+    assert runtime.finalization_submission_count == 1  # the finalizer was reached
+    assert runtime.finalization_accepted is False  # but never accepted
+    assert runtime.correction_attempt_count == 1  # a correction was granted before the hang
+    assert runtime.failure_stage == "evidence_identifier_unresolved"
+
+
+@pytest.mark.asyncio
+async def test_cancellation_raises_typed_error_with_partial_runtime_attached():
+    """External cancellation is wrapped as a typed error carrying the partial runtime.
+
+    A bare `raise` of `asyncio.CancelledError` (a `BaseException`, not an
+    `Exception`) would skip past `TermApplicabilityHandler`'s
+    `except Exception` clause entirely -- no `mark_run_failed` call would
+    ever happen, silently discarding this exact partial-progress runtime and
+    leaving the persisted run stuck at `status="running"` forever.
+    """
+
+    value = task()
+    client = FakeClient(connect_error=asyncio.CancelledError())
+    with pytest.raises(TermApplicabilityRuntimeError) as caught:
+        await ClaudeTermApplicabilityAgent(settings(), client_factory=factory_for(client)).execute(value, Tools())
+    assert caught.value.code == "term_applicability_cancelled"
+    assert caught.value.runtime is not None
+    assert caught.value.runtime.terminal_kind == "cancelled"
+    assert caught.value.runtime.terminal_reason == "cancelled"
+
+
+@pytest.mark.asyncio
 async def test_missing_finalizer_call_raises_validation_error():
     value = task()
     client = FakeClient(messages=[sdk.ResultMessage(subtype="success", duration_ms=1, duration_api_ms=1, is_error=False, num_turns=1, session_id="s")])
@@ -689,14 +790,26 @@ async def test_coverage_extracted_fields_are_computed_from_submitted_facts():
     ground_runtime(type("Options", (), {"_maximor_runtime": runtime})(), ground_term=False, ground_candidate=True)
     payload = {
         **candidate_facts_payload(candidate_fact(field="quantity", raw_value="5")),
-        **coverage_payload(unresolved_fields=["unit_price"]),
+        **coverage_payload(unresolved_fields=[
+            "invoicing_frequency", "invoicing_schedule_type", "payment_terms",
+            "service_end_date", "service_start_date", "unit_price",
+        ]),
     }
     response = await adapters[-1].handler({"result": payload})
     assert not response.get("is_error"), response
     coverage = runtime._finalization_capture.accepted_result.candidate_commercial_fact_coverage[0]
     assert coverage.extracted_fields == (RawCommercialFactField.QUANTITY,)
-    assert coverage.unresolved_fields == (RawCommercialFactField.UNIT_PRICE,)
-    assert set(coverage.expected_fields) == {RawCommercialFactField.QUANTITY, RawCommercialFactField.UNIT_PRICE}
+    assert coverage.unresolved_fields == (
+        RawCommercialFactField.INVOICING_FREQUENCY, RawCommercialFactField.INVOICING_SCHEDULE_TYPE,
+        RawCommercialFactField.PAYMENT_TERMS, RawCommercialFactField.SERVICE_END_DATE,
+        RawCommercialFactField.SERVICE_START_DATE, RawCommercialFactField.UNIT_PRICE,
+    )
+    assert set(coverage.expected_fields) == {
+        RawCommercialFactField.QUANTITY, RawCommercialFactField.UNIT_PRICE,
+        RawCommercialFactField.SERVICE_START_DATE, RawCommercialFactField.SERVICE_END_DATE,
+        RawCommercialFactField.INVOICING_SCHEDULE_TYPE, RawCommercialFactField.INVOICING_FREQUENCY,
+        RawCommercialFactField.PAYMENT_TERMS,
+    }
 
 
 @pytest.mark.asyncio
@@ -710,14 +823,75 @@ async def test_coverage_partitions_correctly_when_every_expected_field_is_extrac
         **candidate_facts_payload(
             candidate_fact(field="quantity", raw_value="5"),
             candidate_fact(field="unit_price", raw_value="$10.00"),
+            candidate_fact(field="service_start_date", raw_value="2026-01-01"),
+            candidate_fact(field="service_end_date", raw_value="2026-12-31"),
+            candidate_fact(field="invoicing_schedule_type", raw_value="Recurring"),
+            candidate_fact(field="invoicing_frequency", raw_value="Monthly"),
+            candidate_fact(field="payment_terms", raw_value="Net 30"),
         ),
         **coverage_payload(unresolved_fields=[]),
     }
     response = await adapters[-1].handler({"result": payload})
     assert not response.get("is_error"), response
     coverage = runtime._finalization_capture.accepted_result.candidate_commercial_fact_coverage[0]
-    assert set(coverage.extracted_fields) == {RawCommercialFactField.QUANTITY, RawCommercialFactField.UNIT_PRICE}
+    assert set(coverage.extracted_fields) == {
+        RawCommercialFactField.QUANTITY, RawCommercialFactField.UNIT_PRICE,
+        RawCommercialFactField.SERVICE_START_DATE, RawCommercialFactField.SERVICE_END_DATE,
+        RawCommercialFactField.INVOICING_SCHEDULE_TYPE, RawCommercialFactField.INVOICING_FREQUENCY,
+        RawCommercialFactField.PAYMENT_TERMS,
+    }
     assert coverage.unresolved_fields == ()
+
+
+@pytest.mark.asyncio
+async def test_coverage_accepts_legitimate_extra_facts_outside_the_hinted_expected_fields():
+    """A field the model correctly extracted but that was never *expected* must not break coverage.
+
+    Reproduces the real `of-0001` failure: `expected_fields` covers the
+    raw-attribute-hinted core fields (quantity, unit_price) plus the
+    always-required contract-item attributes once hinted, but Claude is
+    free -- and expected -- to also extract facts entirely outside that set
+    (currency, unit price period, ...). Before this fix, `extracted_fields`
+    was computed from *every* submitted fact, so any such legitimate extra
+    fact made `extracted_fields` a superset of `expected_fields` and the
+    coverage partition invariant failed deterministically on every
+    well-extracted document, not just hard-to-parse ones.
+    """
+
+    value = task_with_expected_fact_fields()
+    adapters, runtime = ClaudeTermApplicabilityAgent(settings())._build_adapters(value, Tools())
+    ground_runtime(type("Options", (), {"_maximor_runtime": runtime})(), ground_term=False, ground_candidate=True)
+    payload = {
+        **candidate_facts_payload(
+            candidate_fact(field="quantity", raw_value="5"),
+            candidate_fact(field="unit_price", raw_value="$10.00"),
+            candidate_fact(field="service_start_date", raw_value="2026-01-01"),
+            candidate_fact(field="service_end_date", raw_value="2026-12-31"),
+            candidate_fact(field="invoicing_schedule_type", raw_value="Recurring"),
+            candidate_fact(field="invoicing_frequency", raw_value="Monthly"),
+            candidate_fact(field="payment_terms", raw_value="Net 30"),
+            candidate_fact(field="currency", raw_value="USD"),  # extra, never expected for this candidate
+        ),
+        **coverage_payload(unresolved_fields=[]),
+    }
+    response = await adapters[-1].handler({"result": payload})
+    assert not response.get("is_error"), response
+    result = runtime._finalization_capture.accepted_result
+    coverage = result.candidate_commercial_fact_coverage[0]
+    assert set(coverage.extracted_fields) == {
+        RawCommercialFactField.QUANTITY, RawCommercialFactField.UNIT_PRICE,
+        RawCommercialFactField.SERVICE_START_DATE, RawCommercialFactField.SERVICE_END_DATE,
+        RawCommercialFactField.INVOICING_SCHEDULE_TYPE, RawCommercialFactField.INVOICING_FREQUENCY,
+        RawCommercialFactField.PAYMENT_TERMS,
+    }
+    assert coverage.unresolved_fields == ()
+    facts = {fact.field for fact in result.candidate_commercial_facts[0].facts}
+    assert facts == {
+        RawCommercialFactField.QUANTITY, RawCommercialFactField.UNIT_PRICE,
+        RawCommercialFactField.SERVICE_START_DATE, RawCommercialFactField.SERVICE_END_DATE,
+        RawCommercialFactField.INVOICING_SCHEDULE_TYPE, RawCommercialFactField.INVOICING_FREQUENCY,
+        RawCommercialFactField.PAYMENT_TERMS, RawCommercialFactField.CURRENCY,
+    }
 
 
 @pytest.mark.asyncio
@@ -767,6 +941,90 @@ async def test_finalizer_rejects_a_coverage_missing_an_expected_field_entirely()
     response = await adapters[-1].handler({"result": payload})
     assert response["is_error"]
     assert runtime.failure_stage == "pydantic_schema_validation"
+
+
+@pytest.mark.asyncio
+async def test_coverage_partition_mismatch_names_the_missing_field_in_correction_feedback():
+    """A field left out of unresolved_fields must be named, not just a bare schema error code.
+
+    `expected_fields`/`extracted_fields` are both server-computed, so a bare
+    `value_error` at `candidate_commercial_fact_coverage.0` gives Claude no
+    way to know which of its own `unresolved_fields` entries is missing.
+    """
+
+    value = task_with_expected_fact_fields()
+    adapters, runtime = ClaudeTermApplicabilityAgent(settings())._build_adapters(value, Tools())
+    ground_runtime(type("Options", (), {"_maximor_runtime": runtime})(), ground_term=False, ground_candidate=True)
+    payload = {
+        **candidate_facts_payload(candidate_fact(field="quantity", raw_value="5")),
+        **coverage_payload(unresolved_fields=[]),  # every other expected field is unaccounted
+    }
+    response = await adapters[-1].handler({"result": payload})
+    assert response["is_error"]
+    issues = json.loads(response["content"][0]["text"])["issues"]
+    assert len(issues) == 1
+    assert issues[0]["code"] == "coverage_fields_do_not_partition_expected_fields"
+    assert issues[0]["candidate_id"] == "candidate-0001"
+    assert issues[0]["missing_from_both_extracted_and_unresolved"] == [
+        "invoicing_frequency", "invoicing_schedule_type", "payment_terms",
+        "service_end_date", "service_start_date", "unit_price",
+    ]
+    assert issues[0]["present_in_both_extracted_and_unresolved"] == []
+
+
+@pytest.mark.asyncio
+async def test_coverage_partition_overlap_names_the_double_counted_field_in_correction_feedback():
+    """A field claimed as both extracted (via facts) and unresolved must be named as overlapping."""
+
+    value = task_with_expected_fact_fields()
+    adapters, runtime = ClaudeTermApplicabilityAgent(settings())._build_adapters(value, Tools())
+    ground_runtime(type("Options", (), {"_maximor_runtime": runtime})(), ground_term=False, ground_candidate=True)
+    payload = {
+        **candidate_facts_payload(candidate_fact(field="quantity", raw_value="5")),
+        **coverage_payload(unresolved_fields=[
+            "invoicing_frequency", "invoicing_schedule_type", "payment_terms",
+            "quantity", "service_end_date", "service_start_date", "unit_price",
+        ]),
+    }
+    response = await adapters[-1].handler({"result": payload})
+    assert response["is_error"]
+    issues = json.loads(response["content"][0]["text"])["issues"]
+    assert len(issues) == 1
+    assert issues[0]["code"] == "coverage_fields_do_not_partition_expected_fields"
+    assert issues[0]["present_in_both_extracted_and_unresolved"] == ["quantity"]
+    assert issues[0]["missing_from_both_extracted_and_unresolved"] == []
+
+
+@pytest.mark.asyncio
+async def test_coverage_partition_diagnostics_reset_between_correction_attempts():
+    """A clean second submission must not carry over a stale first-attempt diagnosis."""
+
+    value = task_with_expected_fact_fields()
+    adapters, runtime = ClaudeTermApplicabilityAgent(settings())._build_adapters(value, Tools())
+    ground_runtime(type("Options", (), {"_maximor_runtime": runtime})(), ground_term=False, ground_candidate=True)
+    bad_payload = {
+        **candidate_facts_payload(candidate_fact(field="quantity", raw_value="5")),
+        **coverage_payload(unresolved_fields=[]),
+    }
+    first = await adapters[-1].handler({"result": bad_payload})
+    assert first["is_error"]
+    assert runtime.coverage_partition_issues
+
+    good_payload = {
+        **candidate_facts_payload(
+            candidate_fact(field="quantity", raw_value="5"),
+            candidate_fact(field="unit_price", raw_value="$10.00"),
+            candidate_fact(field="service_start_date", raw_value="2026-01-01"),
+            candidate_fact(field="service_end_date", raw_value="2026-12-31"),
+            candidate_fact(field="invoicing_schedule_type", raw_value="Recurring"),
+            candidate_fact(field="invoicing_frequency", raw_value="Monthly"),
+            candidate_fact(field="payment_terms", raw_value="Net 30"),
+        ),
+        **coverage_payload(unresolved_fields=[]),
+    }
+    second = await adapters[-1].handler({"result": good_payload})
+    assert not second.get("is_error"), second
+    assert runtime.coverage_partition_issues == ()
 
 
 def test_persistence_diagnostics_never_carry_raw_text_or_secrets():
