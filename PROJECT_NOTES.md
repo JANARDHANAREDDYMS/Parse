@@ -183,8 +183,8 @@ Generic worker process
   │
   └── Both completed branches become trusted inputs to normalization.
 
-                         ┌───────────────────────────────────────────┐
-                         │ NEXT: deterministic normalization          │
+                         ┌───────────────────────────────────────────-┐
+                         │ Deterministic normalization                │
                          │ ├── money/currency and price schedules     │
                          │ ├── dates and service periods              │
                          │ ├── quantities                             │
@@ -193,8 +193,8 @@ Generic worker process
                          └───────────────────────────────────────────┘
                                              │
                                              ▼
-                         ┌───────────────────────────────────────────┐
-                         │ NEXT: final validation                     │
+                         ┌───────────────────────────────────────────-┐
+                         │ Final validation                           │
                          │ ├── schema, SKU, date, and decimal checks  │
                          │ ├── total/schedule reconciliation          │
                          │ ├── targeted semantic review only when     │
