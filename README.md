@@ -1,4 +1,4 @@
-# Maximor AI take-home
+# Par$e
 
 An evidence-backed order-form extraction backend. It accepts a PDF and a tenant-scoped SKU catalog, then
 uses deterministic processing plus narrowly scoped Claude agents to produce an auditable normalized order
